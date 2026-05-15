@@ -42,6 +42,7 @@ const CustomPieTooltip = ({ active, payload }) => {
 const VEREDICTO_COLOR = {
   COMPRAR: 'bg-emerald-500/20 text-emerald-400',
   VENDER: 'bg-red-500/20 text-red-400',
+  MANTENER: 'bg-blue-500/20 text-blue-400',
   ESPERAR: 'bg-yellow-500/20 text-yellow-400',
   EVITAR: 'bg-slate-500/20 text-slate-400'
 };
@@ -61,7 +62,7 @@ const ZBitacora = ({ analyses }) => {
     return 'hace ' + Math.floor(diff/86400) + ' d';
   };
 
-  const sideToVeredicto = (side) => side === 'buy' ? 'COMPRAR' : 'VENDER';
+  const sideToVeredicto = (side) => side === 'buy' ? 'COMPRAR' : side === 'hold' ? 'MANTENER' : 'VENDER';
   const BUCKET_LABEL = { swing: 'Swing', largo_plazo: 'Largo plazo', dividendos: 'Dividendos', intraday: 'Intraday' };
 
   // Resumen: un chip por símbolo único (el más reciente), derivado de summary o de los campos
@@ -80,9 +81,10 @@ const ZBitacora = ({ analyses }) => {
     return `${r.symbol} · ${action}${price} — ${bucket}`;
   };
 
-  const chipColor = (side) => side === 'buy'
-    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
-    : 'bg-red-500/15 border-red-500/30 text-red-300';
+  const chipColor = (side) =>
+    side === 'buy'  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300' :
+    side === 'hold' ? 'bg-blue-500/15 border-blue-500/30 text-blue-300' :
+                     'bg-red-500/15 border-red-500/30 text-red-300';
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
