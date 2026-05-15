@@ -64,12 +64,43 @@ const ZBitacora = ({ analyses }) => {
   const sideToVeredicto = (side) => side === 'buy' ? 'COMPRAR' : 'VENDER';
   const BUCKET_LABEL = { swing: 'Swing', largo_plazo: 'Largo plazo', dividendos: 'Dividendos', intraday: 'Intraday' };
 
+  // Resumen: un chip por símbolo único (el más reciente), derivado de summary o de los campos
+  const resumenChips = Object.values(
+    analyses.reduce((acc, r) => {
+      if (!acc[r.symbol]) acc[r.symbol] = r;
+      return acc;
+    }, {})
+  ).slice(0, 8);
+
+  const chipText = (r) => {
+    if (r.summary) return r.summary;
+    const action = r.side === 'buy' ? 'COMPRAR' : 'VENDER';
+    const bucket = BUCKET_LABEL[r.bucket] || r.bucket || '';
+    const price = r.estimated_price ? ` $${parseFloat(r.estimated_price).toFixed(0)}` : '';
+    return `${r.symbol} · ${action}${price} — ${bucket}`;
+  };
+
+  const chipColor = (side) => side === 'buy'
+    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+    : 'bg-red-500/15 border-red-500/30 text-red-300';
+
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
       className="bg-[#1a1d2b]/60 backdrop-blur-xl rounded-[1.75rem] p-4 sm:p-6 border border-white/10">
-      <h3 className="text-sm sm:text-base font-bold text-gray-200 mb-4">
+      <h3 className="text-sm sm:text-base font-bold text-gray-200 mb-3">
         Bitácora IULER <span className="text-[10px] text-gray-500 font-normal">(últimas 15 decisiones)</span>
       </h3>
+
+      {resumenChips.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-4 pb-4 border-b border-white/5">
+          {resumenChips.map((r, i) => (
+            <span key={i} className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border ${chipColor(r.side)}`}>
+              {chipText(r)}
+            </span>
+          ))}
+        </div>
+      )}
+
       {analyses.length === 0 ? (
         <p className="text-center text-gray-600 text-sm py-6">Sin decisiones recientes</p>
       ) : (
@@ -150,7 +181,7 @@ const Portfolio = () => {
       ] = await Promise.all([
         supabase.from('activos_cartera_fondo').select('*').eq('fuente', 'iuler').order('valor_total', { ascending: false }),
         supabase.from('alpaca_bot_state').select('account_equity,account_cash,account_buying_power,last_decision,lake_status,updated_at').eq('id', 1).single(),
-        supabase.from('lake_trade_intentions').select('symbol,side,bucket,reason,confidence,estimated_price,estimated_qty,status,created_at').eq('regime', 'open').order('created_at', { ascending: false }).limit(15)
+        supabase.from('lake_trade_intentions').select('symbol,side,bucket,reason,confidence,estimated_price,estimated_qty,status,summary,created_at').eq('regime', 'open').order('created_at', { ascending: false }).limit(15)
       ]);
 
       if (posErr) throw posErr;
