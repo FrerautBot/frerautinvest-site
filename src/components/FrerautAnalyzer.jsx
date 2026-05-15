@@ -195,6 +195,72 @@ const fetchFrerautAnalysis = async (ticker, strategy, technicals) => {
 const fmtUSD = v => v != null ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v) : '—';
 const fmtPct = v => v != null ? `${parseFloat(v) >= 0 ? '+' : ''}${parseFloat(v).toFixed(2)}%` : '—';
 
+// --- SECTOR ROTATION CONSTANTS ---
+
+const SECTOR_ETF_MAP = { sp500:'SPY', nasdaq:'QQQ', semis:'SOXX', finanzas:'XLF', energia:'XLE', biotech:'XBI', smallcap:'IWM', china:'FXI' };
+const SECTOR_DISPLAY = { sp500:'S&P 500', nasdaq:'NASDAQ', semis:'SEMIS', finanzas:'FINANZAS', energia:'ENERGÍA', biotech:'BIOTECH', smallcap:'SMALL CAP', china:'CHINA' };
+
+const timeAgo = (date) => {
+  if (!date) return '';
+  const m = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
+  if (m < 1) return 'hace <1 min';
+  if (m < 60) return `hace ${m} min`;
+  const h = Math.floor(m / 60);
+  return `hace ${h}h ${m % 60}min`;
+};
+
+function SectorCard({ card }) {
+  const [expanded, setExpanded] = useState(false);
+  const sc = {
+    BULL: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400', bar: 'bg-emerald-500' },
+    BEAR: { bg: 'bg-red-500/10',     border: 'border-red-500/30',     text: 'text-red-400',     bar: 'bg-red-500'     },
+    CASH: { bg: 'bg-slate-700/20',   border: 'border-slate-600/50',   text: 'text-slate-400',   bar: 'bg-slate-600'   },
+  }[card.signal] ?? { bg: 'bg-slate-700/20', border: 'border-slate-600/50', text: 'text-slate-400', bar: 'bg-slate-600' };
+  const ticker = card.signal === 'BULL' ? card.ticker_bull : card.signal === 'BEAR' ? card.ticker_bear : 'CASH';
+
+  return (
+    <div className={`rounded-2xl border ${sc.border} ${sc.bg} p-4 flex flex-col gap-3`}>
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <div className="text-sm font-black text-white">{SECTOR_DISPLAY[card.sector] ?? card.sector}</div>
+          <div className="text-xs text-slate-500 font-mono mt-0.5">{card.ticker_bull} / {card.ticker_bear}</div>
+        </div>
+        <div className={`px-3 py-1 rounded-lg text-sm font-black border ${sc.border} ${sc.text} flex-shrink-0`}>{ticker}</div>
+      </div>
+
+      <div className="space-y-1">
+        <div className="flex justify-between text-xs">
+          <span className="text-slate-500">Convicción</span>
+          <span className={`font-bold ${sc.text}`}>{card.conviction}%</span>
+        </div>
+        <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+          <div className={`h-full rounded-full ${sc.bar}`} style={{ width: `${Math.min(card.conviction ?? 0, 100)}%` }} />
+        </div>
+      </div>
+
+      {card.timing && (
+        <div className="text-xs text-slate-500">Timing: <span className="text-yellow-400">{card.timing}</span></div>
+      )}
+
+      <button onClick={() => setExpanded(e => !e)} className="text-xs text-slate-600 hover:text-slate-400 text-left flex items-center gap-1 mt-auto">
+        {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+        {expanded ? 'Ocultar' : 'Ver análisis'}
+      </button>
+
+      {expanded && (
+        <div className="space-y-2 text-xs text-slate-400 border-t border-slate-800/60 pt-2">
+          {card.q1_tendencia  && <p><span className="text-slate-300 font-semibold">Tendencia:</span> {card.q1_tendencia}</p>}
+          {card.q2_momentum   && <p><span className="text-slate-300 font-semibold">Momentum:</span> {card.q2_momentum}</p>}
+          {card.q3_catalizador && <p><span className="text-slate-300 font-semibold">Catalizador:</span> {card.q3_catalizador}</p>}
+          {card.q4_decay_risk && <p><span className="text-slate-300 font-semibold">Decay risk:</span> {card.q4_decay_risk}</p>}
+          {card.reasoning     && <p className={`italic ${sc.text} border-t border-slate-800/60 pt-2`}>{card.reasoning}</p>}
+          {card.risk          && <p className="text-red-400/70">⚠ {card.risk}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // --- FRERAUT CRITERIA PANEL ---
 
 const ACCENT = {
@@ -334,12 +400,14 @@ export default function FrerautAnalyzer() {
   const [swingAnalysis, setSwingAnalysis] = useState(null);
   const [swingAnalysisLoading, setSwingAnalysisLoading] = useState(false);
 
-  // FRERAUTIANO STATE
-  const [frerautianoTicker, setFrerautianoTicker] = useState('SPY');
-  const [spyData, setSpyData] = useState(null);
-  const [spyLoading, setSpyLoading] = useState(false);
-  const [frerautianoAnalysis, setFrerautianoAnalysis] = useState(null);
-  const [frerautianoLoading, setFrerautianoLoading] = useState(false);
+  // FRERAUTIANO SECTOR STATE
+  const [frInit, setFrInit] = useState(null);
+  const [frCards, setFrCards] = useState({});
+  const [frRanking, setFrRanking] = useState(null);
+  const [frLoading, setFrLoading] = useState(false);
+  const [frPhase, setFrPhase] = useState('idle');
+  const [frCurrentSector, setFrCurrentSector] = useState(null);
+  const [frCacheTime, setFrCacheTime] = useState(null);
 
   // VALUE STATE
   const [valueTicker, setValueTicker] = useState('');
@@ -420,18 +488,76 @@ export default function FrerautAnalyzer() {
     );
   };
 
-  // --- TAB 2: FRERAUTIANO LOGIC ---
-  const handleFrerautianoSearch = async (t) => {
-    const ticker = t || frerautianoTicker || 'SPY';
-    setSpyLoading(true);
-    setFrerautianoAnalysis(null);
-    const d = await fetchTickerData(ticker);
-    setSpyData(d);
-    setSpyLoading(false);
-    if (d) {
-      setFrerautianoLoading(true);
-      fetchFrerautAnalysis(ticker, 'frerautiano', d).then(r => { setFrerautianoAnalysis(r); setFrerautianoLoading(false); });
+  // --- TAB 2: FRERAUTIANO SECTOR LOGIC ---
+
+  const loadFrCache = async () => {
+    try {
+      const { data } = await supabase.from('frerautiano_cache').select('*');
+      if (!data?.length) return false;
+      const macro = data.find(r => r.sector === '_macro');
+      if (!macro?.analyzed_at) return false;
+      const ageHrs = (Date.now() - new Date(macro.analyzed_at).getTime()) / 3600000;
+      if (ageHrs >= 4) return false;
+      const ranking = data.find(r => r.sector === '_ranking');
+      const sectors = data.filter(r => !r.sector.startsWith('_'));
+      setFrInit(macro.analysis);
+      setFrRanking(ranking?.analysis ?? null);
+      const cards = {};
+      sectors.forEach(s => { cards[s.sector] = { ...s.analysis, sector: s.sector, ticker_bull: s.ticker_bull, ticker_bear: s.ticker_bear, sector_order_rank: s.sector_order_rank }; });
+      setFrCards(cards);
+      setFrCacheTime(new Date(macro.analyzed_at));
+      setFrPhase('done');
+      return true;
+    } catch { return false; }
+  };
+
+  const runFrAnalysis = async () => {
+    setFrLoading(true);
+    setFrCards({});
+    setFrInit(null);
+    setFrRanking(null);
+    setFrCurrentSector(null);
+    setFrPhase('init');
+
+    const spyTech = await fetchTickerData('SPY');
+
+    const initRes = await supabase.functions.invoke('analyze-freraut', {
+      body: { strategy: 'frerautiano_init', technicals: { spy: spyTech ?? {} } }
+    });
+    if (initRes.error || !initRes.data) { setFrLoading(false); setFrPhase('idle'); return; }
+    const init = initRes.data;
+    setFrInit(init);
+
+    const sectorOrder = Array.isArray(init.sector_order)
+      ? init.sector_order
+      : ['sp500','nasdaq','semis','finanzas','energia','biotech','smallcap','china'];
+
+    const analyses = [];
+    for (let i = 0; i < sectorOrder.length; i++) {
+      const sector = sectorOrder[i];
+      setFrCurrentSector(sector);
+      setFrPhase(`sector_${sector}`);
+      const tech = await fetchTickerData(SECTOR_ETF_MAP[sector] ?? 'SPY');
+      const res = await supabase.functions.invoke('analyze-freraut', {
+        body: { strategy: 'frerautiano_sector', sector, regime: init.regime, vix_assessment: init.vix_assessment ?? '', order_rank: i + 1, technicals: tech ?? {} }
+      });
+      if (!res.error && res.data) {
+        const card = { ...res.data, sector, sector_order_rank: i + 1 };
+        analyses.push(card);
+        setFrCards(prev => ({ ...prev, [sector]: card }));
+      }
     }
+
+    setFrPhase('ranking');
+    setFrCurrentSector(null);
+    const rankRes = await supabase.functions.invoke('analyze-freraut', {
+      body: { strategy: 'frerautiano_ranking', analyses, spy_price: spyTech?.currentPrice ?? 0 }
+    });
+    if (!rankRes.error && rankRes.data) setFrRanking(rankRes.data);
+
+    setFrCacheTime(new Date());
+    setFrPhase('done');
+    setFrLoading(false);
   };
 
   // --- TAB 3: VALUE LOGIC ---
@@ -522,6 +648,13 @@ export default function FrerautAnalyzer() {
       loadDivs();
     }
   }, [activeTab, DIV_STOCKS, divData.length]);
+
+  useEffect(() => {
+    if (activeTab === 'FRERAUTIANO' && frPhase === 'idle' && !frLoading) {
+      loadFrCache().then(hit => { if (!hit) runFrAnalysis(); });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   const sortedDivs = useMemo(() => {
     const arr = [...divData];
@@ -703,95 +836,117 @@ export default function FrerautAnalyzer() {
           {activeTab === 'FRERAUTIANO' && (
             <motion.div key="freraut" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
               <div className="bg-[rgba(8,15,28,0.85)] rounded-2xl border border-[rgba(255,255,255,0.07)] p-6">
+
+                {/* Header */}
                 <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-800/50">
-                  <Zap className="w-8 h-8 text-yellow-400" />
-                  <div>
-                    <h2 className="text-2xl font-black text-white">Estrategia Frerautiana</h2>
-                    <p className="text-sm text-slate-400">7 criterios TIC + decisión UPRO / SPXU / CASH</p>
+                  <Zap className="w-8 h-8 text-yellow-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-2xl font-black text-white">Rotación Sectorial 3x</h2>
+                    <p className="text-sm text-slate-400">8 sectores · Opus + Sonar · análisis guiatorio</p>
                   </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-                    <input
-                      type="text"
-                      value={frerautianoTicker}
-                      onChange={(e) => setFrerautianoTicker(e.target.value.toUpperCase())}
-                      onKeyDown={(e) => e.key === 'Enter' && handleFrerautianoSearch(frerautianoTicker)}
-                      placeholder="Ticker de referencia (ej: SPY, QQQ)..."
-                      className="w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500 transition-colors uppercase font-mono"
-                    />
-                  </div>
-                  <button
-                    onClick={() => handleFrerautianoSearch(frerautianoTicker)}
-                    disabled={spyLoading || !frerautianoTicker}
-                    className="px-6 py-3 bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {spyLoading ? <RefreshCw className="w-5 h-5 animate-spin" /> : 'Analizar'}
-                  </button>
-                </div>
-
-                {spyData && !spyLoading && (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h2 className="text-3xl font-black text-white">{spyData.symbol}</h2>
-                        <div className="text-xl text-slate-300 font-mono">{fmtUSD(spyData.currentPrice)}</div>
-                      </div>
-                      <div className={`px-4 py-1.5 rounded-full border text-sm font-bold tracking-widest ${
-                        spyData.regime === 'BULLISH' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
-                        spyData.regime === 'BEARISH' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
-                        'bg-slate-700/50 text-slate-300 border-slate-600'}`}>
-                        {spyData.regime}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {[
-                        { label: 'RSI 14', val: spyData.rsi14?.toFixed(1), ok: spyData.rsi14 > 50 },
-                        { label: 'SMA 200', val: fmtUSD(spyData.sma200), ok: spyData.currentPrice > spyData.sma200 },
-                        { label: 'MACD Hist', val: spyData.macd?.histogram?.toFixed(3), ok: spyData.macd?.histogram > 0 },
-                        { label: 'ATR', val: spyData.atr?.toFixed(2), ok: null },
-                      ].map(m => (
-                        <div key={m.label} className="bg-slate-900/50 p-4 rounded-xl border border-slate-800 text-center">
-                          <div className="text-xs text-slate-500 mb-1">{m.label}</div>
-                          <div className={`text-lg font-black ${m.ok === true ? 'text-emerald-400' : m.ok === false ? 'text-red-400' : 'text-slate-300'}`}>{m.val}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="h-[240px] bg-slate-900/30 rounded-xl p-4 border border-slate-800">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={spyData.chartData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                          <XAxis dataKey="time" stroke="#475569" fontSize={10} tickMargin={8} minTickGap={30} />
-                          <YAxis domain={['auto','auto']} stroke="#475569" fontSize={10} orientation="right" />
-                          <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px' }} />
-                          <Line type="monotone" dataKey="close" stroke="#eab308" strokeWidth={2} dot={false} />
-                          {spyData.sma200 && <ReferenceLine y={spyData.sma200} stroke="#10b981" strokeDasharray="5 5" label={{ position: 'left', value: 'SMA200', fill: '#10b981', fontSize: 10 }} />}
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-
-                    {frerautianoLoading && (
-                      <div className="p-5 bg-slate-900/80 rounded-xl border border-yellow-500/20 animate-pulse flex items-center gap-3">
-                        <RefreshCw className="w-5 h-5 text-yellow-400 animate-spin flex-shrink-0" />
-                        <p className="text-yellow-400 text-sm">Investigando con Sonar + evaluando 7 criterios TIC + régimen de mercado...</p>
-                      </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    {frCacheTime && (
+                      <span className="text-xs text-slate-500 hidden sm:block">{timeAgo(frCacheTime)}</span>
                     )}
-                    {frerautianoAnalysis && !frerautianoLoading && (
-                      <FrerautCriteriaPanel analysis={frerautianoAnalysis} accentColor="yellow" showMarketCall />
+                    <button
+                      onClick={runFrAnalysis}
+                      disabled={frLoading}
+                      className="px-4 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/30 text-yellow-400 text-sm font-bold rounded-xl transition-colors disabled:opacity-40 flex items-center gap-2"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${frLoading ? 'animate-spin' : ''}`} />
+                      {frLoading ? 'Analizando...' : 'Re-analizar'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Macro regime bar */}
+                {frInit && (
+                  <div className="flex flex-wrap items-center gap-4 mb-6 p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+                    <div className="flex items-center gap-3">
+                      <div className="text-xs text-slate-500 uppercase tracking-widest">Régimen</div>
+                      <div className={`px-3 py-1 rounded-lg text-sm font-black border ${
+                        frInit.regime === 'BULL'   ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' :
+                        frInit.regime === 'BEAR'   ? 'bg-red-500/20 border-red-500/40 text-red-400' :
+                        frInit.regime === 'STRESS' ? 'bg-orange-500/20 border-orange-500/40 text-orange-400' :
+                                                     'bg-slate-700/50 border-slate-600 text-slate-300'
+                      }`}>{frInit.regime}</div>
+                    </div>
+                    {frInit.vix_assessment && (
+                      <p className="text-xs text-slate-400 flex-1 min-w-0">{frInit.vix_assessment}</p>
+                    )}
+                    {frRanking?.top_picks?.length > 0 && (
+                      <div className="flex items-center gap-2 ml-auto">
+                        <div className="text-xs text-slate-500">Top pick:</div>
+                        <div className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 rounded-lg text-sm font-black text-yellow-400">
+                          {frRanking.top_picks[0].ticker}
+                          <span className="text-xs font-normal text-yellow-500/70 ml-1">{frRanking.top_picks[0].conviction}%</span>
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}
 
-                {!spyData && !spyLoading && (
+                {/* Phase indicator */}
+                {frLoading && (
+                  <div className="mb-5 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl flex items-center gap-3">
+                    <RefreshCw className="w-4 h-4 text-yellow-400 animate-spin flex-shrink-0" />
+                    <span className="text-sm text-yellow-400">
+                      {frPhase === 'init'    ? 'Analizando régimen macro con Sonar + Opus...' :
+                       frPhase === 'ranking' ? 'Compilando top picks del día...' :
+                       frPhase.startsWith('sector_')
+                         ? `Analizando ${SECTOR_DISPLAY[frPhase.replace('sector_', '')] ?? frPhase}...`
+                         : 'Iniciando...'}
+                    </span>
+                  </div>
+                )}
+
+                {/* Sector cards grid */}
+                {(Object.keys(frCards).length > 0 || (frLoading && frCurrentSector)) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {Object.values(frCards)
+                      .sort((a, b) => (a.sector_order_rank ?? 99) - (b.sector_order_rank ?? 99))
+                      .map(card => <SectorCard key={card.sector} card={card} />)}
+                    {frLoading && frCurrentSector && !frCards[frCurrentSector] && (
+                      <div className="rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-4 animate-pulse flex flex-col gap-3">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-1.5">
+                            <div className="h-3.5 bg-slate-700 rounded w-20" />
+                            <div className="h-2.5 bg-slate-800 rounded w-16" />
+                          </div>
+                          <div className="h-7 bg-slate-700 rounded-lg w-16" />
+                        </div>
+                        <div className="space-y-1">
+                          <div className="h-1.5 bg-slate-800 rounded-full w-full" />
+                        </div>
+                        <div className="text-xs text-yellow-400/50 text-center pt-1">
+                          {SECTOR_DISPLAY[frCurrentSector] ?? frCurrentSector}...
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Lake market summary */}
+                {frRanking?.market_summary && frPhase === 'done' && (
+                  <div className="mt-5 p-4 bg-slate-900/50 rounded-xl border border-yellow-500/20">
+                    <div className="text-xs text-slate-500 mb-1 uppercase tracking-widest">Visión Lake</div>
+                    <p className="text-sm text-slate-300 italic">{frRanking.market_summary}</p>
+                    {frRanking.avoid?.length > 0 && (
+                      <p className="text-xs text-red-400/60 mt-2">
+                        Evitar: {frRanking.avoid.join(', ')} — {frRanking.avoid_reason}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Empty / loading init state */}
+                {!frLoading && frPhase === 'idle' && Object.keys(frCards).length === 0 && (
                   <div className="py-16 text-center text-slate-500">
                     <Zap className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                    <p>Ingresa un ticker de referencia (SPY, QQQ) y presiona Analizar.</p>
+                    <p>Cargando análisis sectorial...</p>
                   </div>
                 )}
+
               </div>
             </motion.div>
           )}
