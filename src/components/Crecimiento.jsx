@@ -103,7 +103,7 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
             <TrendingUp className="w-6 h-6 text-gold" />
           </div>
           <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-400 to-gold">
-            Crecimiento del Capital del Fondo
+            Crecimiento Capitalización de Mercado
           </h3>
         </div>
         <p className="text-gray-600 dark:text-gray-400 text-center py-12 text-lg">
@@ -266,7 +266,7 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
             </motion.div>
             <div>
               <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-400 to-gold">
-                Crecimiento del Capital del Fondo
+                Crecimiento Capitalización de Mercado
               </h3>
               <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                 Capital Actual: ${valorActualNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} • Rango: ${(minValor / 1000000).toFixed(2)}M - ${(maxValor / 1000000).toFixed(2)}M
@@ -617,7 +617,7 @@ const Crecimiento = () => {
   return (
     <div className="space-y-10 p-2">
       <div className="flex justify-between items-center">
-        <h2 className="text-4xl font-bold text-gold tracking-wide drop-shadow-lg">Crecimiento del Fondo</h2>
+        <h2 className="text-4xl font-bold text-gold tracking-wide drop-shadow-lg">Crecimiento capitalización de mercado</h2>
         {isAdmin && (
           <Button
             onClick={handleToggleEdit} // 🔥 CAMBIADO
