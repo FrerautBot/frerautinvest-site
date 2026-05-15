@@ -1,0 +1,212 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* === BLOQUE DE PALETA INSTITUCIONAL FRERAUT INVEST === */
+/* Este bloque anula los temas de IA de Horizons y fija los tonos corporativos */
+
+:root {
+  --bg: #0B0C10;
+  --panel: #F5F1E8;
+  --line: #C9A227;
+  --text: #1A1D2B;
+  --text-inverse: #FFFFFF;
+  --muted: #6E6E6E;
+  --accent: #C9A227;
+  --accent-hover: #E4C65A;
+  --ok: #3E8E41;
+  --error: #8B1E3F;
+  --radius: 1.5rem;
+}
+
+body {
+  background-color: var(--bg);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* === MODO OSCURO === */
+.dark {
+  --background-color: var(--bg);
+  --text-color: var(--text-inverse);
+  --card-bg: #1A1D2B;
+  --card-text: var(--text-inverse);
+  --header-color: var(--accent);
+}
+
+/* === MODO CLARO === */
+.light {
+  --background-color: var(--panel);
+  --text-color: var(--text);
+  --card-bg: var(--text-inverse); /* White panels */
+  --card-text: var(--text);
+  --header-color: var(--accent);
+}
+
+body {
+  background-color: var(--background-color) !important;
+  color: var(--text-color) !important;
+}
+
+.card {
+  background-color: var(--card-bg) !important;
+  color: var(--card-text) !important;
+  border: 1px solid rgba(201,162,39,0.3) !important;
+  border-radius: 1.75rem !important;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1);
+}
+
+/* === iOS 26 LIQUID GLASS BORDER RADIUS === */
+/* Radios extra-redondeados estilo iOS 26 para toda la app */
+
+/* Contenedores y paneles grandes */
+[class*="rounded-2xl"] {
+  border-radius: 1.75rem !important;
+}
+[class*="rounded-xl"] {
+  border-radius: 1.5rem !important;
+}
+[class*="rounded-lg"] {
+  border-radius: 1.25rem !important;
+}
+[class*="rounded-md"] {
+  border-radius: 1rem !important;
+}
+
+/* Botones */
+button, [role="button"], .btn-main {
+  border-radius: 1rem !important;
+}
+button[class*="rounded-full"], [class*="rounded-full"] {
+  border-radius: 9999px !important;
+}
+
+/* Inputs y select */
+input, select, textarea {
+  border-radius: 1rem !important;
+}
+
+/* Modales y dialogs */
+[role="dialog"], [class*="DialogContent"], [class*="modal"] {
+  border-radius: 2rem !important;
+}
+
+/* Badges y chips */
+[class*="badge"], [class*="chip"], [class*="tag"] {
+  border-radius: 1rem !important;
+}
+
+h1, h2, h3, h4, th {
+  color: var(--header-color) !important;
+}
+
+/* === ELEMENTOS GLOBALES === */
+nav, header {
+  background-color: var(--bg) !important;
+  color: var(--text-inverse) !important;
+}
+
+.btn-main {
+  background-color: var(--accent) !important;
+  color: var(--text-inverse) !important;
+  border: none !important;
+}
+
+.btn-main:hover {
+  background-color: var(--accent-hover) !important;
+}
+
+a {
+  color: var(--accent) !important;
+}
+
+/* === SPLASH SCREEN / INTRO === */
+#splash,
+.splash-screen,
+.intro-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity 1s ease, visibility 1s ease;
+  background-color: var(--panel) !important; /* Siempre beige para la intro */
+}
+
+/* Eliminadas las reglas específicas de dark/light para el splash screen
+   para asegurar que siempre sea beige. */
+
+/* Logo centrado y animación */
+#splash img,
+.splash-screen img {
+  width: 180px;
+  opacity: 0;
+  animation: fadeInLogo 2s ease-in-out forwards;
+}
+
+/* Animación de aparición */
+@keyframes fadeInLogo {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Desvanecer el splash al cargar */
+body.loaded #splash,
+body.loaded .splash-screen {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* === MOBILE RESPONSIVE === */
+
+/* Hide scrollbar for navigation */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Mobile-first spacing */
+@media (max-width: 640px) {
+  /* Reduce padding on mobile */
+  .container { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+  
+  /* Cards: less padding */
+  .card { padding: 1rem; }
+  
+  /* Fix header height on mobile */
+  nav[class*="sticky"] { top: 56px !important; }
+  
+  /* Grids become single column */
+  [class*="grid-cols-2"]:not([class*="grid-cols-12"]) { grid-template-columns: 1fr !important; }
+  [class*="grid-cols-3"]:not([class*="grid-cols-12"]) { grid-template-columns: 1fr 1fr !important; }
+  [class*="grid-cols-4"]:not([class*="grid-cols-12"]) { grid-template-columns: 1fr 1fr !important; }
+  
+  /* Smaller text on mobile */
+  h1, [class*="text-4xl"], [class*="text-5xl"] { font-size: 1.5rem !important; }
+  h2, [class*="text-3xl"] { font-size: 1.25rem !important; }
+  h3, [class*="text-2xl"] { font-size: 1.1rem !important; }
+  
+  /* Fix overflow on mobile */
+  .overflow-x-auto { -webkit-overflow-scrolling: touch; }
+  
+  /* Charts: ensure they don't overflow */
+  canvas, svg[class*="recharts"] { max-width: 100% !important; }
+  
+  /* Tables: allow horizontal scroll */
+  table { display: block; overflow-x: auto; white-space: nowrap; }
+  
+  /* Stat boxes: smaller on mobile */
+  [class*="stat"], [class*="StatBox"] { padding: 0.75rem !important; }
+}
