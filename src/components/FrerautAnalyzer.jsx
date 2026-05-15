@@ -178,14 +178,15 @@ const fetchTickerData = async (ticker) => {
   }
 };
 
-const fetchAIAnalysis = async (ticker, task = 'analyze_ticker', urgency = 'standard') => {
+const fetchFrerautAnalysis = async (ticker, strategy, technicals) => {
   try {
-    const res = await supabase.functions.invoke('lake-orchestrator', {
-      body: { task, payload: { ticker: ticker.toUpperCase(), query: ticker }, urgency, budget: 'medium' }
+    const res = await supabase.functions.invoke('analyze-freraut', {
+      body: { ticker: ticker.toUpperCase(), strategy, technicals }
     });
-    return res.data?.result || null;
+    if (res.error) throw res.error;
+    return res.data || null;
   } catch (err) {
-    console.error('AI analysis error:', err);
+    console.error('Freraut analysis error:', err);
     return null;
   }
 };
@@ -193,6 +194,133 @@ const fetchAIAnalysis = async (ticker, task = 'analyze_ticker', urgency = 'stand
 
 const fmtUSD = v => v != null ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v) : '—';
 const fmtPct = v => v != null ? `${parseFloat(v) >= 0 ? '+' : ''}${parseFloat(v).toFixed(2)}%` : '—';
+
+// --- FRERAUT CRITERIA PANEL ---
+
+const ACCENT = {
+  cyan:    { verdict_bg: 'from-cyan-900/30 to-slate-900/80',    border: 'border-cyan-500/30',    text: 'text-cyan-400',    bar: 'bg-cyan-500' },
+  yellow:  { verdict_bg: 'from-yellow-900/30 to-slate-900/80',  border: 'border-yellow-500/30',  text: 'text-yellow-400',  bar: 'bg-yellow-500' },
+  emerald: { verdict_bg: 'from-emerald-900/30 to-slate-900/80', border: 'border-emerald-500/30', text: 'text-emerald-400', bar: 'bg-emerald-500' },
+};
+
+const VERDICT_STYLE = {
+  'TIC':           'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+  'NO TIC':        'bg-red-500/20 text-red-300 border-red-500/40',
+  'COMPRAR':       'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+  'ACUMULAR':      'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+  'ESPERAR':       'bg-yellow-500/20 text-yellow-300 border-yellow-500/40',
+  'EVITAR':        'bg-red-500/20 text-red-300 border-red-500/40',
+  'INFRAVALORADA': 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+  'PRECIO_JUSTO':  'bg-yellow-500/20 text-yellow-300 border-yellow-500/40',
+  'CARA':          'bg-red-500/20 text-red-300 border-red-500/40',
+};
+
+function FrerautCriteriaPanel({ analysis, accentColor = 'cyan', showMarketCall = false }) {
+  if (!analysis) return null;
+  const a = ACCENT[accentColor] || ACCENT.cyan;
+  const vs = VERDICT_STYLE[analysis.verdict] || 'bg-slate-700 text-slate-300 border-slate-600';
+
+  return (
+    <div className={`rounded-2xl border ${a.border} bg-gradient-to-br ${a.verdict_bg} p-5 space-y-5`}>
+      {/* Header: veredicto + convicción */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className={`px-4 py-1.5 rounded-full border text-lg font-black tracking-wide ${vs}`}>
+            {analysis.verdict}
+          </span>
+          {analysis.conviction_pct != null && (
+            <span className="text-slate-400 text-sm">Convicción: <span className="text-white font-bold">{analysis.conviction_pct}%</span></span>
+          )}
+          {analysis.upside_pct != null && (
+            <span className="text-slate-400 text-sm">Upside: <span className="text-emerald-400 font-bold">+{analysis.upside_pct}%</span></span>
+          )}
+        </div>
+        {/* Market call (Frerautiano) */}
+        {showMarketCall && analysis.market_recommendation && (
+          <div className={`px-6 py-2 rounded-xl border text-2xl font-black text-center ${
+            analysis.market_recommendation === 'UPRO' ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300' :
+            analysis.market_recommendation === 'SPXU' ? 'bg-red-500/20 border-red-500/40 text-red-300' :
+            'bg-slate-700/50 border-slate-600 text-slate-300'}`}>
+            {analysis.market_recommendation}
+            {analysis.regime_confidence != null && <span className="text-xs font-normal ml-2 opacity-60">{analysis.regime_confidence}%</span>}
+          </div>
+        )}
+      </div>
+
+      {/* Criterios */}
+      {analysis.criteria && analysis.criteria.length > 0 && (
+        <div className="space-y-2.5">
+          {analysis.criteria.map(c => (
+            <div key={c.id} className="bg-slate-900/60 rounded-xl p-3 flex flex-col gap-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  {c.met
+                    ? <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    : <XCircle className="w-4 h-4 text-red-400 flex-shrink-0" />}
+                  <span className="text-sm font-semibold text-slate-200 truncate">{c.name}</span>
+                  {c.value && <span className="text-xs text-slate-400 font-mono">{c.value}</span>}
+                </div>
+                <span className="text-sm font-black text-white flex-shrink-0">{c.score}<span className="text-slate-600 font-normal">/10</span></span>
+              </div>
+              {/* Score bar */}
+              <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full transition-all ${c.met ? a.bar : 'bg-red-700'}`} style={{ width: `${(c.score / 10) * 100}%` }} />
+              </div>
+              {c.evidence && <p className="text-xs text-slate-400 leading-relaxed">{c.evidence}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Targets (swing/frerautiano) */}
+      {(analysis.entry_zone || analysis.target_price || analysis.stop_loss) && (
+        <div className="grid grid-cols-3 gap-3">
+          {analysis.entry_zone && (
+            <div className="bg-slate-900/50 rounded-xl p-3 text-center border border-slate-800">
+              <div className="text-xs text-slate-500 mb-1">Zona entrada</div>
+              <div className="text-sm font-mono font-bold text-white">{analysis.entry_zone}</div>
+            </div>
+          )}
+          {analysis.target_price && (
+            <div className="bg-slate-900/50 rounded-xl p-3 text-center border border-emerald-900/40">
+              <div className="text-xs text-slate-500 mb-1">Target</div>
+              <div className="text-sm font-mono font-bold text-emerald-400">{fmtUSD(analysis.target_price)}</div>
+            </div>
+          )}
+          {analysis.stop_loss && (
+            <div className="bg-slate-900/50 rounded-xl p-3 text-center border border-red-900/40">
+              <div className="text-xs text-slate-500 mb-1">Stop Loss</div>
+              <div className="text-sm font-mono font-bold text-red-400">{fmtUSD(analysis.stop_loss)}</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Dividend / Value extras */}
+      {analysis.current_yield && (
+        <div className="flex gap-4 text-sm">
+          <span className="text-slate-400">Yield actual: <span className="text-amber-400 font-bold">{analysis.current_yield}</span></span>
+          {analysis.dividend_safety && (
+            <span className={`font-bold ${analysis.dividend_safety === 'SEGURO' ? 'text-emerald-400' : analysis.dividend_safety === 'MODERADO' ? 'text-yellow-400' : 'text-red-400'}`}>
+              {analysis.dividend_safety}
+            </span>
+          )}
+        </div>
+      )}
+      {analysis.analyst_consensus && (
+        <div className="text-sm text-slate-400">Consenso analistas: <span className="text-slate-200">{analysis.analyst_consensus}</span></div>
+      )}
+      {analysis.fair_value_estimate && (
+        <div className="text-sm text-slate-400">Fair value estimado: <span className="text-emerald-300 font-bold">{analysis.fair_value_estimate}</span></div>
+      )}
+
+      {/* Summary */}
+      {analysis.summary && (
+        <p className={`text-sm italic ${a.text} border-t border-slate-800/60 pt-3`}>{analysis.summary}</p>
+      )}
+    </div>
+  );
+}
 
 // --- MAIN COMPONENT ---
 
@@ -203,17 +331,22 @@ export default function FrerautAnalyzer() {
   const [swingTicker, setSwingTicker] = useState('');
   const [swingData, setSwingData] = useState(null);
   const [swingLoading, setSwingLoading] = useState(false);
-  const [aiAnalysis, setAiAnalysis] = useState(null);
-  const [aiLoading, setAiLoading] = useState(false);
+  const [swingAnalysis, setSwingAnalysis] = useState(null);
+  const [swingAnalysisLoading, setSwingAnalysisLoading] = useState(false);
 
   // FRERAUTIANO STATE
+  const [frerautianoTicker, setFrerautianoTicker] = useState('SPY');
   const [spyData, setSpyData] = useState(null);
-  const [spyLoading, setSpyLoading] = useState(true);
+  const [spyLoading, setSpyLoading] = useState(false);
+  const [frerautianoAnalysis, setFrerautianoAnalysis] = useState(null);
+  const [frerautianoLoading, setFrerautianoLoading] = useState(false);
 
   // VALUE STATE
   const [valueTicker, setValueTicker] = useState('');
   const [valueData, setValueData] = useState(null);
   const [valueLoading, setValueLoading] = useState(false);
+  const [valueAnalysis, setValueAnalysis] = useState(null);
+  const [valueAnalysisLoading, setValueAnalysisLoading] = useState(false);
 
   // DIVIDEND STATE
   const [divData, setDivData] = useState([]);
@@ -229,15 +362,13 @@ export default function FrerautAnalyzer() {
     { t: 'SCHD', y: 3.5 }, { t: 'VYM', y: 2.9 }
   ], []);
 
-  const evalDiv = async (tk) => {
+  const evalDiv = async (tk, techData) => {
     if (divFund[tk]) return;
     setDivFundL(p => ({ ...p, [tk]: true }));
     try {
-      const r = await supabase.functions.invoke('lake-orchestrator', {
-        body: { task: 'chat', payload: { ticker: tk, query: 'Evaluate ' + tk + ' ONLY as a dividend investment. Do NOT discuss swing trading or technical analysis. Answer: 1) PAYOUT RATIO and if sustainable 2) Years of consecutive dividend increases 3) Revenue and EPS trend 4) Debt-to-equity and free cash flow 5) Dividend safety score 1-10. Final verdict: SAFE DIVIDEND or CAUTION or RISKY DIVIDEND' }, urgency: 'realtime', budget: 'low' }
-      });
-      setDivFund(p => ({ ...p, [tk]: r.data?.result || null }));
-    } catch (e) { setDivFund(p => ({ ...p, [tk]: { answer: 'Error', recommendation: 'HOLD' } })); }
+      const r = await fetchFrerautAnalysis(tk, 'dividendos', techData || null);
+      setDivFund(p => ({ ...p, [tk]: r }));
+    } catch (e) { setDivFund(p => ({ ...p, [tk]: { verdict: 'ESPERAR', summary: 'Error al analizar.' } })); }
     setDivFundL(p => ({ ...p, [tk]: false }));
   };
       
@@ -246,11 +377,14 @@ export default function FrerautAnalyzer() {
   const handleSwingSearch = async (t) => {
     if(!t) return;
     setSwingLoading(true);
+    setSwingAnalysis(null);
     const d = await fetchTickerData(t);
     setSwingData(d);
     setSwingLoading(false);
-    setAiLoading(true);
-    fetchAIAnalysis(t).then(r => { setAiAnalysis(r); setAiLoading(false); });
+    if (d) {
+      setSwingAnalysisLoading(true);
+      fetchFrerautAnalysis(t, 'swing', d).then(r => { setSwingAnalysis(r); setSwingAnalysisLoading(false); });
+    }
   };
 
   const renderSwingVerdict = (d) => {
@@ -287,70 +421,31 @@ export default function FrerautAnalyzer() {
   };
 
   // --- TAB 2: FRERAUTIANO LOGIC ---
-  useEffect(() => {
-    if (activeTab === 'FRERAUTIANO' && !spyData) {
-      const loadSpy = async () => {
-        setSpyLoading(true);
-        const d = await fetchTickerData('SPY');
-        setSpyData(d);
-        setSpyLoading(false);
-      };
-      loadSpy();
+  const handleFrerautianoSearch = async (t) => {
+    const ticker = t || frerautianoTicker || 'SPY';
+    setSpyLoading(true);
+    setFrerautianoAnalysis(null);
+    const d = await fetchTickerData(ticker);
+    setSpyData(d);
+    setSpyLoading(false);
+    if (d) {
+      setFrerautianoLoading(true);
+      fetchFrerautAnalysis(ticker, 'frerautiano', d).then(r => { setFrerautianoAnalysis(r); setFrerautianoLoading(false); });
     }
-  }, [activeTab, spyData]);
-
-  const renderFrerautianoDecision = (d) => {
-    if(!d) return null;
-    const isAboveSma = d.currentPrice > d.sma200;
-    const isRsiBull = d.rsi14 > 50;
-    const isMacdBull = d.macd.histogram > 0;
-
-    // All must be bullish for UPRO, otherwise CASH
-    const allBullish = isAboveSma && isRsiBull && isMacdBull;
-
-    let decision = 'CASH';
-    let color = 'text-slate-400';
-    let bg = 'bg-slate-800';
-
-    if (allBullish) {
-      decision = 'UPRO';
-      color = 'text-emerald-400';
-      bg = 'bg-emerald-400/10 border-emerald-400/20';
-    }
-
-    return (
-      <div className="space-y-6">
-        <div className={`p-8 rounded-2xl border flex flex-col items-center justify-center ${bg} shadow-lg`}>
-          <div className="text-sm text-slate-400 mb-2 font-bold tracking-widest uppercase">Posición Sugerida</div>
-          <div className={`text-6xl font-black tracking-tighter ${color}`}>{decision}</div>
-          <div className="text-xs text-slate-500 mt-3 italic">Sin stop-loss. Si cae, se promedia (DCA).</div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
-            <span className="text-slate-300 font-medium">SPY &gt; SMA200</span>
-            {isAboveSma ? <CheckCircle className="w-6 h-6 text-emerald-400" /> : <XCircle className="w-6 h-6 text-slate-500" />}
-          </div>
-          <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
-            <span className="text-slate-300 font-medium">RSI14 &gt; 50</span>
-            {isRsiBull ? <CheckCircle className="w-6 h-6 text-emerald-400" /> : <XCircle className="w-6 h-6 text-slate-500" />}
-          </div>
-          <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
-            <span className="text-slate-300 font-medium">MACD Alcista</span>
-            {isMacdBull ? <CheckCircle className="w-6 h-6 text-emerald-400" /> : <XCircle className="w-6 h-6 text-slate-500" />}
-          </div>
-        </div>
-      </div>
-    );
   };
 
   // --- TAB 3: VALUE LOGIC ---
   const handleValueSearch = async (t) => {
     if(!t) return;
     setValueLoading(true);
+    setValueAnalysis(null);
     const d = await fetchTickerData(t);
     setValueData(d);
     setValueLoading(false);
+    if (d) {
+      setValueAnalysisLoading(true);
+      fetchFrerautAnalysis(t, 'value', d).then(r => { setValueAnalysis(r); setValueAnalysisLoading(false); });
+    }
   };
 
   const renderValueVerdict = (d) => {
@@ -589,14 +684,15 @@ export default function FrerautAnalyzer() {
                     </div>
 
 
-                    {aiLoading && <div className="p-4 bg-slate-900/80 rounded-xl border border-cyan-500/20 animate-pulse"><p className="text-cyan-400 text-sm">Analizando con IA en tiempo real...</p></div>}
-                    {aiAnalysis && !aiLoading && (
-                      <div className="p-5 bg-gradient-to-br from-cyan-900/20 to-slate-900/80 rounded-xl border border-cyan-500/30">
-                        <h4 className="text-cyan-400 font-bold mb-3 flex items-center gap-2">AI Analysis <span className="text-xs text-slate-500 font-normal">{aiAnalysis.model_used}</span></h4>
-                        {aiAnalysis.recommendation && <div className={'inline-block px-3 py-1 rounded-lg text-sm font-bold mb-3 ' + (aiAnalysis.recommendation === 'BUY' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : aiAnalysis.recommendation === 'AVOID' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30')}>{aiAnalysis.recommendation}</div>}
-                        <p className="text-slate-300 text-sm whitespace-pre-wrap mb-3">{aiAnalysis.answer}</p>
-                        {aiAnalysis.citations && aiAnalysis.citations.length > 0 && <div className="text-xs text-slate-500 mt-2">Fuentes: {aiAnalysis.citations.slice(0, 3).join(', ')}</div>}
-                      </div>)}
+                    {swingAnalysisLoading && (
+                      <div className="p-5 bg-slate-900/80 rounded-xl border border-cyan-500/20 animate-pulse flex items-center gap-3">
+                        <RefreshCw className="w-5 h-5 text-cyan-400 animate-spin flex-shrink-0" />
+                        <p className="text-cyan-400 text-sm">Investigando con Sonar + evaluando 7 criterios TIC con Claude...</p>
+                      </div>
+                    )}
+                    {swingAnalysis && !swingAnalysisLoading && (
+                      <FrerautCriteriaPanel analysis={swingAnalysis} accentColor="cyan" />
+                    )}
                   </div>
                 )}
               </div>
@@ -607,61 +703,94 @@ export default function FrerautAnalyzer() {
           {activeTab === 'FRERAUTIANO' && (
             <motion.div key="freraut" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
               <div className="bg-[rgba(8,15,28,0.85)] rounded-2xl border border-[rgba(255,255,255,0.07)] p-6">
-                <div className="flex items-center gap-3 mb-6 pb-6 border-b border-slate-800/50">
+                <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-800/50">
                   <Zap className="w-8 h-8 text-yellow-400" />
                   <div>
-                    <h2 className="text-2xl font-black text-white">Estrategia Frerautiano</h2>
-                    <p className="text-sm text-slate-400">UPRO (3x bull S&P 500) — Rotación Táctica</p>
+                    <h2 className="text-2xl font-black text-white">Estrategia Frerautiana</h2>
+                    <p className="text-sm text-slate-400">7 criterios TIC + decisión UPRO / SPXU / CASH</p>
                   </div>
                 </div>
 
-                {spyLoading ? (
-                  <div className="py-20 flex justify-center"><RefreshCw className="w-8 h-8 text-yellow-400 animate-spin" /></div>
-                ) : spyData ? (
-                  <div className="space-y-8">
-                    {renderFrerautianoDecision(spyData)}
+                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                    <input
+                      type="text"
+                      value={frerautianoTicker}
+                      onChange={(e) => setFrerautianoTicker(e.target.value.toUpperCase())}
+                      onKeyDown={(e) => e.key === 'Enter' && handleFrerautianoSearch(frerautianoTicker)}
+                      placeholder="Ticker de referencia (ej: SPY, QQQ)..."
+                      className="w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500 transition-colors uppercase font-mono"
+                    />
+                  </div>
+                  <button
+                    onClick={() => handleFrerautianoSearch(frerautianoTicker)}
+                    disabled={spyLoading || !frerautianoTicker}
+                    className="px-6 py-3 bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {spyLoading ? <RefreshCw className="w-5 h-5 animate-spin" /> : 'Analizar'}
+                  </button>
+                </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800 text-center">
-                        <div className="text-xs text-slate-500 mb-1">SPY Price</div>
-                        <div className="text-xl font-mono text-white">{fmtUSD(spyData.currentPrice)}</div>
+                {spyData && !spyLoading && (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-3xl font-black text-white">{spyData.symbol}</h2>
+                        <div className="text-xl text-slate-300 font-mono">{fmtUSD(spyData.currentPrice)}</div>
                       </div>
-                      <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800 text-center">
-                        <div className="text-xs text-slate-500 mb-1">SPY SMA200</div>
-                        <div className="text-xl font-mono text-slate-300">{fmtUSD(spyData.sma200)}</div>
-                      </div>
-                      <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800 text-center">
-                        <div className="text-xs text-slate-500 mb-1">RSI 14</div>
-                        <div className={`text-xl font-black ${spyData.rsi14 > 50 ? 'text-emerald-400' : 'text-slate-500'}`}>
-                          {spyData.rsi14?.toFixed(1)}
-                        </div>
-                      </div>
-                      <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-800 text-center">
-                        <div className="text-xs text-slate-500 mb-1">MACD Hist</div>
-                        <div className={`text-xl font-black ${spyData.macd.histogram > 0 ? 'text-emerald-400' : 'text-slate-500'}`}>
-                          {spyData.macd.histogram?.toFixed(3)}
-                        </div>
+                      <div className={`px-4 py-1.5 rounded-full border text-sm font-bold tracking-widest ${
+                        spyData.regime === 'BULLISH' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
+                        spyData.regime === 'BEARISH' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                        'bg-slate-700/50 text-slate-300 border-slate-600'}`}>
+                        {spyData.regime}
                       </div>
                     </div>
 
-                    <div className="h-[300px] w-full mt-6 bg-slate-900/30 rounded-xl p-4 border border-slate-800">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {[
+                        { label: 'RSI 14', val: spyData.rsi14?.toFixed(1), ok: spyData.rsi14 > 50 },
+                        { label: 'SMA 200', val: fmtUSD(spyData.sma200), ok: spyData.currentPrice > spyData.sma200 },
+                        { label: 'MACD Hist', val: spyData.macd?.histogram?.toFixed(3), ok: spyData.macd?.histogram > 0 },
+                        { label: 'ATR', val: spyData.atr?.toFixed(2), ok: null },
+                      ].map(m => (
+                        <div key={m.label} className="bg-slate-900/50 p-4 rounded-xl border border-slate-800 text-center">
+                          <div className="text-xs text-slate-500 mb-1">{m.label}</div>
+                          <div className={`text-lg font-black ${m.ok === true ? 'text-emerald-400' : m.ok === false ? 'text-red-400' : 'text-slate-300'}`}>{m.val}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="h-[240px] bg-slate-900/30 rounded-xl p-4 border border-slate-800">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={spyData.chartData}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                          <XAxis dataKey="time" stroke="#475569" fontSize={10} tickMargin={10} minTickGap={30} />
-                          <YAxis domain={['auto', 'auto']} stroke="#475569" fontSize={10} orientation="right" />
-                          <Tooltip 
-                            contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px' }}
-                          />
+                          <XAxis dataKey="time" stroke="#475569" fontSize={10} tickMargin={8} minTickGap={30} />
+                          <YAxis domain={['auto','auto']} stroke="#475569" fontSize={10} orientation="right" />
+                          <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px' }} />
                           <Line type="monotone" dataKey="close" stroke="#eab308" strokeWidth={2} dot={false} />
                           {spyData.sma200 && <ReferenceLine y={spyData.sma200} stroke="#10b981" strokeDasharray="5 5" label={{ position: 'left', value: 'SMA200', fill: '#10b981', fontSize: 10 }} />}
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
 
+                    {frerautianoLoading && (
+                      <div className="p-5 bg-slate-900/80 rounded-xl border border-yellow-500/20 animate-pulse flex items-center gap-3">
+                        <RefreshCw className="w-5 h-5 text-yellow-400 animate-spin flex-shrink-0" />
+                        <p className="text-yellow-400 text-sm">Investigando con Sonar + evaluando 7 criterios TIC + régimen de mercado...</p>
+                      </div>
+                    )}
+                    {frerautianoAnalysis && !frerautianoLoading && (
+                      <FrerautCriteriaPanel analysis={frerautianoAnalysis} accentColor="yellow" showMarketCall />
+                    )}
                   </div>
-                ) : (
-                  <div className="text-center text-red-400">Error loading SPY data.</div>
+                )}
+
+                {!spyData && !spyLoading && (
+                  <div className="py-16 text-center text-slate-500">
+                    <Zap className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                    <p>Ingresa un ticker de referencia (SPY, QQQ) y presiona Analizar.</p>
+                  </div>
                 )}
               </div>
             </motion.div>
@@ -702,13 +831,27 @@ export default function FrerautAnalyzer() {
 
                 {valueData && !valueLoading && (
                   <div className="space-y-6">
-                    <div className="flex items-end justify-between">
+                    <div className="flex items-center justify-between">
                       <div>
                         <h2 className="text-3xl font-black text-white">{valueData.symbol}</h2>
                         <div className="text-xl text-slate-300 font-mono">{fmtUSD(valueData.currentPrice)}</div>
                       </div>
+                      <div className="text-right text-sm text-slate-400">
+                        <div>52w H: {fmtUSD(valueData.high52w)}</div>
+                        <div className="text-emerald-400">Desc: {(((valueData.high52w - valueData.currentPrice)/valueData.high52w)*100).toFixed(1)}%</div>
+                      </div>
                     </div>
-                    {renderValueVerdict(valueData)}
+
+                    {valueAnalysisLoading && (
+                      <div className="p-5 bg-slate-900/80 rounded-xl border border-emerald-500/20 animate-pulse flex items-center gap-3">
+                        <RefreshCw className="w-5 h-5 text-emerald-400 animate-spin flex-shrink-0" />
+                        <p className="text-emerald-400 text-sm">Investigando con Sonar + evaluando fundamentales, máximos y previsiones...</p>
+                      </div>
+                    )}
+                    {valueAnalysis && !valueAnalysisLoading && (
+                      <FrerautCriteriaPanel analysis={valueAnalysis} accentColor="emerald" />
+                    )}
+                    {!valueAnalysis && !valueAnalysisLoading && renderValueVerdict(valueData)}
                   </div>
                 )}
               </div>
@@ -781,9 +924,38 @@ export default function FrerautAnalyzer() {
                                 <Plus className="w-3 h-3" /> COMPRAR
                               </div>
                             )}
-                            {!divFund[item.t] && !divFundL[item.t] && <button onClick={(e)=>{e.stopPropagation();evalDiv(item.t);}} className="w-full mt-3 py-2 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold hover:bg-amber-500/25 transition-colors">Evaluar Negocio</button>}
-                            {divFundL[item.t] && <div className="mt-3 p-2 bg-amber-900/20 rounded-lg border border-amber-500/20 animate-pulse"><p className="text-amber-400 text-xs">Evaluando fundamentales con IA...</p></div>}
-                            {divFund[item.t] && !divFundL[item.t] && <div className="mt-3 p-3 bg-slate-800/80 rounded-lg border border-slate-700 text-xs">{divFund[item.t].recommendation && <div className={'inline-block px-2 py-0.5 rounded text-[10px] font-bold mb-2 ' + (divFund[item.t].recommendation === 'BUY' ? 'bg-emerald-500/20 text-emerald-400' : divFund[item.t].recommendation === 'AVOID' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400')}>{divFund[item.t].recommendation === 'BUY' ? 'DIVIDENDO SEGURO' : divFund[item.t].recommendation === 'AVOID' ? 'DIVIDENDO RIESGOSO' : 'PRECAUCION'}</div>}<p className="text-slate-300 whitespace-pre-wrap text-[11px] leading-relaxed">{divFund[item.t].answer?.substring(0, 500)}</p></div>}
+                            {!divFund[item.t] && !divFundL[item.t] && (
+                              <button onClick={(e)=>{e.stopPropagation();evalDiv(item.t, d);}} className="w-full mt-3 py-2 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold hover:bg-amber-500/25 transition-colors">
+                                Evaluar con Sonar + Claude
+                              </button>
+                            )}
+                            {divFundL[item.t] && (
+                              <div className="mt-3 p-2 bg-amber-900/20 rounded-lg border border-amber-500/20 animate-pulse flex items-center gap-2">
+                                <RefreshCw className="w-3 h-3 text-amber-400 animate-spin" />
+                                <p className="text-amber-400 text-xs">Investigando con Sonar + analizando dividendo...</p>
+                              </div>
+                            )}
+                            {divFund[item.t] && !divFundL[item.t] && (
+                              <div className="mt-3 space-y-2">
+                                {(() => {
+                                  const a = divFund[item.t];
+                                  const vColor = a.verdict === 'COMPRAR' ? 'text-emerald-400 bg-emerald-500/20' : a.verdict === 'ACUMULAR' ? 'text-cyan-400 bg-cyan-500/20' : a.verdict === 'ESPERAR' ? 'text-yellow-400 bg-yellow-500/20' : 'text-red-400 bg-red-500/20';
+                                  return (
+                                    <>
+                                      <div className={`inline-block px-2 py-0.5 rounded text-[10px] font-black ${vColor}`}>{a.verdict}</div>
+                                      {a.criteria?.slice(0,3).map(c => (
+                                        <div key={c.id} className="flex items-center gap-1.5 text-[10px]">
+                                          {c.met ? <CheckCircle className="w-3 h-3 text-emerald-400 flex-shrink-0" /> : <XCircle className="w-3 h-3 text-red-400 flex-shrink-0" />}
+                                          <span className="text-slate-400">{c.name}:</span>
+                                          <span className="text-slate-300">{c.value || c.evidence?.slice(0,40)}</span>
+                                        </div>
+                                      ))}
+                                      {a.summary && <p className="text-slate-400 text-[10px] italic mt-1">{a.summary?.slice(0,120)}</p>}
+                                    </>
+                                  );
+                                })()}
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
