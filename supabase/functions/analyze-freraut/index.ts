@@ -2,13 +2,41 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const ANTHROPIC_KEY = Deno.env.get("CLAUDE_API_KEY") ?? Deno.env.get("ANTHROPIC_API_KEY") ?? "";
 const SONAR_KEY = Deno.env.get("PERPLEXITY_API_KEY") ?? "";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// ── Sonar research ───────────────────────────────────────────────────────────
+// ── Sector ETF map ────────────────────────────────────────────────────────────
+
+const SECTORS: Record<string, { bull: string; bear: string; etf: string }> = {
+  sp500:    { bull: "UPRO",  bear: "SPXU", etf: "SPY"  },
+  nasdaq:   { bull: "TQQQ",  bear: "SQQQ", etf: "QQQ"  },
+  semis:    { bull: "SOXL",  bear: "SOXS", etf: "SOXX" },
+  finanzas: { bull: "FAS",   bear: "FAZ",  etf: "XLF"  },
+  energia:  { bull: "ERX",   bear: "ERY",  etf: "XLE"  },
+  biotech:  { bull: "LABU",  bear: "LABD", etf: "XBI"  },
+  smallcap: { bull: "TNA",   bear: "TZA",  etf: "IWM"  },
+  china:    { bull: "YINN",  bear: "YANG", etf: "FXI"  },
+};
+
+const SECTOR_QUERIES: Record<string, string> = {
+  _news: "Noticias financieras más importantes de hoy: Fed, inflación, geopolítica, shocks de mercado, eventos clave. Solo datos de hoy. Sé conciso.",
+  _spy:  "SPY precio actual, rendimiento última semana y mes. VIX nivel hoy. Porcentaje acciones S&P500 sobre SMA50. ¿Régimen alcista o bajista? Datos concretos.",
+  sp500:    "SPY flujo fondos institucionales hoy, soportes clave mencionados por analistas, catalizadores próximas 2 semanas. Números concretos.",
+  nasdaq:   "QQQ rendimiento vs SPY última semana, liderazgo tech, noticias FAANG y mega-cap, earnings próximos importantes. Datos concretos.",
+  semis:    "SOXX semiconductores rendimiento últimas 2 semanas, ciclo inventarios chips, noticias NVDA AMD TSMC ASML, próximos earnings. Datos concretos.",
+  finanzas: "XLF financials rendimiento, impacto curva yield en bancos, noticias JPM BAC GS, próximos earnings. Datos concretos.",
+  energia:  "XLE energy rendimiento, precio Brent y WTI hoy, noticias OPEC recientes, perspectiva demanda global. Datos concretos.",
+  biotech:  "XBI biotech rendimiento, próximas decisiones FDA, noticias M&A biotech, flujo hedge funds sector salud. Datos concretos.",
+  smallcap: "IWM small cap rendimiento vs SPY, señal risk-on o risk-off del mercado, spread high yield bonds, catalizadores. Datos concretos.",
+  china:    "FXI China rendimiento, noticias PBOC política monetaria, tensión geopolítica EEUU-China, datos macro China recientes.",
+};
+
+// ── Sonar helpers ─────────────────────────────────────────────────────────────
 
 async function sonarResearch(ticker: string, strategy: string): Promise<string> {
   const queries: Record<string, string> = {
@@ -21,10 +49,7 @@ async function sonarResearch(ticker: string, strategy: string): Promise<string> 
   try {
     const res = await fetch("https://api.perplexity.ai/chat/completions", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${SONAR_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${SONAR_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "sonar-pro",
         messages: [{ role: "user", content: queries[strategy] ?? queries.swing }],
@@ -38,9 +63,37 @@ async function sonarResearch(ticker: string, strategy: string): Promise<string> 
   }
 }
 
-// ── Claude call helper ────────────────────────────────────────────────────────
+async function sonarFrerauti(query: string): Promise<string> {
+  try {
+    const res = await fetch("https://api.perplexity.ai/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${SONAR_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "sonar-pro",
+        messages: [{ role: "user", content: query }],
+        search_domain_filter: [
+          "finance.perplexity.ai",
+          "finance.yahoo.com",
+          "finance.google.com",
+          "investing.com",
+        ],
+        max_tokens: 1000,
+      }),
+    });
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content ?? "Sin datos Sonar.";
+  } catch {
+    return "Sin datos Sonar (error de red).";
+  }
+}
 
-async function claudeJSON(system: string, user: string): Promise<Record<string, unknown>> {
+// ── Claude helpers ────────────────────────────────────────────────────────────
+
+async function claudeJSON(
+  system: string,
+  user: string,
+  model = "claude-sonnet-4-6",
+): Promise<Record<string, unknown>> {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -49,10 +102,9 @@ async function claudeJSON(system: string, user: string): Promise<Record<string, 
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-6",
+      model,
       max_tokens: 1500,
       system,
-      // Prefill assistant turn with "{" to force JSON-only output
       messages: [
         { role: "user", content: user },
         { role: "assistant", content: "{" },
@@ -60,7 +112,6 @@ async function claudeJSON(system: string, user: string): Promise<Record<string, 
     }),
   });
   const data = await res.json();
-  // Response continues from the prefilled "{"
   const raw: string = data.content?.[0]?.text ?? "";
   const text = "{" + raw;
   const match = text.match(/\{[\s\S]*\}/);
@@ -71,11 +122,222 @@ async function claudeJSON(system: string, user: string): Promise<Record<string, 
   }
 }
 
-// ── Strategy analyzers ────────────────────────────────────────────────────────
+// ── Supabase cache write ──────────────────────────────────────────────────────
+
+async function upsertCache(row: Record<string, unknown>): Promise<void> {
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/frerautiano_cache`, {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_SERVICE_KEY,
+        "Authorization": `Bearer ${SUPABASE_SERVICE_KEY}`,
+        "Content-Type": "application/json",
+        "Prefer": "resolution=merge-duplicates",
+      },
+      body: JSON.stringify(row),
+    });
+  } catch {
+    // non-fatal
+  }
+}
+
+// ── Tech summary helper ───────────────────────────────────────────────────────
 
 function techSummary(t: Record<string, unknown>): string {
   return `Precio: $${(t.currentPrice as number)?.toFixed(2) ?? "N/A"} | RSI14: ${(t.rsi14 as number)?.toFixed(1) ?? "N/A"} | RSI2: ${(t.rsi2 as number)?.toFixed(1) ?? "N/A"} | SMA20: $${(t.sma20 as number)?.toFixed(2) ?? "N/A"} | SMA50: $${(t.sma50 as number)?.toFixed(2) ?? "N/A"} | SMA200: $${(t.sma200 as number)?.toFixed(2) ?? "N/A"} | MACD hist: ${(t.macd as { histogram: number })?.histogram?.toFixed(3) ?? "N/A"} | ATR: ${(t.atr as number)?.toFixed(2) ?? "N/A"} | Régimen: ${t.regime ?? "N/A"} | 52wH: $${(t.high52w as number)?.toFixed(2) ?? "N/A"} | 52wL: $${(t.low52w as number)?.toFixed(2) ?? "N/A"} | DownDays: ${t.downDays ?? "N/A"} | IBS: ${(t.ibs as number)?.toFixed(2) ?? "N/A"}`;
 }
+
+function techSummaryShort(t: Record<string, unknown>): string {
+  return `Precio: $${(t.currentPrice as number)?.toFixed(2) ?? "N/A"} | RSI14: ${(t.rsi14 as number)?.toFixed(1) ?? "N/A"} | SMA50: $${(t.sma50 as number)?.toFixed(2) ?? "N/A"} | SMA200: $${(t.sma200 as number)?.toFixed(2) ?? "N/A"} | MACD hist: ${(t.macd as { histogram: number })?.histogram?.toFixed(3) ?? "N/A"} | ATR: ${(t.atr as number)?.toFixed(2) ?? "N/A"}`;
+}
+
+// ── FRERAUTIANO FASE 1+2: Init ────────────────────────────────────────────────
+// Fetch news + SPY context in parallel, then Opus determines regime + sector order
+
+async function frerautianoInit(techSpy: Record<string, unknown>) {
+  const [sonarNews, sonarSpy] = await Promise.all([
+    sonarFrerauti(SECTOR_QUERIES._news),
+    sonarFrerauti(SECTOR_QUERIES._spy),
+  ]);
+
+  const system = `Eres Lake, analista jefe de Freraut Invest. Especialista en rotación sectorial con ETFs 3x.
+Responde SOLO JSON. Sin texto fuera. Sin disclaimers. Los datos de Sonar son actuales — úsalos sin reservas.`;
+
+  const user = `NOTICIAS MACRO HOY (Sonar — fuentes confiables):
+${sonarNews}
+
+TECHNICALS SPY (datos en tiempo real del sistema):
+${techSummaryShort(techSpy)}
+
+CONTEXTO SPY + VIX (Sonar):
+${sonarSpy}
+
+Tu tarea:
+1. Define el régimen actual del mercado.
+2. Ordena los 8 sectores de MAYOR a MENOR probabilidad TIC hoy.
+   TIC aplica tanto alcista (3x bull) como inverso (3x bear) — en bear market SPXU puede ser el mejor TIC.
+3. Justifica brevemente el orden.
+
+Sectores disponibles: sp500, nasdaq, semis, finanzas, energia, biotech, smallcap, china
+
+JSON:
+{
+  "regime": "BULL" | "BEAR" | "NEUTRAL" | "STRESS",
+  "vix_assessment": "descripción breve del VIX y qué implica para 3x",
+  "spy_price": number,
+  "sector_order": ["sector1","sector2","sector3","sector4","sector5","sector6","sector7","sector8"],
+  "order_reasoning": "<150 chars — por qué este orden ahora"
+}`;
+
+  const result = await claudeJSON(system, user, "claude-opus-4-7");
+
+  const spyPrice = (result.spy_price as number) ?? (techSpy.currentPrice as number) ?? 0;
+
+  await Promise.all([
+    upsertCache({
+      sector: "_macro",
+      macro_regime: result.regime,
+      spy_price_snapshot: spyPrice,
+      analysis: result,
+      sonar_raw: sonarSpy,
+      analyzed_at: new Date().toISOString(),
+    }),
+    upsertCache({
+      sector: "_news",
+      analysis: { content: sonarNews },
+      analyzed_at: new Date().toISOString(),
+    }),
+  ]);
+
+  return { ...result, sonar_news: sonarNews, sonar_spy: sonarSpy };
+}
+
+// ── FRERAUTIANO FASE 3: Sector analysis ──────────────────────────────────────
+
+async function frerautianoSector(
+  sector: string,
+  regime: string,
+  vixAssessment: string,
+  orderRank: number,
+  technicals: Record<string, unknown>,
+) {
+  const pair = SECTORS[sector];
+  if (!pair) return { error: "sector_desconocido" };
+
+  const sonarData = await sonarFrerauti(SECTOR_QUERIES[sector] ?? SECTOR_QUERIES.sp500);
+
+  const system = `Eres Lake, analista jefe de Freraut Invest. Especialista en ETFs 3x apalancados.
+
+REGLA CRÍTICA: El volatility decay destruye capital en mercados LATERALES.
+Solo tendencia CLARA justifica entrar en un 3x. Si hay duda → CASH.
+Conviction < 65% → signal = "CASH" obligatorio.
+Un análisis conservador que evita una pérdida vale más que una señal agresiva equivocada.
+
+Los datos de Sonar son actuales y provienen de fuentes confiables. Úsalos sin reservas.
+Responde SOLO JSON. Sin texto fuera. Sin disclaimers.`;
+
+  const user = `SECTOR: ${sector.toUpperCase()} | ETF Bull: ${pair.bull} | ETF Bear: ${pair.bear} | ETF referencia: ${pair.etf}
+CONTEXTO MACRO: Régimen=${regime} | VIX=${vixAssessment}
+
+TECHNICALS ${pair.etf} (sistema en tiempo real):
+${techSummaryShort(technicals)}
+
+INVESTIGACIÓN SONAR (Perplexity Finance, Yahoo, Google, Investing):
+${sonarData}
+
+Responde estas 4 preguntas brevemente y luego da tu veredicto final:
+1. TENDENCIA: ¿Precio en tendencia clara (up o down) o lateral las últimas 2 semanas?
+2. MOMENTUM: ¿Hay momentum confirmado — flujo, liderazgo vs SPY, volumen?
+3. CATALIZADOR: ¿Existe evento próximo que pueda acelerar el movimiento?
+4. DECAY RISK: ¿Por qué NO es mercado lateral? ¿Qué hace que HOY sea diferente?
+
+JSON:
+{
+  "signal": "BULL" | "BEAR" | "CASH",
+  "ticker_recomendado": "${pair.bull}" | "${pair.bear}" | "CASH",
+  "conviction": number,
+  "q1_tendencia": "respuesta corta",
+  "q2_momentum": "respuesta corta",
+  "q3_catalizador": "respuesta corta",
+  "q4_decay_risk": "respuesta corta",
+  "reasoning": "<200 chars — qué vio Lake, por qué esta señal",
+  "risk": "<100 chars — principal riesgo de esta posición",
+  "timing": "inmediato" | "esperar 2-3 días" | "esperar semana"
+}`;
+
+  const result = await claudeJSON(system, user, "claude-opus-4-7");
+
+  await upsertCache({
+    sector,
+    ticker_bull: pair.bull,
+    ticker_bear: pair.bear,
+    signal: result.signal,
+    conviction: result.conviction,
+    analysis: result,
+    sonar_raw: sonarData,
+    macro_regime: regime,
+    sector_order_rank: orderRank,
+    analyzed_at: new Date().toISOString(),
+  });
+
+  return {
+    sector,
+    ticker_bull: pair.bull,
+    ticker_bear: pair.bear,
+    ...result,
+  };
+}
+
+// ── FRERAUTIANO FASE 4: Ranking ───────────────────────────────────────────────
+
+async function frerautianoRanking(
+  analyses: Record<string, unknown>[],
+  spyPrice: number,
+) {
+  const system = `Eres Lake. Acabas de analizar 8 sectores con ETFs 3x.
+Responde SOLO JSON. Sin texto fuera.`;
+
+  const summary = analyses
+    .map((a) =>
+      `${String(a.sector).toUpperCase()}: signal=${a.signal} conviction=${a.conviction} ticker=${a.ticker_recomendado} timing=${a.timing} — ${a.reasoning}`
+    )
+    .join("\n");
+
+  const user = `ANÁLISIS COMPLETO DE LOS 8 SECTORES:
+${summary}
+
+Elige el top 1-2 sectores para entrar HOY con ETF 3x.
+Justifica por qué estos sobre los demás: convicción, timing, riesgo decay, contexto macro.
+Indica también cuáles evitar y por qué.
+
+JSON:
+{
+  "top_picks": [
+    {
+      "sector": string,
+      "ticker": string,
+      "conviction": number,
+      "why_top": "<120 chars — por qué este sobre los demás"
+    }
+  ],
+  "market_summary": "<200 chars — visión general de Lake sobre el mercado hoy",
+  "avoid": ["sector1", "sector2"],
+  "avoid_reason": "<100 chars — por qué evitar estos"
+}`;
+
+  const result = await claudeJSON(system, user, "claude-opus-4-7");
+
+  await upsertCache({
+    sector: "_ranking",
+    analysis: result,
+    spy_price_snapshot: spyPrice,
+    analyzed_at: new Date().toISOString(),
+  });
+
+  return result;
+}
+
+// ── Existing strategy analyzers (unchanged) ───────────────────────────────────
 
 async function analyzeTIC(ticker: string, strategy: string, t: Record<string, unknown>, research: string) {
   const isFrerauti = strategy === "frerautiano";
@@ -239,32 +501,71 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
 
   try {
-    const { ticker, strategy, technicals } = await req.json();
+    const body = await req.json();
+    const { ticker, strategy, technicals } = body;
 
-    if (!ticker || !strategy) {
-      return new Response(JSON.stringify({ error: "ticker y strategy requeridos" }), {
+    if (!strategy) {
+      return new Response(JSON.stringify({ error: "strategy requerida" }), {
         status: 400, headers: { ...cors, "Content-Type": "application/json" },
       });
     }
-
-    const t = technicals ?? {};
-    const research = await sonarResearch(ticker.toUpperCase(), strategy);
 
     let result: Record<string, unknown>;
-    if (strategy === "swing" || strategy === "frerautiano") {
-      result = await analyzeTIC(ticker.toUpperCase(), strategy, t, research);
-    } else if (strategy === "dividendos") {
-      result = await analyzeDividendos(ticker.toUpperCase(), t, research);
-    } else if (strategy === "value") {
-      result = await analyzeValue(ticker.toUpperCase(), t, research);
-    } else {
-      return new Response(JSON.stringify({ error: "strategy desconocida" }), {
-        status: 400, headers: { ...cors, "Content-Type": "application/json" },
-      });
-    }
 
-    result.ticker = ticker.toUpperCase();
-    result.strategy = strategy;
+    // ── Frerautiano sector rotation strategies ──
+    if (strategy === "frerautiano_init") {
+      const techSpy = technicals?.spy ?? {};
+      result = await frerautianoInit(techSpy);
+
+    } else if (strategy === "frerautiano_sector") {
+      const { sector, regime, vix_assessment, order_rank } = body;
+      if (!sector || !regime) {
+        return new Response(JSON.stringify({ error: "sector y regime requeridos" }), {
+          status: 400, headers: { ...cors, "Content-Type": "application/json" },
+        });
+      }
+      result = await frerautianoSector(
+        sector,
+        regime,
+        vix_assessment ?? "",
+        order_rank ?? 0,
+        technicals ?? {},
+      );
+
+    } else if (strategy === "frerautiano_ranking") {
+      const { analyses, spy_price } = body;
+      if (!analyses || !Array.isArray(analyses)) {
+        return new Response(JSON.stringify({ error: "analyses array requerido" }), {
+          status: 400, headers: { ...cors, "Content-Type": "application/json" },
+        });
+      }
+      result = await frerautianoRanking(analyses, spy_price ?? 0);
+
+    // ── Existing strategies ──
+    } else {
+      if (!ticker) {
+        return new Response(JSON.stringify({ error: "ticker requerido" }), {
+          status: 400, headers: { ...cors, "Content-Type": "application/json" },
+        });
+      }
+      const t = technicals ?? {};
+      const research = await sonarResearch(ticker.toUpperCase(), strategy);
+
+      if (strategy === "swing" || strategy === "frerautiano") {
+        result = await analyzeTIC(ticker.toUpperCase(), strategy, t, research);
+      } else if (strategy === "dividendos") {
+        result = await analyzeDividendos(ticker.toUpperCase(), t, research);
+      } else if (strategy === "value") {
+        result = await analyzeValue(ticker.toUpperCase(), t, research);
+      } else {
+        return new Response(JSON.stringify({ error: "strategy desconocida" }), {
+          status: 400, headers: { ...cors, "Content-Type": "application/json" },
+        });
+      }
+
+      result.ticker = ticker.toUpperCase();
+      result.strategy = strategy;
+    }
 
     return new Response(JSON.stringify(result), {
       headers: { ...cors, "Content-Type": "application/json" },
