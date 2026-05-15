@@ -61,11 +61,14 @@ const ZBitacora = ({ analyses }) => {
     return 'hace ' + Math.floor(diff/86400) + ' d';
   };
 
+  const sideToVeredicto = (side) => side === 'buy' ? 'COMPRAR' : 'VENDER';
+  const BUCKET_LABEL = { swing: 'Swing', largo_plazo: 'Largo plazo', dividendos: 'Dividendos', intraday: 'Intraday' };
+
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
       className="bg-[#1a1d2b]/60 backdrop-blur-xl rounded-[1.75rem] p-4 sm:p-6 border border-white/10">
       <h3 className="text-sm sm:text-base font-bold text-gray-200 mb-4">
-        Bitácora Lake AI <span className="text-[10px] text-gray-500 font-normal">(últimas 15 decisiones)</span>
+        Bitácora IULER <span className="text-[10px] text-gray-500 font-normal">(últimas 15 decisiones)</span>
       </h3>
       {analyses.length === 0 ? (
         <p className="text-center text-gray-600 text-sm py-6">Sin decisiones recientes</p>
@@ -75,52 +78,52 @@ const ZBitacora = ({ analyses }) => {
             <thead>
               <tr className="border-b border-yellow-500/20">
                 <th className="text-left py-2 px-2 text-yellow-500/80 font-bold uppercase">Ticker</th>
-                <th className="text-left py-2 px-2 text-yellow-500/80 font-bold uppercase">Veredicto</th>
-                <th className="text-left py-2 px-2 text-yellow-500/80 font-bold uppercase hidden sm:table-cell">Régimen</th>
-                <th className="text-right py-2 px-2 text-yellow-500/80 font-bold uppercase hidden md:table-cell">Scores</th>
-                <th className="text-right py-2 px-2 text-yellow-500/80 font-bold uppercase hidden lg:table-cell">RSI</th>
+                <th className="text-left py-2 px-2 text-yellow-500/80 font-bold uppercase">Acción</th>
+                <th className="text-left py-2 px-2 text-yellow-500/80 font-bold uppercase hidden sm:table-cell">Estrategia</th>
+                <th className="text-right py-2 px-2 text-yellow-500/80 font-bold uppercase hidden md:table-cell">Precio est.</th>
+                <th className="text-right py-2 px-2 text-yellow-500/80 font-bold uppercase hidden lg:table-cell">Confianza</th>
                 <th className="text-right py-2 px-2 text-yellow-500/80 font-bold uppercase">Fecha</th>
               </tr>
             </thead>
             <tbody>
-              {analyses.map((r, i) => (
-                <tr key={i} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                  <td className="py-2 px-2">
-                    <div className="font-bold text-white">{r.ticker}</div>
-                    {r.notas && (
-                      <div className="text-gray-500 text-xs mt-0.5 truncate max-w-[120px]">
-                        {r.notas.length > 30 ? r.notas.substring(0, 30) + '...' : r.notas}
-                      </div>
-                    )}
-                  </td>
-                  <td className="py-2 px-2">
-                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${VEREDICTO_COLOR[r.veredicto] || 'bg-gray-500/20 text-gray-400'}`}>
-                      {r.veredicto}
-                    </span>
-                  </td>
-                  <td className="py-2 px-2 hidden sm:table-cell">
-                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${REGIME_COLOR[r.regime?.toLowerCase()] || 'bg-gray-500/20 text-gray-400'}`}>
-                      {r.regime}
-                    </span>
-                  </td>
-                  <td className="py-2 px-2 text-right hidden md:table-cell">
-                    <div className="flex flex-col gap-0.5 items-end">
-                      <span className="text-gray-400 text-[10px]">LP: {r.lp_score}</span>
-                      <span className="text-gray-400 text-[10px]">CP: {r.cp_score}</span>
-                    </div>
-                  </td>
-                  <td className="py-2 px-2 text-right hidden lg:table-cell">
-                    <span className="text-gray-400 text-xs">
-                      RSI: {r.rsi != null ? r.rsi.toFixed(1) : '—'}
-                    </span>
-                  </td>
-                  <td className="py-2 px-2 text-right">
-                    <span className="text-gray-500 text-xs">
-                      {relativeTime(r.created_at)}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {analyses.map((r, i) => {
+                const veredicto = sideToVeredicto(r.side);
+                return (
+                  <tr key={i} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                    <td className="py-2 px-2">
+                      <div className="font-bold text-white">{r.symbol}</div>
+                      {r.reason && (
+                        <div className="text-gray-500 text-xs mt-0.5 truncate max-w-[140px]">
+                          {r.reason.length > 40 ? r.reason.substring(0, 40) + '...' : r.reason}
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-2 px-2">
+                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${VEREDICTO_COLOR[veredicto] || 'bg-gray-500/20 text-gray-400'}`}>
+                        {veredicto}
+                      </span>
+                    </td>
+                    <td className="py-2 px-2 hidden sm:table-cell">
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-slate-500/20 text-slate-300">
+                        {BUCKET_LABEL[r.bucket] || r.bucket || '—'}
+                      </span>
+                    </td>
+                    <td className="py-2 px-2 text-right hidden md:table-cell">
+                      <span className="text-gray-400 text-[10px]">
+                        {r.estimated_price ? `$${parseFloat(r.estimated_price).toFixed(2)}` : '—'}
+                      </span>
+                    </td>
+                    <td className="py-2 px-2 text-right hidden lg:table-cell">
+                      <span className={`text-xs ${r.confidence === 'high' ? 'text-emerald-400' : 'text-yellow-400'}`}>
+                        {r.confidence === 'high' ? 'Alta' : 'Media'}
+                      </span>
+                    </td>
+                    <td className="py-2 px-2 text-right">
+                      <span className="text-gray-500 text-xs">{relativeTime(r.created_at)}</span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -147,7 +150,7 @@ const Portfolio = () => {
       ] = await Promise.all([
         supabase.from('activos_cartera_fondo').select('*').eq('fuente', 'iuler').order('valor_total', { ascending: false }),
         supabase.from('alpaca_bot_state').select('account_equity,account_cash,account_buying_power,last_decision,lake_status,updated_at').eq('id', 1).single(),
-        supabase.from('freraut_analysis_log').select('ticker,veredicto,regime,lp_score,cp_score,rsi,notas,created_at').order('created_at', { ascending: false }).limit(15)
+        supabase.from('lake_trade_intentions').select('symbol,side,bucket,reason,confidence,estimated_price,estimated_qty,status,created_at').eq('regime', 'open').order('created_at', { ascending: false }).limit(15)
       ]);
 
       if (posErr) throw posErr;
