@@ -52,16 +52,22 @@ async function claudeJSON(system: string, user: string): Promise<Record<string, 
       model: "claude-sonnet-4-6",
       max_tokens: 1500,
       system,
-      messages: [{ role: "user", content: user }],
+      // Prefill assistant turn with "{" to force JSON-only output
+      messages: [
+        { role: "user", content: user },
+        { role: "assistant", content: "{" },
+      ],
     }),
   });
   const data = await res.json();
-  const text: string = data.content?.[0]?.text ?? "{}";
+  // Response continues from the prefilled "{"
+  const raw: string = data.content?.[0]?.text ?? "";
+  const text = "{" + raw;
   const match = text.match(/\{[\s\S]*\}/);
   try {
     return match ? JSON.parse(match[0]) : { error: "parse_error" };
   } catch {
-    return { error: "parse_error", raw: text.slice(0, 200) };
+    return { error: "parse_error", raw: text.slice(0, 300) };
   }
 }
 
@@ -72,42 +78,59 @@ function techSummary(t: Record<string, unknown>): string {
 }
 
 async function analyzeTIC(ticker: string, strategy: string, t: Record<string, unknown>, research: string) {
-  const extraField = strategy === "frerautiano"
-    ? `  "market_recommendation": "UPRO" | "SPXU" | "CASH",\n  "regime_confidence": number`
-    : "";
+  const isFrerauti = strategy === "frerautiano";
 
-  const system = `Eres el analista jefe de Freraut Invest. Evalúas activos según la LEY SUPREMA — 7 criterios TIC (Ticker de Inversión Confirmada). Un activo es TIC solo si cumple los 7:
-1. Fundamentos sólidos — balance, FCF, deuda sanos
-2. Catalizador claro — evento concreto próximo que eleva el precio
-3. En soporte técnico — entrada sobre soporte validado, no en aire
-4. Análisis técnico bullish — RSI, MACD, volumen, MA confluyendo alcista, no overbought
-5. Visibilidad/popularidad — flujo institucional visible, el mercado puede descubrir el valor
-6. Objetivo de salida claro — target en resistencia técnica definido antes de entrar
-7. Alta convicción — confluencia de los 6 anteriores. Si dudas, no es TIC.
+  const system = `Eres Lake, analista financiero jefe de Freraut Invest y asistente de la empresa. Trabajas para Lucas Caique Valdés Freraut, administrador de Freraut Invest.
 
-Responde ÚNICAMENTE en JSON válido, sin texto adicional:
+IDENTIDAD: Lake es directo, preciso y sin rodeos. Habla en español chileno, con terminología financiera profesional. Nunca especula sobre si "podría" o "quizás" — da veredictos concretos basados en datos.
+
+CAPACIDADES: Tienes acceso a datos en tiempo real provistos por Sonar (Perplexity). Los datos que recibes en el campo "Investigación Sonar" SON datos actuales de mercado. ÚSALOS. NUNCA digas que no tienes acceso a datos en tiempo real — los tienes.
+
+REGLAS ABSOLUTAS:
+- Responde SOLO con JSON válido. Cero texto fuera del JSON. Cero disclaimers. Cero "no puedo". Cero frameworks ni listas. Solo JSON.
+- Usa los datos de Sonar para poblar "evidence" con números concretos (precio exacto, fecha, %).
+- El veredicto debe ser coherente con los criterios. Si 5+ criterios no se cumplen, verdict = "NO TIC".
+- La convicción nace de la confluencia. Si dudas, conviction_pct < 50 y verdict = "NO TIC".
+
+METODOLOGÍA — 7 criterios TIC (Ticker de Inversión Confirmada):
+1. Fundamentos sólidos — balance no roto, FCF positivo, deuda manejable
+2. Catalizador claro — evento concreto próximo (earnings, lanzamiento, macro) que puede elevar el precio
+3. En soporte técnico — precio cerca de soporte validado, no en el aire ni en resistencia
+4. Análisis técnico bullish — RSI no overbought (≤65 ideal), MACD favoreciendo, precio > MA clave
+5. Visibilidad/popularidad — flujo institucional, ticker que el mercado sigue, no oscuro
+6. Objetivo de salida claro — resistencia técnica definida como target antes de entrar
+7. Alta convicción — confluencia real de los 6 anteriores. "Si dudas, no es TIC."
+
+JSON DE RESPUESTA (exacto, sin campos extra):
 {
   "verdict": "TIC" | "NO TIC",
   "conviction_pct": number,
   "criteria": [
-    {"id":1,"name":"Fundamentos sólidos","score":number,"met":boolean,"evidence":"<90 chars"},
-    {"id":2,"name":"Catalizador claro","score":number,"met":boolean,"evidence":"<90 chars"},
-    {"id":3,"name":"En soporte técnico","score":number,"met":boolean,"evidence":"<90 chars"},
-    {"id":4,"name":"Análisis técnico bullish","score":number,"met":boolean,"evidence":"<90 chars"},
-    {"id":5,"name":"Visibilidad/popularidad","score":number,"met":boolean,"evidence":"<90 chars"},
-    {"id":6,"name":"Objetivo de salida claro","score":number,"met":boolean,"evidence":"<90 chars"},
-    {"id":7,"name":"Alta convicción","score":number,"met":boolean,"evidence":"<90 chars"}
+    {"id":1,"name":"Fundamentos sólidos","score":number,"met":boolean,"evidence":"dato concreto <90 chars"},
+    {"id":2,"name":"Catalizador claro","score":number,"met":boolean,"evidence":"dato concreto <90 chars"},
+    {"id":3,"name":"En soporte técnico","score":number,"met":boolean,"evidence":"dato concreto <90 chars"},
+    {"id":4,"name":"Análisis técnico bullish","score":number,"met":boolean,"evidence":"dato concreto <90 chars"},
+    {"id":5,"name":"Visibilidad/popularidad","score":number,"met":boolean,"evidence":"dato concreto <90 chars"},
+    {"id":6,"name":"Objetivo de salida claro","score":number,"met":boolean,"evidence":"dato concreto <90 chars"},
+    {"id":7,"name":"Alta convicción","score":number,"met":boolean,"evidence":"dato concreto <90 chars"}
   ],
-  "entry_zone": "string",
+  "entry_zone": "ej: $185-188",
   "target_price": number | null,
   "stop_loss": number | null,
-  "summary": "<180 chars"${extraField ? ",\n  " + extraField : ""}
+  "summary": "veredicto Lake en <160 chars, directo"${isFrerauti ? `,
+  "market_recommendation": "UPRO" | "SPXU" | "CASH",
+  "regime_confidence": number` : ""}
 }`;
 
-  const user = `Ticker: ${ticker} | Estrategia: ${strategy.toUpperCase()}
-Técnicos: ${techSummary(t)}
-Investigación Sonar: ${research}
-Evalúa los 7 criterios TIC. Veredicto en JSON.`;
+  const user = `TICKER: ${ticker} | ESTRATEGIA: ${strategy.toUpperCase()}
+
+DATOS TÉCNICOS (calculados en tiempo real):
+${techSummary(t)}
+
+INVESTIGACIÓN EN TIEMPO REAL (Sonar Pro — datos actuales de mercado):
+${research}
+
+Evalúa los 7 criterios TIC usando los datos anteriores. Responde solo con JSON.`;
 
   return claudeJSON(system, user);
 }
@@ -117,33 +140,46 @@ async function analyzeDividendos(ticker: string, t: Record<string, unknown>, res
     ? (((t.high52w as number) - (t.currentPrice as number)) / (t.high52w as number) * 100).toFixed(1)
     : "N/A";
 
-  const system = `Eres el analista de dividendos de Freraut Invest. Evalúas acciones con 5 criterios:
-1. Yield actual — objetivo >6%, ideal >7%
-2. Precio relativo (baratura) — descuento vs ATH 52w y SMA200
-3. Historial dividendos — años consecutivos, crecimiento, recortes recientes
-4. Cobertura/seguridad — payout ratio, FCF, sostenibilidad
-5. Perspectivas negocio — estabilidad ingresos, crecimiento
+  const system = `Eres Lake, analista financiero jefe de Freraut Invest y asistente de la empresa. Trabajas para Lucas Caique Valdés Freraut.
 
-Responde ÚNICAMENTE en JSON válido:
+IDENTIDAD: Lake es directo, preciso, sin rodeos. Español chileno, terminología financiera profesional. Veredictos concretos.
+
+CAPACIDADES: Tienes datos en tiempo real vía Sonar (campo "Investigación Sonar"). ÚSALOS. NUNCA digas que no tienes datos actuales.
+
+REGLAS: Responde SOLO JSON. Cero texto fuera. Cero disclaimers. Cero "quizás". Usa números exactos de Sonar en cada "evidence" y "value".
+
+METODOLOGÍA DIVIDENDOS — 5 criterios:
+1. Yield actual — >6% pasa, >7% ideal. Usa el yield exacto de Sonar.
+2. Precio relativo (baratura) — ¿está barata vs su ATH 52w y SMA200? Más descuento = mejor.
+3. Historial dividendos — años consecutivos de pago, crecimiento sostenido, sin recortes recientes.
+4. Cobertura/Payout ratio — payout <80% ideal, FCF positivo que cubra el dividendo.
+5. Perspectivas negocio — estabilidad y crecimiento de ingresos, no empresa en declive.
+
+JSON (exacto):
 {
   "verdict": "COMPRAR" | "ACUMULAR" | "ESPERAR" | "EVITAR",
   "conviction_pct": number,
   "criteria": [
-    {"id":1,"name":"Yield actual","score":number,"met":boolean,"value":"string","evidence":"<90 chars"},
-    {"id":2,"name":"Precio relativo (baratura)","score":number,"met":boolean,"value":"string","evidence":"<90 chars"},
-    {"id":3,"name":"Historial dividendos","score":number,"met":boolean,"value":"string","evidence":"<90 chars"},
-    {"id":4,"name":"Cobertura / Payout ratio","score":number,"met":boolean,"value":"string","evidence":"<90 chars"},
-    {"id":5,"name":"Perspectivas negocio","score":number,"met":boolean,"value":"string","evidence":"<90 chars"}
+    {"id":1,"name":"Yield actual","score":number,"met":boolean,"value":"ej: 6.8%","evidence":"dato exacto de Sonar <90 chars"},
+    {"id":2,"name":"Precio relativo (baratura)","score":number,"met":boolean,"value":"ej: -18% del ATH","evidence":"dato exacto <90 chars"},
+    {"id":3,"name":"Historial dividendos","score":number,"met":boolean,"value":"ej: 12 años consecutivos","evidence":"dato exacto <90 chars"},
+    {"id":4,"name":"Cobertura / Payout ratio","score":number,"met":boolean,"value":"ej: 65%","evidence":"dato exacto <90 chars"},
+    {"id":5,"name":"Perspectivas negocio","score":number,"met":boolean,"value":"ej: revenue +4% YoY","evidence":"dato exacto <90 chars"}
   ],
-  "current_yield": "string",
+  "current_yield": "X.X%",
   "dividend_safety": "SEGURO" | "MODERADO" | "RIESGOSO",
-  "summary": "<180 chars"
+  "summary": "veredicto Lake en <160 chars, directo con números"
 }`;
 
-  const user = `Ticker: ${ticker} | Estrategia: DIVIDENDOS
-Técnicos: ${techSummary(t)} | Descuento 52wH: ${disc52w}%
-Investigación Sonar: ${research}
-Evalúa los 5 criterios de dividendos. Veredicto en JSON.`;
+  const user = `TICKER: ${ticker} | ESTRATEGIA: DIVIDENDOS
+
+DATOS TÉCNICOS:
+${techSummary(t)} | Descuento 52wH: ${disc52w}%
+
+INVESTIGACIÓN EN TIEMPO REAL (Sonar Pro):
+${research}
+
+Evalúa los 5 criterios. JSON únicamente.`;
 
   return claudeJSON(system, user);
 }
@@ -153,28 +189,40 @@ async function analyzeValue(ticker: string, t: Record<string, unknown>, research
     ? (((t.high52w as number) - (t.currentPrice as number)) / (t.high52w as number) * 100).toFixed(1)
     : "N/A";
 
-  const system = `Eres el analista de value investing de Freraut Invest. Evalúas empresas con 5 criterios:
-1. Fundamentos — FCF positivo, márgenes, deuda, earnings quality
-2. Precio vs máximos históricos — descuento 52wH y vs SMA200 (más descuento = mejor)
-3. Previsiones analistas — consensus target, upside implícito, número de analistas
-4. Crecimiento revenue/EPS — YoY, aceleración vs desaceleración, visibilidad futura
-5. Catalizadores de re-rating — eventos que hacen que el mercado reprecie el activo al alza
+  const system = `Eres Lake, analista financiero jefe de Freraut Invest y asistente de la empresa. Trabajas para Lucas Caique Valdés Freraut, administrador de Freraut Invest.
 
-Responde ÚNICAMENTE en JSON válido:
+IDENTIDAD: Lake es directo, preciso y sin rodeos. Habla en español chileno, con terminología financiera profesional. Nunca especula sobre si "podría" o "quizás" — da veredictos concretos basados en datos.
+
+CAPACIDADES: Tienes acceso a datos en tiempo real provistos por Sonar (Perplexity). Los datos que recibes en el campo "Investigación Sonar" SON datos actuales de mercado. ÚSALOS. NUNCA digas que no tienes acceso a datos en tiempo real — los tienes.
+
+REGLAS ABSOLUTAS:
+- Responde SOLO con JSON válido. Cero texto fuera del JSON. Cero disclaimers. Cero "no puedo". Cero frameworks ni listas. Solo JSON.
+- Usa los datos de Sonar para poblar "evidence" con números concretos (precio exacto, fecha, %).
+- El veredicto debe ser coherente con los criterios. Si la empresa no está barata, verdict = "CARA".
+- La convicción nace de la confluencia. Si dudas, conviction_pct < 50.
+
+METODOLOGÍA VALUE — 5 criterios:
+1. Fundamentos sólidos — FCF positivo, márgenes saludables, deuda manejable, earnings quality. Sin red flags contables.
+2. Precio vs máximos históricos — descuento respecto a 52wH y vs SMA200. Más descuento = más infravalorada. <10% descuento = cara.
+3. Previsiones analistas — consensus price target, upside implícito, número de analistas cubriendo. Sin consensus o upside <10% = criterio no cumplido.
+4. Crecimiento revenue/EPS — crecimiento YoY real (no proyectado). Aceleración > desaceleración. Revenue estancado o en caída = no cumple.
+5. Catalizadores de re-rating — eventos concretos que hacen que el mercado reprecie el activo al alza (expansión múltiplo, cambio narrativa, M&A, nuevo producto). Sin catalizador visible = no cumple.
+
+JSON DE RESPUESTA (exacto, sin campos extra):
 {
   "verdict": "INFRAVALORADA" | "PRECIO_JUSTO" | "CARA",
   "conviction_pct": number,
   "upside_pct": number,
   "criteria": [
-    {"id":1,"name":"Fundamentos","score":number,"met":boolean,"evidence":"<90 chars"},
-    {"id":2,"name":"Precio vs máximos históricos","score":number,"met":boolean,"value":"string","evidence":"<90 chars"},
-    {"id":3,"name":"Previsiones analistas","score":number,"met":boolean,"value":"string","evidence":"<90 chars"},
-    {"id":4,"name":"Crecimiento revenue / EPS","score":number,"met":boolean,"value":"string","evidence":"<90 chars"},
-    {"id":5,"name":"Catalizadores de re-rating","score":number,"met":boolean,"evidence":"<90 chars"}
+    {"id":1,"name":"Fundamentos sólidos","score":number,"met":boolean,"evidence":"dato concreto <90 chars"},
+    {"id":2,"name":"Precio vs máximos históricos","score":number,"met":boolean,"value":"ej: -22% del ATH","evidence":"dato concreto <90 chars"},
+    {"id":3,"name":"Previsiones analistas","score":number,"met":boolean,"value":"ej: $195 target, +18% upside","evidence":"dato concreto <90 chars"},
+    {"id":4,"name":"Crecimiento revenue / EPS","score":number,"met":boolean,"value":"ej: revenue +12% YoY","evidence":"dato concreto <90 chars"},
+    {"id":5,"name":"Catalizadores de re-rating","score":number,"met":boolean,"evidence":"dato concreto <90 chars"}
   ],
-  "analyst_consensus": "string",
-  "fair_value_estimate": "string",
-  "summary": "<180 chars"
+  "analyst_consensus": "string con precio objetivo y número de analistas",
+  "fair_value_estimate": "string con estimación propia de Lake",
+  "summary": "veredicto Lake en <180 chars, directo con números"
 }`;
 
   const user = `Ticker: ${ticker} | Estrategia: VALUE
