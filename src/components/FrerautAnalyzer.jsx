@@ -408,6 +408,8 @@ export default function FrerautAnalyzer() {
   const [frPhase, setFrPhase] = useState('idle');
   const [frCurrentSector, setFrCurrentSector] = useState(null);
   const [frCacheTime, setFrCacheTime] = useState(null);
+  const [frError, setFrError] = useState(null);
+  const frStartedRef = React.useRef(false);
 
   // VALUE STATE
   const [valueTicker, setValueTicker] = useState('');
@@ -513,51 +515,60 @@ export default function FrerautAnalyzer() {
 
   const runFrAnalysis = async () => {
     setFrLoading(true);
+    setFrError(null);
     setFrCards({});
     setFrInit(null);
     setFrRanking(null);
     setFrCurrentSector(null);
     setFrPhase('init');
 
-    const spyTech = await fetchTickerData('SPY');
+    try {
+      const spyTech = await fetchTickerData('SPY');
 
-    const initRes = await supabase.functions.invoke('analyze-freraut', {
-      body: { strategy: 'frerautiano_init', technicals: { spy: spyTech ?? {} } }
-    });
-    if (initRes.error || !initRes.data) { setFrLoading(false); setFrPhase('idle'); return; }
-    const init = initRes.data;
-    setFrInit(init);
-
-    const sectorOrder = Array.isArray(init.sector_order)
-      ? init.sector_order
-      : ['sp500','nasdaq','semis','finanzas','energia','biotech','smallcap','china'];
-
-    const analyses = [];
-    for (let i = 0; i < sectorOrder.length; i++) {
-      const sector = sectorOrder[i];
-      setFrCurrentSector(sector);
-      setFrPhase(`sector_${sector}`);
-      const tech = await fetchTickerData(SECTOR_ETF_MAP[sector] ?? 'SPY');
-      const res = await supabase.functions.invoke('analyze-freraut', {
-        body: { strategy: 'frerautiano_sector', sector, regime: init.regime, vix_assessment: init.vix_assessment ?? '', order_rank: i + 1, technicals: tech ?? {} }
+      const initRes = await supabase.functions.invoke('analyze-freraut', {
+        body: { strategy: 'frerautiano_init', technicals: { spy: spyTech ?? {} } }
       });
-      if (!res.error && res.data) {
-        const card = { ...res.data, sector, sector_order_rank: i + 1 };
-        analyses.push(card);
-        setFrCards(prev => ({ ...prev, [sector]: card }));
+      if (initRes.error || !initRes.data) {
+        throw new Error(initRes.error?.message ?? 'Sin respuesta del analizador macro');
       }
+      const init = initRes.data;
+      setFrInit(init);
+
+      const sectorOrder = Array.isArray(init.sector_order)
+        ? init.sector_order
+        : ['sp500','nasdaq','semis','finanzas','energia','biotech','smallcap','china'];
+
+      const analyses = [];
+      for (let i = 0; i < sectorOrder.length; i++) {
+        const sector = sectorOrder[i];
+        setFrCurrentSector(sector);
+        setFrPhase(`sector_${sector}`);
+        const tech = await fetchTickerData(SECTOR_ETF_MAP[sector] ?? 'SPY');
+        const res = await supabase.functions.invoke('analyze-freraut', {
+          body: { strategy: 'frerautiano_sector', sector, regime: init.regime, vix_assessment: init.vix_assessment ?? '', order_rank: i + 1, technicals: tech ?? {} }
+        });
+        if (!res.error && res.data) {
+          const card = { ...res.data, sector, sector_order_rank: i + 1 };
+          analyses.push(card);
+          setFrCards(prev => ({ ...prev, [sector]: card }));
+        }
+      }
+
+      setFrPhase('ranking');
+      setFrCurrentSector(null);
+      const rankRes = await supabase.functions.invoke('analyze-freraut', {
+        body: { strategy: 'frerautiano_ranking', analyses, spy_price: spyTech?.currentPrice ?? 0 }
+      });
+      if (!rankRes.error && rankRes.data) setFrRanking(rankRes.data);
+
+      setFrCacheTime(new Date());
+      setFrPhase('done');
+    } catch (err) {
+      setFrError(err.message ?? 'Error desconocido');
+      setFrPhase('idle');
+    } finally {
+      setFrLoading(false);
     }
-
-    setFrPhase('ranking');
-    setFrCurrentSector(null);
-    const rankRes = await supabase.functions.invoke('analyze-freraut', {
-      body: { strategy: 'frerautiano_ranking', analyses, spy_price: spyTech?.currentPrice ?? 0 }
-    });
-    if (!rankRes.error && rankRes.data) setFrRanking(rankRes.data);
-
-    setFrCacheTime(new Date());
-    setFrPhase('done');
-    setFrLoading(false);
   };
 
   // --- TAB 3: VALUE LOGIC ---
@@ -650,7 +661,8 @@ export default function FrerautAnalyzer() {
   }, [activeTab, DIV_STOCKS, divData.length]);
 
   useEffect(() => {
-    if (activeTab === 'FRERAUTIANO' && frPhase === 'idle' && !frLoading) {
+    if (activeTab === 'FRERAUTIANO' && !frStartedRef.current) {
+      frStartedRef.current = true;
       loadFrCache().then(hit => { if (!hit) runFrAnalysis(); });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -939,11 +951,26 @@ export default function FrerautAnalyzer() {
                   </div>
                 )}
 
+                {/* Error state */}
+                {frError && !frLoading && (
+                  <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-red-400 font-semibold">Error en análisis</p>
+                      <p className="text-xs text-red-400/70 mt-1 font-mono">{frError}</p>
+                      <button onClick={runFrAnalysis} className="mt-2 text-xs text-red-400 underline hover:text-red-300">Reintentar</button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Empty / loading init state */}
-                {!frLoading && frPhase === 'idle' && Object.keys(frCards).length === 0 && (
+                {!frLoading && !frError && frPhase === 'idle' && Object.keys(frCards).length === 0 && (
                   <div className="py-16 text-center text-slate-500">
                     <Zap className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                    <p>Cargando análisis sectorial...</p>
+                    <p className="mb-3">Iniciando análisis sectorial...</p>
+                    <button onClick={runFrAnalysis} className="px-4 py-2 bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-sm font-bold rounded-xl hover:bg-yellow-500/30 transition-colors">
+                      Analizar ahora
+                    </button>
                   </div>
                 )}
 
