@@ -1,5 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
 const ANTHROPIC_KEY = Deno.env.get("CLAUDE_API_KEY") ?? Deno.env.get("ANTHROPIC_API_KEY") ?? "";
 const SONAR_KEY = Deno.env.get("PERPLEXITY_API_KEY") ?? "";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
@@ -71,12 +69,6 @@ async function sonarFrerauti(query: string): Promise<string> {
       body: JSON.stringify({
         model: "sonar-pro",
         messages: [{ role: "user", content: query }],
-        search_domain_filter: [
-          "finance.perplexity.ai",
-          "finance.yahoo.com",
-          "finance.google.com",
-          "investing.com",
-        ],
         max_tokens: 1000,
       }),
     });
@@ -105,20 +97,23 @@ async function claudeJSON(
       model,
       max_tokens: 1500,
       system,
-      messages: [
-        { role: "user", content: user },
-        { role: "assistant", content: "{" },
-      ],
+      messages: [{ role: "user", content: user }],
     }),
   });
+  if (!res.ok) {
+    const errText = await res.text();
+    return { error: "anthropic_http_error", status: res.status, detail: errText.slice(0, 300) };
+  }
   const data = await res.json();
+  if (data.error) {
+    return { error: "anthropic_api_error", detail: String(data.error?.message ?? JSON.stringify(data.error)).slice(0, 300) };
+  }
   const raw: string = data.content?.[0]?.text ?? "";
-  const text = "{" + raw;
-  const match = text.match(/\{[\s\S]*\}/);
+  const match = raw.match(/\{[\s\S]*\}/);
   try {
-    return match ? JSON.parse(match[0]) : { error: "parse_error" };
+    return match ? JSON.parse(match[0]) : { error: "parse_error", raw: raw.slice(0, 300) };
   } catch {
-    return { error: "parse_error", raw: text.slice(0, 300) };
+    return { error: "parse_error", raw: raw.slice(0, 300) };
   }
 }
 
@@ -190,6 +185,14 @@ JSON:
 }`;
 
   const result = await claudeJSON(system, user, "claude-opus-4-7");
+
+  // Fallback si Opus no produjo JSON válido
+  if (!result.regime) {
+    result.regime = "NEUTRAL";
+    result.vix_assessment = "Datos insuficientes";
+    result.sector_order = ["sp500","nasdaq","semis","finanzas","energia","biotech","smallcap","china"];
+    result.order_reasoning = "Orden por defecto — datos Sonar no disponibles";
+  }
 
   const spyPrice = (result.spy_price as number) ?? (techSpy.currentPrice as number) ?? 0;
 
@@ -497,7 +500,7 @@ Evalúa los 5 criterios value. Veredicto en JSON.`;
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
 
   try {
