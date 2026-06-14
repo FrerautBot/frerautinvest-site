@@ -285,9 +285,10 @@ const NavHistoricoChart = ({ isDarkMode, navPrice }) => {
   const displayedData = useDownsampledData(historial, 200);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (attemptRange) => {
       setLoading(true);
-      const dias = { '1D': 1, '5D': 5, '1M': 30, '6M': 180, 'YTD': 365, '1Y': 365, '5Y': 1825, 'All': 3650 }[timeRange] || 180;
+      const range = attemptRange || timeRange;
+      const dias = { '1D': 1, '5D': 5, '1M': 30, '6M': 180, 'YTD': 365, '1Y': 365, '5Y': 1825, 'All': 3650 }[range] || 180;
 
       const { data: navData, error } = await supabase.rpc('obtener_nav_historico', { p_dias: dias });
 
@@ -297,13 +298,21 @@ const NavHistoricoChart = ({ isDarkMode, navPrice }) => {
         // Filtrar solo filas con UEs reales en circulacion (ues_circulacion > 1)
         // Las filas con ues_circulacion=1 tienen nav=capital_total (total fondo, no precio por UE)
         const validData = (navData || []).filter(item => parseFloat(item.ues_circulacion || 0) > 1);
+        if (validData.length === 0 && range !== '6M') {
+          // Auto-extender el rango si no hay datos validos (ej: fin de semana en 1D)
+          const fallbacks = { '1D': '5D', '5D': '1M', '1M': '6M', 'YTD': '6M', '1Y': '6M' };
+          const nextRange = fallbacks[range];
+          if (nextRange) {
+            return fetchData(nextRange);
+          }
+        }
         setHistorial(validData);
       }
       setLoading(false);
     };
 
     fetchData();
-    const channel = supabase.channel('nav_changes').on('postgres_changes', { event: '*', schema: 'public', table: 'nav_historico' }, fetchData).subscribe();
+    const channel = supabase.channel('nav_changes').on('postgres_changes', { event: '*', schema: 'public', table: 'nav_historico' }, () => fetchData()).subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [timeRange]);
 
