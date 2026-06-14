@@ -64,10 +64,15 @@ const Index = ({ onNavigate }) => {
           .limit(3);
 
         const { data: history } = await supabase
-          .from('nav_historico')
-          .select('fecha, nav')
-          .order('fecha', { ascending: false })
-          .limit(30);
+          .rpc('obtener_nav_historico', { p_dias: 7 })
+          .then(r => {
+            if (r.data) {
+              // Filtrar solo filas con UEs reales (precio por UE, no total fondo)
+              const valid = r.data.filter(item => parseFloat(item.ues_circulacion || 0) > 1);
+              return { data: valid.slice(-30) };
+            }
+            return r;
+          });
 
         if (userPatrimonio) setUserData(userPatrimonio);
         if (metrics) setMarketMetrics(metrics);
@@ -365,10 +370,10 @@ const Index = ({ onNavigate }) => {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="text-xl font-light text-slate-900 dark:text-white tracking-tight">
-                      Evolución del Patrimonio
+                      Precio Histórico de las UEs
                     </CardTitle>
                     <CardDescription className="mt-1.5 text-slate-500 dark:text-slate-400 font-light">
-                      Rendimiento histórico de la cartera durante los últimos 30 días
+                      Valor de la Unidad de Efectivo (NAV) — últimos 30 snapshots
                     </CardDescription>
                   </div>
                   <Badge variant="outline" className="border-blue-500/30 bg-blue-500/5 text-blue-700 dark:text-blue-400 font-light">
@@ -406,13 +411,13 @@ const Index = ({ onNavigate }) => {
                           axisLine={false}
                           dy={10}
                         />
-                        <YAxis 
+                        <YAxis
                           stroke="#94a3b8"
                           fontSize={11}
                           tickLine={false}
                           axisLine={false}
-                          tickFormatter={(value) => `$${(value/1000).toFixed(0)}k`}
-                          domain={['dataMin - 100', 'dataMax + 100']}
+                          tickFormatter={(value) => `$${value.toFixed(2)}`}
+                          domain={['dataMin - 0.05', 'dataMax + 0.05']}
                           dx={-10}
                         />
                         <Tooltip 
@@ -423,17 +428,17 @@ const Index = ({ onNavigate }) => {
                             boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
                             padding: '12px 16px'
                           }}
-                          formatter={(value) => [formatCurrency(value), 'Valor']}
+                          formatter={(value) => [`$${parseFloat(value).toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 6 })}`, 'Precio UE']}
                           labelFormatter={(label) => new Date(label).toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                           labelStyle={{ color: '#94a3b8', fontSize: '11px', marginBottom: '4px', fontWeight: '300' }}
                           itemStyle={{ color: '#fff', fontSize: '13px', fontWeight: '400' }}
                         />
-                        <Area 
-                          type="monotone" 
-                          dataKey="nav" 
-                          stroke="url(#navGradient)" 
-                          strokeWidth={3} 
-                          fillOpacity={1} 
+                        <Area
+                          type="monotone"
+                          dataKey="nav"
+                          stroke="url(#navGradient)"
+                          strokeWidth={3}
+                          fillOpacity={1}
                           fill="url(#navGradient)"
                           animationDuration={1500}
                         />

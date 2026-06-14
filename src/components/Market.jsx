@@ -87,7 +87,19 @@ const VolumeChart = ({ isDarkMode }) => {
   }, [displayedData]);
 
   if (loading && !volumeData.length) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"></div></div>;
-  if (!volumeData.length) return <div className="text-center py-12"><p className={isDarkMode ? 'text-gray-500' : 'text-gray-600'}>No hay datos de volumen disponibles</p></div>;
+  if (!volumeData.length) return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-2xl font-bold text-yellow-500">Análisis de Volumen</h3>
+        <TrendingUp className="text-green-400" size={24} />
+      </div>
+      <div className="text-center py-16">
+        <div className="text-6xl mb-4 opacity-30">📊</div>
+        <p className={`text-lg mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Volumen de mercado aún no disponible</p>
+        <p className={`text-sm ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>El volumen aparecerá automáticamente cuando se registren operaciones de compra/venta</p>
+      </div>
+    </div>
+  );
 
   const width = 1000, height = 260, padding = { top: 40, right: 40, bottom: 50, left: 60 };
 
@@ -282,7 +294,10 @@ const NavHistoricoChart = ({ isDarkMode, navPrice }) => {
       if (error) {
         console.error("Error fetching NAV history:", error);
       } else if (navData) {
-        setHistorial(navData);
+        // Filtrar solo filas con UEs reales en circulacion (ues_circulacion > 1)
+        // Las filas con ues_circulacion=1 tienen nav=capital_total (total fondo, no precio por UE)
+        const validData = (navData || []).filter(item => parseFloat(item.ues_circulacion || 0) > 1);
+        setHistorial(validData);
       }
       setLoading(false);
     };
@@ -338,8 +353,11 @@ const NavHistoricoChart = ({ isDarkMode, navPrice }) => {
   if (!historial?.length && !loading) return (
     <div className={`rounded-2xl p-8 shadow-sm border ${isDarkMode ? 'bg-black border-gray-800' : 'bg-white border-gray-300'
       }`}>
-      <h3 className="text-2xl font-bold text-yellow-500 mb-6">Precio UE - Histórico</h3>
-      <p className={`text-center py-12 ${isDarkMode ? 'text-gray-500' : 'text-gray-600'}`}>No hay datos disponibles</p>
+      <h3 className="text-2xl font-bold text-yellow-500 mb-2">Precio UE - Histórico</h3>
+      <div className="text-center py-12">
+        <p className={`text-lg mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>No hay datos de precio para este período</p>
+        <p className={`text-sm ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>Selecciona un rango de tiempo más amplio (1M, 6M, etc.) para ver el histórico</p>
+      </div>
     </div>
   );
 
