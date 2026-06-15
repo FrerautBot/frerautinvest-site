@@ -901,7 +901,7 @@ const Market = () => {
             icon="💰"
             title="Capital Total"
             value={`$${parseFloat(latestCapitalTotal).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`}
-            subtext="Capital de inversión disponible"
+            subtext="Capitalización total de mercado"
             valueClassName="text-green-400"
             gradient={isDarkMode ? "from-green-900/20 to-gray-900/40" : "from-green-100 to-gray-50"}
             isDarkMode={isDarkMode}
