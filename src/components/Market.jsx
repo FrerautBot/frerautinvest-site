@@ -281,6 +281,7 @@ const NavHistoricoChart = ({ isDarkMode, navPrice }) => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [timeRange, setTimeRange] = useState('6M');
   const [loading, setLoading] = useState(false);
+  const [actualRange, setActualRange] = useState(null); // rango real tras auto-extension
 
   const displayedData = useDownsampledData(historial, 200);
 
@@ -290,23 +291,45 @@ const NavHistoricoChart = ({ isDarkMode, navPrice }) => {
       const range = attemptRange || timeRange;
       const dias = { '1D': 1, '5D': 5, '1M': 30, '6M': 180, 'YTD': 365, '1Y': 365, '5Y': 1825, 'All': 3650 }[range] || 180;
 
-      const { data: navData, error } = await supabase.rpc('obtener_nav_historico', { p_dias: dias });
+      const [navResult, currentResult] = await Promise.all([
+        supabase.rpc('obtener_nav_historico', { p_dias: dias }),
+        supabase.from('precio_actual_ue').select('precio_actual, fecha').single()
+      ]);
 
-      if (error) {
-        console.error("Error fetching NAV history:", error);
+      const navData = navResult.data;
+      const currentPriceData = currentResult.data;
+
+      if (navResult.error) {
+        console.error("Error fetching NAV history:", navResult.error);
       } else if (navData) {
         // Filtrar solo filas con UEs reales en circulacion (ues_circulacion > 1)
-        // Las filas con ues_circulacion=1 tienen nav=capital_total (total fondo, no precio por UE)
         const validData = (navData || []).filter(item => parseFloat(item.ues_circulacion || 0) > 1);
+
         if (validData.length === 0 && range !== '6M') {
-          // Auto-extender el rango si no hay datos validos (ej: fin de semana en 1D)
           const fallbacks = { '1D': '5D', '5D': '1M', '1M': '6M', 'YTD': '6M', '1Y': '6M' };
           const nextRange = fallbacks[range];
           if (nextRange) {
             return fetchData(nextRange);
           }
         }
-        setHistorial(validData);
+
+        // Adjuntar precio actual como ultimo punto si es mas reciente
+        let enhanced = validData;
+        if (currentPriceData && currentPriceData.precio_actual) {
+          const lastHistoricalDate = validData.length > 0 ? new Date(validData[validData.length - 1].fecha) : null;
+          const currentDate = new Date(currentPriceData.fecha);
+          if (!lastHistoricalDate || currentDate > lastHistoricalDate) {
+            enhanced = [...validData, {
+              fecha: currentPriceData.fecha,
+              nav: currentPriceData.precio_actual,
+              capital_total: 0,
+              ues_circulacion: validData.length > 0 ? validData[0].ues_circulacion : 10000
+            }];
+          }
+        }
+
+        setHistorial(enhanced);
+        setActualRange(range !== timeRange ? range : null);
       }
       setLoading(false);
     };
@@ -428,7 +451,7 @@ const NavHistoricoChart = ({ isDarkMode, navPrice }) => {
         <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Última actualización: {new Date().toLocaleString('es-CL', { dateStyle: 'medium', timeStyle: 'short' })}</p>
       </div>
 
-      <div className={`flex items-center gap-2 mb-6 rounded-lg p-1 w-fit border ${isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-100 border-gray-300'
+      <div className="flex items-center gap-2 mb-6 rounded-lg p-1 w-fit border relative ${isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-100 border-gray-300'
         }`}>
         {['1D', '5D', '1M', '6M', 'YTD', '1Y', '5Y', 'All'].map((range) => (
           <button
@@ -444,6 +467,11 @@ const NavHistoricoChart = ({ isDarkMode, navPrice }) => {
             {range}
           </button>
         ))}
+        {actualRange && (
+          <span className="ml-2 px-2 py-1 text-[10px] rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30 whitespace-nowrap">
+            Mostrando datos de {actualRange}
+          </span>
+        )}
       </div>
 
       <div className={`relative rounded-xl border ${isDarkMode ? 'bg-black border-gray-800' : 'bg-white border-gray-300'
