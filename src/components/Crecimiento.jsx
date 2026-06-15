@@ -271,11 +271,11 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
               <TrendingUp className="w-6 h-6 text-gold" />
             </motion.div>
             <div>
-              <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-400 to-gold">
-                Crecimiento Capitalización de Mercado
+              <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-400 to-gold" style={{ fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: '0.02em' }}>
+                Capitalización de Mercado
               </h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                Capital Actual: ${valorActualNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} • Rango: ${(minValor / 1000000).toFixed(2)}M - ${(maxValor / 1000000).toFixed(2)}M
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 tracking-wide" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+                ${valorActualNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} · Rango ${(minValor / 1000000).toFixed(2)}M – ${(maxValor / 1000000).toFixed(2)}M
               </p>
             </div>
           </div>
@@ -350,25 +350,25 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             style={{ cursor: 'crosshair' }}
+            shapeRendering="geometricPrecision"
           >
             <defs>
               <linearGradient id="gradientGoldEnhanced" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#FFD700" stopOpacity="0.6" />
-                <stop offset="50%" stopColor="#d4af37" stopOpacity="0.3" />
+                <stop offset="0%" stopColor="#d4af37" stopOpacity="0.35" />
+                <stop offset="40%" stopColor="#d4af37" stopOpacity="0.12" />
                 <stop offset="100%" stopColor="#d4af37" stopOpacity="0" />
               </linearGradient>
-              <filter id="glowEnhanced">
-                <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+              <filter id="lineGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
                 <feMerge>
-                  <feMergeNode in="coloredBlur" />
-                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="blur" />
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
-              <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#FFD700" />
+              <linearGradient id="lineGradientPremium" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#e2c044" />
                 <stop offset="50%" stopColor="#d4af37" />
-                <stop offset="100%" stopColor="#FFD700" />
+                <stop offset="100%" stopColor="#e2c044" />
               </linearGradient>
             </defs>
 
@@ -384,14 +384,18 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
                     y2={yPos}
                     className="stroke-gray-300 dark:stroke-gray-600"
                     strokeWidth="1"
-                    strokeDasharray="6 4"
-                    opacity="0.4"
+                    strokeDasharray="4 6"
+                    opacity="0.3"
                   />
                   <text
-                    x={padding.left - 15}
-                    y={yPos + 5}
+                    x={padding.left - 12}
+                    y={yPos + 4}
                     textAnchor="end"
-                    className="text-xs fill-gray-800 dark:fill-white font-semibold"
+                    fill="#a0a0a0"
+                    fontSize="11"
+                    fontFamily="'Playfair Display', Georgia, 'Times New Roman', serif"
+                    fontWeight="500"
+                    letterSpacing="0.5"
                   >
                     ${(valorEtiqueta / 1000000).toFixed(2)}M
                   </text>
@@ -399,16 +403,28 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
               );
             })}
 
-            <path d={areaPathD} fill="url(#gradientGoldEnhanced)" opacity="0.4" />
+            <path d={areaPathD} fill="url(#gradientGoldEnhanced)" opacity="0.5" />
 
+            {/* Glow detrás de la línea para dar definición */}
             <path
               d={pathD}
               fill="none"
-              stroke="url(#lineGradient)"
-              strokeWidth="6"
+              stroke="#d4af37"
+              strokeWidth="8"
               strokeLinecap="round"
               strokeLinejoin="round"
-              filter="url(#glowEnhanced)"
+              opacity="0.15"
+            />
+
+            {/* Línea principal fina con anti-aliasing */}
+            <path
+              d={pathD}
+              fill="none"
+              stroke="url(#lineGradientPremium)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              filter="url(#lineGlow)"
             />
 
             {displayPoint && (
@@ -418,25 +434,25 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
                   y1={padding.top}
                   x2={displayPoint.x}
                   y2={height - padding.bottom}
-                  stroke="#FFD700"
-                  strokeWidth="2"
-                  strokeDasharray="4 4"
-                  opacity="0.6"
+                  stroke="#d4af37"
+                  strokeWidth="1"
+                  strokeDasharray="3 4"
+                  opacity="0.4"
                 />
 
                 <circle
                   cx={displayPoint.x}
                   cy={displayPoint.y}
-                  r="10"
-                  fill="#FFD700"
+                  r="6"
+                  fill="#d4af37"
                   stroke="#fff"
-                  strokeWidth="3"
-                  filter="url(#glowEnhanced)"
+                  strokeWidth="2.5"
+                  filter="url(#lineGlow)"
                 />
 
-                <circle cx={displayPoint.x} cy={displayPoint.y} r="14" fill="none" stroke="#FFD700" strokeWidth="2" opacity="0.3">
-                  <animate attributeName="r" from="10" to="22" dur="1.5s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" from="0.5" to="0" dur="1.5s" repeatCount="indefinite" />
+                <circle cx={displayPoint.x} cy={displayPoint.y} r="12" fill="none" stroke="#d4af37" strokeWidth="1.5" opacity="0.25">
+                  <animate attributeName="r" from="6" to="18" dur="2s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" from="0.4" to="0" dur="2s" repeatCount="indefinite" />
                 </circle>
               </>
             )}
@@ -446,15 +462,19 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
               y1={height - padding.bottom}
               x2={width - padding.right}
               y2={height - padding.bottom}
-              className="stroke-gray-400 dark:stroke-gray-600"
-              strokeWidth="2"
+              stroke="#d4af37"
+              strokeWidth="1"
+              opacity="0.3"
             />
 
             <text
               x={padding.left}
               y={height - padding.bottom + 25}
               textAnchor="start"
-              className="text-xs fill-gray-700 dark:fill-gray-400 font-medium"
+              fill="#9ca3af"
+              fontSize="11"
+              fontFamily="'Playfair Display', Georgia, 'Times New Roman', serif"
+              fontWeight="400"
             >
               {formatFecha(dataToRender[0].fecha)}
             </text>
@@ -463,7 +483,11 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
               x={width - padding.right}
               y={height - padding.bottom + 25}
               textAnchor="end"
-              className="text-xs fill-gray-700 dark:fill-gray-400 font-medium"
+              fill="#d4af37"
+              fontSize="11"
+              fontFamily="'Playfair Display', Georgia, 'Times New Roman', serif"
+              fontWeight="600"
+              letterSpacing="1"
             >
               Ahora
             </text>
@@ -479,21 +503,21 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
                 className="absolute pointer-events-none z-50"
                 style={getTooltipPosition()}
               >
-                <div className="bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-black border-2 border-gold rounded-2xl px-6 py-4 shadow-2xl backdrop-blur-md">
+                <div className="bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-black border border-gold/40 rounded-2xl px-6 py-4 shadow-2xl backdrop-blur-md" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
                   <div className="space-y-3">
-                    <p className="text-gold font-black text-2xl drop-shadow-[0_0_10px_rgba(255,215,0,0.5)]">
+                    <p className="text-gold font-black text-2xl tracking-tight drop-shadow-[0_0_8px_rgba(212,175,55,0.3)]">
                       ${(hoveredPoint.esActual ? valorActualNum : hoveredPoint.valor).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
-                    <div className="border-t border-gold/30 pt-2 space-y-1">
-                      <p className="text-gray-900 dark:text-white text-sm font-semibold flex items-center gap-2">
-                        📅 {hoveredPoint.esActual ? 'Ahora' : formatFecha(hoveredPoint.fecha)}
+                    <div className="border-t border-gold/20 pt-2 space-y-1">
+                      <p className="text-gray-600 dark:text-gray-300 text-xs font-medium tracking-wide flex items-center gap-1.5">
+                        <span className="opacity-60">📅</span> {hoveredPoint.esActual ? 'Ahora' : formatFecha(hoveredPoint.fecha)}
                       </p>
-                      <p className="text-gray-900 dark:text-white text-sm font-semibold flex items-center gap-2">
-                        🕐 {formatHora(hoveredPoint.fecha)}
+                      <p className="text-gray-500 dark:text-gray-400 text-xs tracking-wide flex items-center gap-1.5">
+                        <span className="opacity-60">🕐</span> {formatHora(hoveredPoint.fecha)}
                       </p>
                       {hoveredPoint.nav && (
-                        <p className="text-gold text-xs font-medium mt-2">
-                          NAV: ${parseFloat(hoveredPoint.nav).toFixed(4)}
+                        <p className="text-gold/70 text-[11px] font-medium mt-1 tracking-wide">
+                          NAV · ${parseFloat(hoveredPoint.nav).toFixed(4)}
                         </p>
                       )}
                     </div>
