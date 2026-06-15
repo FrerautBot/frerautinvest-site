@@ -462,7 +462,7 @@ const NavHistoricoChart = ({ isDarkMode, navPrice }) => {
         <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Última actualización: {new Date().toLocaleString('es-CL', { dateStyle: 'medium', timeStyle: 'short' })}</p>
       </div>
 
-      <div className="flex items-center gap-2 mb-6 rounded-lg p-1 w-fit border relative ${isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-100 border-gray-300'
+      <div className={`flex items-center gap-2 mb-6 rounded-lg p-1 w-fit border relative ${isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-100 border-gray-300'
         }`}>
         {['1D', '5D', '1M', '6M', 'YTD', '1Y', '5Y', 'All'].map((range) => (
           <button
