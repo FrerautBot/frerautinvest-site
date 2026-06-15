@@ -62,19 +62,21 @@ const Index = ({ onNavigate }) => {
           .order('created_at', { ascending: false })
           .limit(3);
 
-        const [navResult, currentResult, metricsResult] = await Promise.all([
+        const [navResult, currentResult] = await Promise.all([
           supabase.rpc('obtener_nav_historico', { p_dias: 7 }),
-          supabase.from('precio_actual_ue').select('precio_actual, capital_total, fecha').maybeSingle(),
-          supabase.from('metricas_mercado').select('*').maybeSingle()
+          supabase.from('precio_actual_ue').select('precio_actual, capital_total, fecha').maybeSingle()
         ]);
+
+        // metricas_mercado aparte para no enmascarar errores
+        const { data: rawMetrics } = await supabase.from('metricas_mercado').select('*').single();
+        // Sobrescribir nav_actual con el capital_total real
+        const metrics = rawMetrics ? { ...rawMetrics, nav_actual: currentResult.data?.capital_total || rawMetrics.nav_actual } : null;
 
         let history = [];
         if (navResult.data) {
           let valid = navResult.data.filter(item => parseFloat(item.ues_circulacion || 0) > 1);
-          // Ordenar cronologico por si acaso
           valid.sort((a, b) => new Date(a.fecha + 'Z') - new Date(b.fecha + 'Z'));
           valid = valid.slice(-30);
-          // Adjuntar precio actual como ultimo punto si es mas reciente
           if (currentResult.data?.precio_actual) {
             const lastFecha = valid.length > 0 ? new Date(valid[valid.length - 1].fecha + 'Z').getTime() : 0;
             const currentFecha = new Date(currentResult.data.fecha).getTime();
