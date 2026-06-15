@@ -358,8 +358,16 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="overflow-visible bg-white/90 dark:bg-gradient-to-b dark:from-gray-900/60 dark:to-gray-900/30 rounded-2xl p-6 border border-gray-300/60 dark:border-gold/20 relative shadow-[0_0_40px_-8px_rgba(212,175,55,0.06)]"
+          className="overflow-hidden bg-white/90 dark:bg-gray-950 rounded-2xl p-6 border border-gray-300/60 dark:border-gold/20 relative shadow-[0_0_40px_-8px_rgba(212,175,55,0.06)]"
         >
+          {/* Fondo con puntitos minimalistas */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-[0.12] dark:opacity-[0.15]"
+            style={{
+              backgroundImage: `radial-gradient(circle, #888 0.5px, transparent 0.5px)`,
+              backgroundSize: '10px 10px'
+            }}
+          />
           <svg
             width={width}
             height={height}
@@ -416,11 +424,11 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
                     x={padding.left - 12}
                     y={yPos + 4}
                     textAnchor="end"
-                    fill="#a0a0a0"
+                    fill="#b0b0b0"
                     fontSize="11"
-                    fontFamily="'Playfair Display', Georgia, 'Times New Roman', serif"
-                    fontWeight="500"
-                    letterSpacing="0.5"
+                    fontFamily="'Inter', system-ui, sans-serif"
+                    fontWeight="400"
+                    letterSpacing="0.3"
                   >
                     ${(valorEtiqueta / 1000000).toFixed(2)}M
                   </text>
@@ -511,9 +519,9 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
               x={padding.left}
               y={height - padding.bottom + 25}
               textAnchor="start"
-              fill="#9ca3af"
+              fill="#888"
               fontSize="11"
-              fontFamily="'Playfair Display', Georgia, 'Times New Roman', serif"
+              fontFamily="'Inter', system-ui, sans-serif"
               fontWeight="400"
             >
               {formatFecha(dataToRender[0].fecha)}
@@ -525,9 +533,9 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
               textAnchor="end"
               fill="#d4af37"
               fontSize="11"
-              fontFamily="'Playfair Display', Georgia, 'Times New Roman', serif"
-              fontWeight="600"
-              letterSpacing="1"
+              fontFamily="'Inter', system-ui, sans-serif"
+              fontWeight="500"
+              letterSpacing="1.5"
             >
               Ahora
             </text>
