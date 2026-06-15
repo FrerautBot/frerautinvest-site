@@ -636,10 +636,8 @@ const Market = () => {
 
   const fetchCapitalTotal = useCallback(async () => {
     const { data, error } = await supabase
-      .from('nav_historico')
+      .from('precio_actual_ue')
       .select('capital_total')
-      .order('fecha', { ascending: false })
-      .limit(1)
       .single();
 
     if (!error && data) {
