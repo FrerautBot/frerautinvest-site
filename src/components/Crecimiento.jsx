@@ -579,10 +579,11 @@ const Crecimiento = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [capitalHistorico, setCapitalHistorico] = useState([]);
   const [marketMetrics, setMarketMetrics] = useState({ ues_circulacion: 0, capital_total: 0 });
-  const [capitalBase, setCapitalBase] = useState(0); // valor base de nav_historico (es_manual=true)
+  const [capitalBase, setCapitalBase] = useState(40000000); // valor base en CLP desde parametros_fondo
   const [editingCapital, setEditingCapital] = useState(false);
   const [capitalInput, setCapitalInput] = useState('');
   const [loading, setLoading] = useState(true);
+  const [fxRate, setFxRate] = useState(920); // tipo de cambio USD/CLP
 
   const fetchCapitalHistorico = useCallback(async () => {
     const { data, error: historyError } = await supabase.rpc('obtener_capital_total_historico', { p_dias: 90 });
@@ -603,18 +604,23 @@ const Crecimiento = () => {
     setLoading(false);
   }, []);
 
-  // Traer el valor base manual (es_manual=true) de nav_historico
+  // Traer el valor base desde parametros_fondo
   const fetchCapitalBase = useCallback(async () => {
     const { data, error } = await supabase
-      .from('nav_historico')
-      .select('capital_total')
-      .eq('es_manual', true)
-      .order('fecha', { ascending: false })
-      .limit(1)
+      .from('parametros_fondo')
+      .select('valor_base_clp')
+      .eq('id', 1)
       .maybeSingle();
-    if (!error && data?.capital_total) {
-      setCapitalBase(parseFloat(data.capital_total));
+    if (!error && data?.valor_base_clp) {
+      setCapitalBase(parseFloat(data.valor_base_clp));
     }
+    // Traer tipo de cambio
+    const { data: fx } = await supabase
+      .from('fx_config')
+      .select('manual_rate')
+      .eq('is_active', true)
+      .maybeSingle();
+    if (fx?.manual_rate) setFxRate(parseFloat(fx.manual_rate));
   }, []);
 
   const checkAdminStatus = useCallback(async () => {
@@ -657,18 +663,18 @@ const Crecimiento = () => {
   };
 
   const handleUpdateCapitalTotal = async () => {
-    const nuevoCapital = parseFloat(capitalInput);
-    if (isNaN(nuevoCapital) || nuevoCapital < 0) {
-      toast({ variant: "destructive", title: "Error", description: "Ingrese un valor válido" });
+    const nuevoBaseClp = parseFloat(capitalInput);
+    if (isNaN(nuevoBaseClp) || nuevoBaseClp < 0) {
+      toast({ variant: "destructive", title: "Error", description: "Ingrese un valor válido en CLP" });
       return;
     }
     try {
-      const { data, error } = await supabase.rpc('establecer_capital_manual', { p_capital: nuevoCapital, p_motivo: 'Ajuste manual desde dashboard' });
+      const { data, error } = await supabase.rpc('actualizar_valor_base', { p_valor_base_clp: nuevoBaseClp });
       if (error) throw error;
       if (data.success) {
-        toast({ title: "✅ Valor base actualizado", description: `Nuevo valor base: $${nuevoCapital.toLocaleString()}` });
+        toast({ title: "✅ Valor base actualizado", description: `Nuevo valor base: $${nuevoBaseClp.toLocaleString()} CLP (≈ $${(nuevoBaseClp/fxRate).toLocaleString('en-US', {minimumFractionDigits:2})} USD)` });
         setEditingCapital(false);
-        setCapitalBase(nuevoCapital);
+        setCapitalBase(nuevoBaseClp);
         fetchCapitalHistorico();
         fetchMarketMetrics();
       } else {
@@ -680,12 +686,12 @@ const Crecimiento = () => {
     }
   };
 
-  const handleResetToAutomatic = async () => {
+  const handleResetBase = async () => {
     try {
-      const { data, error } = await supabase.rpc('desactivar_capital_manual');
+      const { data, error } = await supabase.rpc('actualizar_valor_base', { p_valor_base_clp: 40000000 });
       if (error) throw error;
       if (data.success) {
-        toast({ title: "🔄 Capital automático reactivado", description: "El sistema volverá a calcular desde la cartera" });
+        toast({ title: "🔄 Valor base restablecido", description: "Valor base vuelto a 40,000,000 CLP" });
         fetchCapitalBase();
         fetchCapitalHistorico();
         fetchMarketMetrics();
@@ -723,29 +729,30 @@ const Crecimiento = () => {
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.4, ease: "easeInOut" }} className="bg-gradient-to-br from-blue-900/40 to-blue-800/40 p-6 rounded-2xl border border-blue-500/30 overflow-hidden shadow-2xl backdrop-blur-sm">
             <h3 className="text-xl font-bold text-blue-300 mb-2 flex items-center gap-2">
               Editar Valor Base del Fondo
-              <span className="text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded font-normal">🔒 Base manual</span>
+              <span className="text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded font-normal">🔒 Valor Base CLP</span>
             </h3>
             <p className="text-sm text-blue-200/60 mb-4">
-              Valor base actual: <strong className="text-blue-200">${capitalBase.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD</strong>
+              Valor base actual: <strong className="text-blue-200">${capitalBase.toLocaleString('es-CL')} CLP</strong>
+              <span className="text-blue-200/40 ml-2">(≈ ${(capitalBase/fxRate).toLocaleString('en-US', {minimumFractionDigits:2})} USD · TC: ${fxRate})</span>
               {marketMetrics.capital_total > 0 && (
-                <span className="text-blue-200/40 ml-2">· Capital total c/ IULER: ${parseFloat(marketMetrics.capital_total).toLocaleString('en-US', { minimumFractionDigits: 2 })} USD</span>
+                <span className="text-blue-200/40 ml-2">· Capital total: ${parseFloat(marketMetrics.capital_total).toLocaleString('en-US', { minimumFractionDigits: 2 })} USD</span>
               )}
             </p>
             <div className="flex items-end gap-4">
               <div className="flex-grow">
-                <Label htmlFor="capital-input" className="text-gray-300 font-semibold mb-2 block">Valor Base (USD)</Label>
-                <Input id="capital-input" type="number" step="0.01" value={capitalInput} onChange={(e) => setCapitalInput(e.target.value)} className="bg-gray-800 border-blue-500/50 focus:border-blue-400 text-white rounded-lg text-lg" placeholder="Ej: 46864.56" />
+                <Label htmlFor="capital-input" className="text-gray-300 font-semibold mb-2 block">Valor Base (CLP)</Label>
+                <Input id="capital-input" type="number" step="1" value={capitalInput} onChange={(e) => setCapitalInput(e.target.value)} className="bg-gray-800 border-blue-500/50 focus:border-blue-400 text-white rounded-lg text-lg" placeholder="Ej: 40000000" />
               </div>
               <Button onClick={handleUpdateCapitalTotal} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 rounded-lg shadow-lg">
                 <Save className="w-4 h-4 mr-2" />
                 Guardar Base
               </Button>
-              <Button onClick={handleResetToAutomatic} variant="outline" className="border-green-500/50 text-green-400 hover:bg-green-500/10 px-6 rounded-lg">🔄 Automático</Button>
+              <Button onClick={handleResetBase} variant="outline" className="border-green-500/50 text-green-400 hover:bg-green-500/10 px-6 rounded-lg">🔄 Restablecer 40M</Button>
             </div>
             <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
               <p className="text-sm text-yellow-300 flex items-start gap-2">
                 <span>⚠️</span>
-                <span>El valor base se almacena en <strong>nav_historico</strong> con <strong>es_manual=true</strong>. La vista <strong>precio_actual_ue</strong> usa este valor como base para calcular el precio de la UE combinándolo con el portfolio de IULER.</span>
+                <span>El valor base (en CLP) se suma al equity de IULER convertido a USD. Fórmula: <strong>capital_total = (alpaca_equity + valor_base / tc) × multiplicador</strong>. La tabla <strong>parametros_fondo</strong> almacena este valor.</span>
               </p>
             </div>
           </motion.div>
