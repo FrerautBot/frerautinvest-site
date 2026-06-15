@@ -281,19 +281,17 @@ const NavHistoricoChart = ({ isDarkMode, navPrice }) => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [timeRange, setTimeRange] = useState('6M');
   const [loading, setLoading] = useState(false);
-  const [actualRange, setActualRange] = useState(null); // rango real tras auto-extension
-
   const displayedData = useDownsampledData(historial, 200);
 
   useEffect(() => {
-    const fetchData = async (attemptRange) => {
+    const fetchData = async () => {
       setLoading(true);
-      const range = attemptRange || timeRange;
-      const dias = { '1D': 1, '5D': 5, '1M': 30, '6M': 180, 'YTD': 365, '1Y': 365, '5Y': 1825, 'All': 3650 }[range] || 180;
+      const dias = { '1D': 1, '5D': 5, '1M': 30, '6M': 180, 'YTD': 365, '1Y': 365, '5Y': 1825, 'All': 3650 }[timeRange] || 180;
 
+      // Traer tanto el historico como el precio actual en paralelo
       const [navResult, currentResult] = await Promise.all([
         supabase.rpc('obtener_nav_historico', { p_dias: dias }),
-        supabase.from('precio_actual_ue').select('precio_actual, fecha').single()
+        supabase.from('precio_actual_ue').select('precio_actual, fecha').maybeSingle()
       ]);
 
       const navData = navResult.data;
@@ -303,33 +301,40 @@ const NavHistoricoChart = ({ isDarkMode, navPrice }) => {
         console.error("Error fetching NAV history:", navResult.error);
       } else if (navData) {
         // Filtrar solo filas con UEs reales en circulacion (ues_circulacion > 1)
-        const validData = (navData || []).filter(item => parseFloat(item.ues_circulacion || 0) > 1);
+        let validData = (navData || []).filter(item => parseFloat(item.ues_circulacion || 0) > 1);
 
-        if (validData.length === 0 && range !== '6M') {
-          const fallbacks = { '1D': '5D', '5D': '1M', '1M': '6M', 'YTD': '6M', '1Y': '6M' };
-          const nextRange = fallbacks[range];
-          if (nextRange) {
-            return fetchData(nextRange);
-          }
+        // Para 1D: limitar a hoy (00:00 - 24:00 hora chilena)
+        if (timeRange === '1D' && validData.length > 0) {
+          const chileNow = new Date();
+          // Ajustar a UTC-3 / UTC-4 segun horario Chile
+          const chileOffset = -3; // Horario de verano Chile (octubre-marzo)
+          const todayStart = new Date(chileNow.getTime());
+          todayStart.setHours(0, 0, 0, 0);
+          validData = validData.filter(item => {
+            const d = new Date(item.fecha + (item.fecha.includes('Z') || item.fecha.includes('+') ? '' : 'Z'));
+            return d >= todayStart;
+          });
         }
 
-        // Adjuntar precio actual como ultimo punto si es mas reciente
+        // Adjuntar precio actual como ultimo punto si es mas reciente que el ultimo snapshot
         let enhanced = validData;
-        if (currentPriceData && currentPriceData.precio_actual) {
-          const lastHistoricalDate = validData.length > 0 ? new Date(validData[validData.length - 1].fecha) : null;
-          const currentDate = new Date(currentPriceData.fecha);
-          if (!lastHistoricalDate || currentDate > lastHistoricalDate) {
+        if (currentPriceData?.precio_actual) {
+          const lastFecha = validData.length > 0
+            ? new Date(validData[validData.length - 1].fecha + (validData[validData.length - 1].fecha.includes('Z') || validData[validData.length - 1].fecha.includes('+') ? '' : 'Z')).getTime()
+            : 0;
+          const currentFecha = new Date(currentPriceData.fecha).getTime();
+          if (currentFecha > lastFecha) {
+            const ues = validData.length > 0 ? validData[0].ues_circulacion : 10000;
             enhanced = [...validData, {
               fecha: currentPriceData.fecha,
               nav: currentPriceData.precio_actual,
-              capital_total: 0,
-              ues_circulacion: validData.length > 0 ? validData[0].ues_circulacion : 10000
+              capital_total: currentPriceData.precio_actual * ues,
+              ues_circulacion: ues
             }];
           }
         }
 
         setHistorial(enhanced);
-        setActualRange(range !== timeRange ? range : null);
       }
       setLoading(false);
     };
@@ -387,8 +392,14 @@ const NavHistoricoChart = ({ isDarkMode, navPrice }) => {
       }`}>
       <h3 className="text-2xl font-bold text-yellow-500 mb-2">Precio UE - Histórico</h3>
       <div className="text-center py-12">
-        <p className={`text-lg mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>No hay datos de precio para este período</p>
-        <p className={`text-sm ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>Selecciona un rango de tiempo más amplio (1M, 6M, etc.) para ver el histórico</p>
+        <p className={`text-lg mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+          {timeRange === '1D' ? 'No hay actividad registrada hoy' : 'No hay datos de precio para este período'}
+        </p>
+        <p className={`text-sm ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
+          {timeRange === '1D'
+            ? 'Los snapshots de precio se registran en días hábiles. Prueba 5D o 1M.'
+            : 'Selecciona un rango de tiempo más amplio (1M, 6M, etc.) para ver el histórico'}
+        </p>
       </div>
     </div>
   );
@@ -467,11 +478,6 @@ const NavHistoricoChart = ({ isDarkMode, navPrice }) => {
             {range}
           </button>
         ))}
-        {actualRange && (
-          <span className="ml-2 px-2 py-1 text-[10px] rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30 whitespace-nowrap">
-            Mostrando datos de {actualRange}
-          </span>
-        )}
       </div>
 
       <div className={`relative rounded-xl border ${isDarkMode ? 'bg-black border-gray-800' : 'bg-white border-gray-300'
