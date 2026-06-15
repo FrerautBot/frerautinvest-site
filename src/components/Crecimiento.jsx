@@ -358,16 +358,13 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="overflow-hidden bg-white/90 dark:bg-gray-950 rounded-2xl p-6 border border-gray-300/60 dark:border-gold/20 relative shadow-[0_0_40px_-8px_rgba(212,175,55,0.06)]"
+          className="overflow-hidden rounded-2xl p-6 border border-gray-300/60 dark:border-gold/20 relative shadow-[0_0_40px_-8px_rgba(212,175,55,0.06)]"
+          style={{
+            background: '#0b0c10',
+            backgroundImage: `radial-gradient(circle, rgba(160,160,160,0.25) 0.5px, transparent 0.5px)`,
+            backgroundSize: '12px 12px'
+          }}
         >
-          {/* Fondo con puntitos minimalistas */}
-          <div
-            className="absolute inset-0 pointer-events-none opacity-[0.12] dark:opacity-[0.15]"
-            style={{
-              backgroundImage: `radial-gradient(circle, #888 0.5px, transparent 0.5px)`,
-              backgroundSize: '10px 10px'
-            }}
-          />
           <svg
             width={width}
             height={height}
@@ -460,20 +457,16 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
               filter="url(#lineGlow)"
             />
 
-            {/* Nodos sutiles en cada punto de datos */}
-            {allPoints.map((p, i) => (
-              <circle
-                key={i}
-                cx={p.x}
-                cy={p.y}
-                r={p.esActual ? 5 : 2.5}
-                fill={p.esActual ? '#d4af37' : '#e2c044'}
-                stroke="#fff"
-                strokeWidth={p.esActual ? 2 : 1}
-                opacity={p.esActual ? 1 : 0.5}
-                filter={p.esActual ? 'url(#nodeGlow)' : undefined}
-              />
-            ))}
+            {/* Nodo final (solo el punto actual) */}
+            <circle
+              cx={allPoints[allPoints.length - 1].x}
+              cy={allPoints[allPoints.length - 1].y}
+              r="5"
+              fill="#d4af37"
+              stroke="#fff"
+              strokeWidth="2"
+              filter="url(#nodeGlow)"
+            />
 
             {displayPoint && (
               <>
