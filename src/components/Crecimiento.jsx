@@ -188,9 +188,13 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
   const handleMouseMove = (e) => {
     const svg = e.currentTarget;
     const rect = svg.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    setMousePos({ x: mouseX, y: mouseY });
+    // Escalar coordenadas del mouse al sistema de coordenadas SVG
+    const scaleX = svg.width.baseVal.value / rect.width;
+    const scaleY = svg.height.baseVal.value / rect.height;
+    const mouseX = (e.clientX - rect.left) * scaleX;
+    const mouseY = (e.clientY - rect.top) * scaleY;
+    // mousePos en CSS para posicionar el tooltip correctamente
+    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
 
     if (mouseX < padding.left || mouseX > width - padding.right ||
       mouseY < padding.top || mouseY > height - padding.bottom) {
