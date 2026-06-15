@@ -579,6 +579,7 @@ const Crecimiento = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [capitalHistorico, setCapitalHistorico] = useState([]);
   const [marketMetrics, setMarketMetrics] = useState({ ues_circulacion: 0, capital_total: 0 });
+  const [capitalBase, setCapitalBase] = useState(0); // valor base de nav_historico (es_manual=true)
   const [editingCapital, setEditingCapital] = useState(false);
   const [capitalInput, setCapitalInput] = useState('');
   const [loading, setLoading] = useState(true);
@@ -592,16 +593,28 @@ const Crecimiento = () => {
     }
   }, []);
 
-  // 🔥 MODIFICADO: NO actualizar capitalInput automáticamente
   const fetchMarketMetrics = useCallback(async () => {
     const { data, error: metricsError } = await supabase.rpc('obtener_metricas_mercado');
     if (metricsError) {
       console.error("❌ Error fetching market metrics:", metricsError.message);
     } else if (data && data.length > 0) {
       setMarketMetrics(data[0]);
-      // 🔥 NO sobrescribir capitalInput aquí
     }
     setLoading(false);
+  }, []);
+
+  // Traer el valor base manual (es_manual=true) de nav_historico
+  const fetchCapitalBase = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('nav_historico')
+      .select('capital_total')
+      .eq('es_manual', true)
+      .order('fecha', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!error && data?.capital_total) {
+      setCapitalBase(parseFloat(data.capital_total));
+    }
   }, []);
 
   const checkAdminStatus = useCallback(async () => {
@@ -619,7 +632,8 @@ const Crecimiento = () => {
       await Promise.all([
         checkAdminStatus(),
         fetchCapitalHistorico(),
-        fetchMarketMetrics()
+        fetchMarketMetrics(),
+        fetchCapitalBase()
       ]);
     };
 
@@ -634,11 +648,10 @@ const Crecimiento = () => {
     return () => clearInterval(interval);
   }, [session, fetchCapitalHistorico, fetchMarketMetrics, checkAdminStatus]);
 
-  // 🔥 NUEVO: Handler para abrir/cerrar modo edición
   const handleToggleEdit = () => {
     if (!editingCapital) {
-      // Al abrir, cargar el valor actual
-      setCapitalInput(marketMetrics.capital_total?.toString() || '0');
+      // Al abrir, cargar el valor base manual actual
+      setCapitalInput(capitalBase?.toString() || '0');
     }
     setEditingCapital(!editingCapital);
   };
@@ -653,8 +666,9 @@ const Crecimiento = () => {
       const { data, error } = await supabase.rpc('establecer_capital_manual', { p_capital: nuevoCapital, p_motivo: 'Ajuste manual desde dashboard' });
       if (error) throw error;
       if (data.success) {
-        toast({ title: "✅ Capital forzado exitosamente", description: `El capital permanecerá en $${nuevoCapital.toLocaleString()} hasta que lo desactives` });
+        toast({ title: "✅ Valor base actualizado", description: `Nuevo valor base: $${nuevoCapital.toLocaleString()}` });
         setEditingCapital(false);
+        setCapitalBase(nuevoCapital);
         fetchCapitalHistorico();
         fetchMarketMetrics();
       } else {
@@ -672,6 +686,7 @@ const Crecimiento = () => {
       if (error) throw error;
       if (data.success) {
         toast({ title: "🔄 Capital automático reactivado", description: "El sistema volverá a calcular desde la cartera" });
+        fetchCapitalBase();
         fetchCapitalHistorico();
         fetchMarketMetrics();
       }
@@ -706,25 +721,31 @@ const Crecimiento = () => {
       <AnimatePresence>
         {editingCapital && isAdmin && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.4, ease: "easeInOut" }} className="bg-gradient-to-br from-blue-900/40 to-blue-800/40 p-6 rounded-2xl border border-blue-500/30 overflow-hidden shadow-2xl backdrop-blur-sm">
-            <h3 className="text-xl font-bold text-blue-300 mb-4 flex items-center gap-2">
-              Forzar Capital Total del Fondo
-              <span className="text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded font-normal">🔒 Modo Manual</span>
+            <h3 className="text-xl font-bold text-blue-300 mb-2 flex items-center gap-2">
+              Editar Valor Base del Fondo
+              <span className="text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded font-normal">🔒 Base manual</span>
             </h3>
+            <p className="text-sm text-blue-200/60 mb-4">
+              Valor base actual: <strong className="text-blue-200">${capitalBase.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD</strong>
+              {marketMetrics.capital_total > 0 && (
+                <span className="text-blue-200/40 ml-2">· Capital total c/ IULER: ${parseFloat(marketMetrics.capital_total).toLocaleString('en-US', { minimumFractionDigits: 2 })} USD</span>
+              )}
+            </p>
             <div className="flex items-end gap-4">
               <div className="flex-grow">
-                <Label htmlFor="capital-input" className="text-gray-300 font-semibold mb-2 block">Capital Total (USD)</Label>
-                <Input id="capital-input" type="number" step="0.01" value={capitalInput} onChange={(e) => setCapitalInput(e.target.value)} className="bg-gray-800 border-blue-500/50 focus:border-blue-400 text-white rounded-lg text-lg" placeholder="Ej: 11300498.767224" />
+                <Label htmlFor="capital-input" className="text-gray-300 font-semibold mb-2 block">Valor Base (USD)</Label>
+                <Input id="capital-input" type="number" step="0.01" value={capitalInput} onChange={(e) => setCapitalInput(e.target.value)} className="bg-gray-800 border-blue-500/50 focus:border-blue-400 text-white rounded-lg text-lg" placeholder="Ej: 46864.56" />
               </div>
               <Button onClick={handleUpdateCapitalTotal} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 rounded-lg shadow-lg">
                 <Save className="w-4 h-4 mr-2" />
-                Forzar
+                Guardar Base
               </Button>
               <Button onClick={handleResetToAutomatic} variant="outline" className="border-green-500/50 text-green-400 hover:bg-green-500/10 px-6 rounded-lg">🔄 Automático</Button>
             </div>
             <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
               <p className="text-sm text-yellow-300 flex items-start gap-2">
                 <span>⚠️</span>
-                <span>El capital permanecerá <strong>fijo</strong> en el valor ingresado hasta que presiones "Automático". Los snapshots cada 5 minutos respetarán este valor manual.</span>
+                <span>El valor base se almacena en <strong>nav_historico</strong> con <strong>es_manual=true</strong>. La vista <strong>precio_actual_ue</strong> usa este valor como base para calcular el precio de la UE combinándolo con el portfolio de IULER.</span>
               </p>
             </div>
           </motion.div>
