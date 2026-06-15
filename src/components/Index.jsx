@@ -51,10 +51,6 @@ const Index = ({ onNavigate }) => {
           .eq('usuario_id', user.id)
           .single();
 
-        const { data: rawMetrics } = metricsResult;
-        // Sobrescribir nav_actual con el capital_total real de precio_actual_ue
-        const metrics = rawMetrics ? { ...rawMetrics, nav_actual: currentResult.data?.capital_total || rawMetrics.nav_actual } : null;
-
         const { data: reports } = await supabase
           .from('published_reports')
           .select('*')
