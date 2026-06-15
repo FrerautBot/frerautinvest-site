@@ -196,8 +196,8 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
     // mousePos en CSS para posicionar el tooltip correctamente
     setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
 
-    if (mouseX < padding.left || mouseX > width - padding.right ||
-      mouseY < padding.top || mouseY > height - padding.bottom) {
+    if (mouseX < padding.left - 10 || mouseX > width - padding.right + 5 ||
+      mouseY < padding.top - 5 || mouseY > height - padding.bottom + 5) {
       setHoveredPoint(null);
       return;
     }
@@ -207,7 +207,9 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
 
     allPoints.forEach((point) => {
       const distX = Math.abs(mouseX - point.x);
-      if (distX < minDistX) {
+      // Usar <= para que el punto "actual" (el ultimo en allPoints) gane
+      // cuando comparte la misma X que el ultimo punto historico
+      if (distX <= minDistX) {
         minDistX = distX;
         closestPoint = point;
       }
