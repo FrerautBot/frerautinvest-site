@@ -84,7 +84,7 @@ const Index = ({ onNavigate }) => {
               });
             }
           }
-          history = valid.reverse();
+          history = valid;
         }
 
         if (userPatrimonio) setUserData(userPatrimonio);
