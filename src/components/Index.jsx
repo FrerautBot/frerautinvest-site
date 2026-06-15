@@ -63,21 +63,34 @@ const Index = ({ onNavigate }) => {
           .order('created_at', { ascending: false })
           .limit(3);
 
-        const { data: history } = await supabase
-          .rpc('obtener_nav_historico', { p_dias: 7 })
-          .then(r => {
-            if (r.data) {
-              // Filtrar solo filas con UEs reales (precio por UE, no total fondo)
-              const valid = r.data.filter(item => parseFloat(item.ues_circulacion || 0) > 1);
-              return { data: valid.slice(-30) };
+        const [navResult, currentResult] = await Promise.all([
+          supabase.rpc('obtener_nav_historico', { p_dias: 7 }),
+          supabase.from('precio_actual_ue').select('precio_actual, fecha').maybeSingle()
+        ]);
+
+        let history = [];
+        if (navResult.data) {
+          const valid = navResult.data.filter(item => parseFloat(item.ues_circulacion || 0) > 1).slice(-30);
+          // Adjuntar precio actual como ultimo punto si es mas reciente
+          if (currentResult.data?.precio_actual) {
+            const lastFecha = valid.length > 0 ? new Date(valid[valid.length - 1].fecha + 'Z').getTime() : 0;
+            const currentFecha = new Date(currentResult.data.fecha).getTime();
+            if (currentFecha > lastFecha) {
+              valid.push({
+                fecha: currentResult.data.fecha,
+                nav: currentResult.data.precio_actual,
+                capital_total: 0,
+                ues_circulacion: 10000
+              });
             }
-            return r;
-          });
+          }
+          history = valid.reverse();
+        }
 
         if (userPatrimonio) setUserData(userPatrimonio);
         if (metrics) setMarketMetrics(metrics);
         if (reports) setRecentReports(reports);
-        if (history) setNavHistory(history.reverse());
+        if (history.length > 0) setNavHistory(history);
 
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
