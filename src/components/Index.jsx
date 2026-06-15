@@ -51,10 +51,9 @@ const Index = ({ onNavigate }) => {
           .eq('usuario_id', user.id)
           .single();
 
-        const { data: metrics } = await supabase
-          .from('metricas_mercado')
-          .select('*')
-          .single();
+        const { data: rawMetrics } = metricsResult;
+        // Sobrescribir nav_actual con el capital_total real de precio_actual_ue
+        const metrics = rawMetrics ? { ...rawMetrics, nav_actual: currentResult.data?.capital_total || rawMetrics.nav_actual } : null;
 
         const { data: reports } = await supabase
           .from('published_reports')
@@ -63,9 +62,10 @@ const Index = ({ onNavigate }) => {
           .order('created_at', { ascending: false })
           .limit(3);
 
-        const [navResult, currentResult] = await Promise.all([
+        const [navResult, currentResult, metricsResult] = await Promise.all([
           supabase.rpc('obtener_nav_historico', { p_dias: 7 }),
-          supabase.from('precio_actual_ue').select('precio_actual, fecha').maybeSingle()
+          supabase.from('precio_actual_ue').select('precio_actual, capital_total, fecha').maybeSingle(),
+          supabase.from('metricas_mercado').select('*').maybeSingle()
         ]);
 
         let history = [];
