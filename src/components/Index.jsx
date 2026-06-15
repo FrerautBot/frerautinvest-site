@@ -70,7 +70,10 @@ const Index = ({ onNavigate }) => {
 
         let history = [];
         if (navResult.data) {
-          const valid = navResult.data.filter(item => parseFloat(item.ues_circulacion || 0) > 1).slice(-30);
+          let valid = navResult.data.filter(item => parseFloat(item.ues_circulacion || 0) > 1);
+          // Ordenar cronologico por si acaso
+          valid.sort((a, b) => new Date(a.fecha + 'Z') - new Date(b.fecha + 'Z'));
+          valid = valid.slice(-30);
           // Adjuntar precio actual como ultimo punto si es mas reciente
           if (currentResult.data?.precio_actual) {
             const lastFecha = valid.length > 0 ? new Date(valid[valid.length - 1].fecha + 'Z').getTime() : 0;
