@@ -176,7 +176,24 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
 
   const allPoints = [...points, puntoActual];
 
-  const pathD = allPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  // Curva suave (Catmull-Rom → cubic Bezier) para linea profesional
+  function smoothPath(pts) {
+    if (pts.length < 2) return pts.map(p => `${p.x},${p.y}`).join(' ');
+    const d = pts.map((p, i, a) => {
+      if (i === 0) return `M ${p.x} ${p.y}`;
+      const prev = a[i - 1];
+      const next = a[i + 1] || p;
+      const tension = 0.3;
+      const cp1x = prev.x + (p.x - prev.x) * tension;
+      const cp1y = prev.y + (p.y - prev.y) * tension;
+      const cp2x = p.x - (next.x - prev.x) * tension;
+      const cp2y = p.y - (next.y - prev.y) * tension;
+      return `C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p.x},${p.y}`;
+    });
+    return d.join(' ');
+  }
+
+  const pathD = smoothPath(allPoints);
   const areaPathD = `${pathD} L ${allPoints[allPoints.length - 1].x} ${height - padding.bottom} L ${padding.left} ${height - padding.bottom} Z`;
 
   const valorFinal = valorActualNum;
@@ -341,7 +358,7 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="overflow-visible bg-white/90 dark:bg-gradient-to-b dark:from-gray-900/50 dark:to-gray-900/30 rounded-2xl p-6 border border-gray-300 dark:border-gray-800/50 relative"
+          className="overflow-visible bg-white/90 dark:bg-gradient-to-b dark:from-gray-900/60 dark:to-gray-900/30 rounded-2xl p-6 border border-gray-300/60 dark:border-gold/20 relative shadow-[0_0_40px_-8px_rgba(212,175,55,0.06)]"
         >
           <svg
             width={width}
@@ -354,22 +371,30 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
           >
             <defs>
               <linearGradient id="gradientGoldEnhanced" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#d4af37" stopOpacity="0.35" />
-                <stop offset="40%" stopColor="#d4af37" stopOpacity="0.12" />
+                <stop offset="0%" stopColor="#d4af37" stopOpacity="0.4" />
+                <stop offset="30%" stopColor="#d4af37" stopOpacity="0.18" />
+                <stop offset="60%" stopColor="#d4af37" stopOpacity="0.06" />
                 <stop offset="100%" stopColor="#d4af37" stopOpacity="0" />
               </linearGradient>
               <filter id="lineGlow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feGaussianBlur stdDeviation="3.5" result="blur" />
                 <feMerge>
                   <feMergeNode in="blur" />
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
               <linearGradient id="lineGradientPremium" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#e2c044" />
+                <stop offset="0%" stopColor="#f0d060" />
                 <stop offset="50%" stopColor="#d4af37" />
-                <stop offset="100%" stopColor="#e2c044" />
+                <stop offset="100%" stopColor="#b8962e" />
               </linearGradient>
+              <filter id="nodeGlow">
+                <feGaussianBlur stdDeviation="1.5" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
             </defs>
 
             {[0, 0.25, 0.5, 0.75, 1].map((f, i) => {
@@ -405,27 +430,42 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
 
             <path d={areaPathD} fill="url(#gradientGoldEnhanced)" opacity="0.5" />
 
-            {/* Glow detrás de la línea para dar definición */}
+            {/* Glow detrás de la línea */}
             <path
               d={pathD}
               fill="none"
               stroke="#d4af37"
-              strokeWidth="8"
+              strokeWidth="10"
               strokeLinecap="round"
               strokeLinejoin="round"
-              opacity="0.15"
+              opacity="0.12"
             />
 
-            {/* Línea principal fina con anti-aliasing */}
+            {/* Línea principal */}
             <path
               d={pathD}
               fill="none"
               stroke="url(#lineGradientPremium)"
-              strokeWidth="3"
+              strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
               filter="url(#lineGlow)"
             />
+
+            {/* Nodos sutiles en cada punto de datos */}
+            {allPoints.map((p, i) => (
+              <circle
+                key={i}
+                cx={p.x}
+                cy={p.y}
+                r={p.esActual ? 5 : 2.5}
+                fill={p.esActual ? '#d4af37' : '#e2c044'}
+                stroke="#fff"
+                strokeWidth={p.esActual ? 2 : 1}
+                opacity={p.esActual ? 1 : 0.5}
+                filter={p.esActual ? 'url(#nodeGlow)' : undefined}
+              />
+            ))}
 
             {displayPoint && (
               <>
