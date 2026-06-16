@@ -814,7 +814,7 @@ const Market = () => {
 
   const handleSellUnits = async () => {
     const normalizedAmount = Number(sellAmount.replace(',', '.'));
-    if (!session?.user?.id || !navData?.nav || isNaN(normalizedAmount) || normalizedAmount <= 0) {
+    if (!session?.user?.id || !navPrice || isNaN(normalizedAmount) || normalizedAmount <= 0) {
       toast({ variant: "destructive", title: "Datos de venta inválidos", description: "Asegúrate de ingresar una cantidad válida y estar logueado." });
       return;
     }
@@ -1102,13 +1102,17 @@ const Market = () => {
               }`}>
               <p className={`text-sm mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Saldo disponible</p>
               <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{userSaldoUSD}</p>
-              <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>{userSaldoCLP}</p>  
+              <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>{userSaldoCLP}</p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="sell-amount" className={`block text-sm font-semibold mb-2 uppercase tracking-wider ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>Cantidad de UEs</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className={`text-sm font-semibold uppercase tracking-wider ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                    Cantidad de UEs
+                  </label>
+                </div>
                 <input
                   type="text"
                   id="sell-amount"
@@ -1129,17 +1133,27 @@ const Market = () => {
                 }`}>
                 <p className={`text-xs uppercase tracking-wider mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
                   }`}>Valor Estimado</p>
-                <p className="text-xl font-bold text-red-400">
-                  {sellAmount && navData ? '$' + (Number(sellAmount.replace(',', '.')) * navData.nav).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD' : '$0.00 USD'}
-                </p>
-                <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                  {sellAmount && navData ? '$' + Math.round(Number(sellAmount.replace(',', '.')) * navData.nav * fxRate).toLocaleString('es-CL') + ' CLP' : '$0 CLP'}
-                </p>
+                {sellAmount && navPrice && (
+                  <>
+                    <p className="text-xl font-bold text-red-400">
+                      {'$' + (Number(sellAmount.replace(',', '.')) * navPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD'}
+                    </p>
+                    <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                      {'$' + Math.round(Number(sellAmount.replace(',', '.')) * navPrice * fxRate).toLocaleString('es-CL') + ' CLP'}
+                    </p>
+                  </>
+                )}
+                {(!sellAmount || !navPrice) && (
+                  <>
+                    <p className="text-xl font-bold text-red-400">$0.00 USD</p>
+                    <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>$0 CLP</p>
+                  </>
+                )}
               </div>
 
               <TradingActionButton
                 onClick={handleSellUnits}
-                disabled={!session || !navData || !sellAmount || Number(sellAmount.replace(',', '.')) <= 0}
+                disabled={!session || !navPrice || !sellAmount || Number(sellAmount.replace(',', '.')) <= 0}
                 loading={isSelling}
                 text="Vender UEs"
                 icon={<ArrowDownLeft size={22} />}
@@ -1198,7 +1212,7 @@ const Market = () => {
                 </div>
 
                 {allOrders.slice(0, visibleOrders).map(order => {
-                  const totalCLP = order.cantidad_restante * order.precio_nav;
+                  const totalUSD = order.cantidad_restante * order.precio_nav;
                   const estadoBadge = order.estado === 'completada' ? '✅' : order.estado === 'parcial' ? '⏳' : '🔄';
                   return (
                     <div key={order.id} className={`grid grid-cols-6 gap-4 items-center p-4 backdrop-blur-sm rounded-xl border transition-all ${isDarkMode
@@ -1218,7 +1232,7 @@ const Market = () => {
                         ${order.precio_nav.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
                       </span>
                       <span className="text-blue-400 font-semibold text-right">
-                        ${totalCLP.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ${totalUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                       <span className="text-center text-sm">
                         {estadoBadge} <span className={`text-xs uppercase ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{order.estado}</span>
