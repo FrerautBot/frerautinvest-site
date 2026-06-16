@@ -14,6 +14,7 @@ export default function AuthModal({ isOpen, onClose }) {
   const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState(null);
   const { toast } = useToast();
 
   const handleSubmit = async (e) => {
@@ -52,17 +53,10 @@ export default function AuthModal({ isOpen, onClose }) {
 
         if (error) throw error;
 
-        toast({
-          title: "Registration successful!",
-          description: "Please check your email to verify your account.",
-        });
-        
-        // Clear form and close on success
+        setRegisteredEmail(email);
         setEmail('');
         setPassword('');
         setFullName('');
-        setMode('login');
-        if (onClose) onClose();
       }
     } catch (error) {
       toast({
@@ -116,6 +110,36 @@ export default function AuthModal({ isOpen, onClose }) {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
+                {registeredEmail ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-center py-6 space-y-4"
+                  >
+                    <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto">
+                      <Mail className="w-8 h-8 text-yellow-500" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white">Check your email</h3>
+                    <p className="text-gray-400 text-sm">
+                      We sent a verification link to <strong className="text-white">{registeredEmail}</strong>
+                    </p>
+                    <p className="text-gray-500 text-xs">
+                      Click the link in the email to activate your account, then log in.
+                    </p>
+                    <p className="text-gray-500 text-xs">
+                      Didn't get it? Check your spam folder.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="mt-4"
+                      onClick={() => setRegisteredEmail(null)}
+                    >
+                      Back to login
+                    </Button>
+                  </motion.div>
+                ) : (
+                <>
                 <AnimatePresence mode="popLayout">
                   {mode === 'register' && (
                     <motion.div
@@ -194,6 +218,8 @@ export default function AuthModal({ isOpen, onClose }) {
                     mode === 'login' ? 'Sign In' : 'Create Account'
                   )}
                 </Button>
+              </>
+              )}
               </form>
 
               <div className="mt-6 text-center">

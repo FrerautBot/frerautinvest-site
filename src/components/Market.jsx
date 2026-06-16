@@ -867,7 +867,7 @@ const Market = () => {
     );
   }
 
-  const userSaldoCLP = userWallet?.saldo_clp ? parseFloat(userWallet.saldo_clp).toLocaleString('es-CL', { style: 'currency', currency: 'CLP' }) : 'CLP 0';
+  const userSaldoCLP = userWallet?.saldo_clp ? `$${Number(userWallet.saldo_clp).toLocaleString('es-CL')} CLP` : '$0 CLP';
   const userSaldoUSD = userWallet?.saldo_usd ? `$${parseFloat(userWallet.saldo_usd).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD` : '$0.00 USD';
 
   return (
