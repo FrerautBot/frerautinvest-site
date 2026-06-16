@@ -633,6 +633,7 @@ const Market = () => {
   const [visibleTransactions, setVisibleTransactions] = useState(3);
   const [visibleOrders, setVisibleOrders] = useState(3);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [fxRate, setFxRate] = useState(950);
 
   const fetchCapitalTotal = useCallback(async () => {
     const { data, error } = await supabase
@@ -643,6 +644,11 @@ const Market = () => {
     if (!error && data) {
       setLatestCapitalTotal(data.capital_total);
     }
+  }, []);
+
+  const fetchFxRate = useCallback(async () => {
+    const { data } = await supabase.from('fx_config').select('manual_rate').eq('is_active', true).maybeSingle();
+    if (data?.manual_rate) setFxRate(parseFloat(data.manual_rate));
   }, []);
 
   const fetchNavPrice = useCallback(async () => {
@@ -722,7 +728,8 @@ const Market = () => {
       fetchUserWallet(),
       fetchUserTransactions(),
       fetchAllOrders(),
-      fetchCapitalTotal()
+      fetchCapitalTotal(),
+      fetchFxRate()
     ]).finally(() => setLoading(false));
 
     const marketChannel = supabase.channel('market_main_channel')
@@ -747,7 +754,7 @@ const Market = () => {
       supabase.removeChannel(marketChannel);
       if (walletChannel) supabase.removeChannel(walletChannel);
     };
-  }, [session, fetchMarketMetrics, fetchNavData, fetchNavPrice, fetchUserWallet, fetchUserTransactions, fetchAllOrders, fetchCapitalTotal]);
+  }, [session, fetchMarketMetrics, fetchNavData, fetchNavPrice, fetchUserWallet, fetchUserTransactions, fetchAllOrders, fetchCapitalTotal, fetchFxRate]);
 
   useEffect(() => {
     const loadUserBankId = async () => {
@@ -977,7 +984,10 @@ const Market = () => {
                 <p className={`text-xs uppercase tracking-wider mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
                   }`}>Costo Estimado</p>
                 <p className="text-xl font-bold text-green-400">
-                  {buyAmount && navPrice ? '$' + (Number(buyAmount.replace(',', '.')) * navPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD' : '$0.00 USD'}              <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>{userSaldoCLP}</p>  
+                  {buyAmount && navPrice ? '$' + (Number(buyAmount.replace(',', '.')) * navPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD' : '$0.00 USD'}
+                </p>
+                <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                  {buyAmount && navPrice ? '$' + Math.round(Number(buyAmount.replace(',', '.')) * navPrice * fxRate).toLocaleString('es-CL') + ' CLP' : '$0 CLP'}
                 </p>
               </div>
 
@@ -1042,6 +1052,9 @@ const Market = () => {
                   }`}>Valor Estimado</p>
                 <p className="text-xl font-bold text-red-400">
                   {sellAmount && navData ? '$' + (Number(sellAmount.replace(',', '.')) * navData.nav).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD' : '$0.00 USD'}
+                </p>
+                <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                  {sellAmount && navData ? '$' + Math.round(Number(sellAmount.replace(',', '.')) * navData.nav * fxRate).toLocaleString('es-CL') + ' CLP' : '$0 CLP'}
                 </p>
               </div>
 
