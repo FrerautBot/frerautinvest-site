@@ -619,6 +619,7 @@ const Market = () => {
   const [buyAmount, setBuyAmount] = useState('');
   const [buyMode, setBuyMode] = useState('ues');
   const [sellAmount, setSellAmount] = useState('');
+  const [sellMode, setSellMode] = useState('ues');
   const [isBuying, setIsBuying] = useState(false);
   const [isSelling, setIsSelling] = useState(false);
   const [transactions, setTransactions] = useState([]);
@@ -813,16 +814,24 @@ const Market = () => {
   };
 
   const handleSellUnits = async () => {
-    const normalizedAmount = Number(sellAmount.replace(',', '.'));
-    if (!session?.user?.id || !navPrice || isNaN(normalizedAmount) || normalizedAmount <= 0) {
-      toast({ variant: "destructive", title: "Datos de venta inválidos", description: "Asegúrate de ingresar una cantidad válida y estar logueado." });
+    const raw = Number(sellAmount.replace(',', '.'));
+    if (!session?.user?.id || !navPrice || isNaN(raw) || raw <= 0) {
+      toast({ variant: "destructive", title: "Datos de venta inválidos", description: "Ingresa una cantidad válida y asegúrate de estar logueado." });
+      return;
+    }
+    // Convertir CLP ou USD a UEs según el modo
+    const cantidadUEs = sellMode === 'clp' ? raw / fxRate / navPrice
+      : sellMode === 'usd' ? raw / navPrice
+      : raw;
+    if (isNaN(cantidadUEs) || cantidadUEs <= 0) {
+      toast({ variant: "destructive", title: "Cantidad inválida", description: "Revisa el valor ingresado." });
       return;
     }
     setIsSelling(true);
     try {
       const { data, error } = await supabase.rpc("procesar_venta_ue_con_ajuste", {
         p_usuario_id: session.user.id,
-        p_cantidad: normalizedAmount
+        p_cantidad: cantidadUEs
       });
       if (error) throw error;
       if (data?.length > 0 && data[0]?.ok) {
@@ -1110,15 +1119,29 @@ const Market = () => {
                 <div className="flex items-center justify-between mb-2">
                   <label className={`text-sm font-semibold uppercase tracking-wider ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
                     }`}>
-                    Cantidad de UEs
+                    {sellMode === 'ues' ? 'Cantidad de UEs' : sellMode === 'clp' ? 'Monto en CLP' : 'Monto en USD'}
                   </label>
+                  <div className="flex rounded-lg overflow-hidden border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}">
+                    <button
+                      onClick={() => setSellMode('ues')}
+                      className={`px-3 py-1 text-xs font-semibold transition-all ${sellMode === 'ues' ? 'bg-red-500 text-white' : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                    >UEs</button>
+                    <button
+                      onClick={() => setSellMode('clp')}
+                      className={`px-3 py-1 text-xs font-semibold transition-all ${sellMode === 'clp' ? 'bg-red-500 text-white' : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                    >CLP</button>
+                    <button
+                      onClick={() => setSellMode('usd')}
+                      className={`px-3 py-1 text-xs font-semibold transition-all ${sellMode === 'usd' ? 'bg-red-500 text-white' : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                    >USD</button>
+                  </div>
                 </div>
                 <input
                   type="text"
                   id="sell-amount"
                   value={sellAmount}
                   onChange={(e) => setSellAmount(e.target.value.replace(/[^0-9.,]/g, ''))}
-                  placeholder="0.00000000"
+                  placeholder={sellMode === 'ues' ? "0.00000000" : "0"}
                   className={`w-full p-4 backdrop-blur-sm border rounded-xl text-lg transition-all ${isDarkMode
                     ? 'bg-gray-900/60 border-red-500/30 text-white focus:ring-2 focus:ring-red-500'
                     : 'bg-white border-red-300 text-gray-900 focus:ring-2 focus:ring-red-400'
@@ -1127,6 +1150,14 @@ const Market = () => {
                   inputMode="decimal"
                   autoComplete="off"
                 />
+                {sellMode !== 'ues' && navPrice && sellAmount && (
+                  <p className={`text-xs mt-2 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
+                    ≈ {sellMode === 'clp'
+                      ? (Number(sellAmount.replace(',', '.')) / fxRate / navPrice).toFixed(8)
+                      : (Number(sellAmount.replace(',', '.')) / navPrice).toFixed(8)
+                    } UEs
+                  </p>
+                )}
               </div>
 
               <div className={`p-4 rounded-xl backdrop-blur-sm border ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'
@@ -1135,12 +1166,42 @@ const Market = () => {
                   }`}>Valor Estimado</p>
                 {sellAmount && navPrice && (
                   <>
-                    <p className="text-xl font-bold text-red-400">
-                      {'$' + (Number(sellAmount.replace(',', '.')) * navPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD'}
-                    </p>
-                    <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                      {'$' + Math.round(Number(sellAmount.replace(',', '.')) * navPrice * fxRate).toLocaleString('es-CL') + ' CLP'}
-                    </p>
+                    {sellMode === 'ues' && (
+                      <>
+                        <p className="text-xl font-bold text-red-400">
+                          {'$' + (Number(sellAmount.replace(',', '.')) * navPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD'}
+                        </p>
+                        <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                          {'$' + Math.round(Number(sellAmount.replace(',', '.')) * navPrice * fxRate).toLocaleString('es-CL') + ' CLP'}
+                        </p>
+                      </>
+                    )}
+                    {sellMode === 'clp' && (
+                      <>
+                        <p className="text-xl font-bold text-red-400">
+                          {'$' + Math.round(Number(sellAmount.replace(',', '.')) / fxRate * 100) / 100 + ' USD'}
+                        </p>
+                        <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                          {'$' + Number(sellAmount.replace(',', '.')).toLocaleString('es-CL') + ' CLP'}
+                        </p>
+                        <p className={`text-xs mt-1 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
+                          ≈ {(Number(sellAmount.replace(',', '.')) / fxRate / navPrice).toFixed(8)} UEs
+                        </p>
+                      </>
+                    )}
+                    {sellMode === 'usd' && (
+                      <>
+                        <p className="text-xl font-bold text-red-400">
+                          {'$' + Number(sellAmount.replace(',', '.')).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD'}
+                        </p>
+                        <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                          {'$' + Math.round(Number(sellAmount.replace(',', '.')) * fxRate).toLocaleString('es-CL') + ' CLP'}
+                        </p>
+                        <p className={`text-xs mt-1 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
+                          ≈ {(Number(sellAmount.replace(',', '.')) / navPrice).toFixed(8)} UEs
+                        </p>
+                      </>
+                    )}
                   </>
                 )}
                 {(!sellAmount || !navPrice) && (
