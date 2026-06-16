@@ -13,7 +13,7 @@ const VolumeChart = () => {
   const fetchVolumeData = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.rpc('calculaar_ajuste_nav_por_volumen');
+      const { data, error } = await supabase.rpc('calcular_ajuste_nav_por_volumen');
       if (error) {
         console.error('Error fetching volume data:', error);
         setVolumeData(null);

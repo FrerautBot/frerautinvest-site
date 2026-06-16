@@ -5,19 +5,30 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { TrendingUp, Calendar, Wallet, PieChart, ArrowUpRight, ArrowDownRight, Loader2, DollarSign, X, Save, Trash2, RefreshCw, ArrowRightLeft } from 'lucide-react';
 
-function PatrimonioChart({ historial }) {
+const formatUSD = (val) => {
+  if (val == null || isNaN(val)) return '$0.00 USD';
+  return '$' + Number(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD';
+};
+const formatCLP = (val, fx) => {
+  if (val == null || isNaN(val) || !fx) return '';
+  const clp = Number(val) * fx;
+  return '≈ $' + Math.round(clp).toLocaleString('es-CL') + ' CLP';
+};
+
+function PatrimonioChart({ historial, fxRate }) {
+  const [hoveredPoint, setHoveredPoint] = useState(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
   if (!historial || historial.length === 0) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-900/95 dark:via-gray-800/90 dark:to-black/95 backdrop-blur-xl border border-gold/30 dark:border-gold/30 rounded-3xl p-8 shadow-2xl"
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+        className="bg-white dark:bg-gradient-to-br dark:from-gray-900/95 dark:via-gray-900/90 dark:to-black/95 border border-gray-300 dark:border-emerald-500/30 rounded-3xl p-8 shadow-2xl backdrop-blur-sm"
       >
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-gold/10 rounded-lg backdrop-blur-sm border border-gold/20">
-            <TrendingUp className="w-6 h-6 text-gold" />
+          <div className="p-2 bg-emerald-500/10 rounded-lg backdrop-blur-sm border border-emerald-500/20">
+            <TrendingUp className="w-6 h-6 text-emerald-500" />
           </div>
-          <h3 className="text-2xl font-bold text-gold tracking-wide">Evolución de tu Patrimonio</h3>
+          <h3 className="text-2xl font-bold text-emerald-500 tracking-wide">Evolución de tu Patrimonio</h3>
         </div>
         <p className="text-gray-600 dark:text-gray-400 text-center py-12 text-lg">No hay suficiente historial para mostrar el gráfico</p>
       </motion.div>
@@ -30,192 +41,214 @@ function PatrimonioChart({ historial }) {
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
 
-  const valoresUE = historial.map(h => h?.valor_total_ues_real ? Number(h.valor_total_ues_real) : 0);
   const valoresPatrimonio = historial.map(h => h?.patrimonio_total_real ? Number(h.patrimonio_total_real) : 0);
-
-  const todosLosValores = [...valoresUE, ...valoresPatrimonio].filter(v => v > 0);
+  const todosLosValores = valoresPatrimonio.filter(v => v > 0);
 
   if (todosLosValores.length === 0) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-900/95 dark:via-gray-800/90 dark:to-black/95 backdrop-blur-xl border border-gold/30 rounded-3xl p-8 shadow-2xl"
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+        className="bg-white dark:bg-gradient-to-br dark:from-gray-900/95 dark:via-gray-900/90 dark:to-black/95 border border-gray-300 dark:border-emerald-500/30 rounded-3xl p-8 shadow-2xl backdrop-blur-sm"
       >
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-gold/10 rounded-lg backdrop-blur-sm border border-gold/20">
-            <TrendingUp className="w-6 h-6 text-gold" />
+          <div className="p-2 bg-emerald-500/10 rounded-lg backdrop-blur-sm border border-emerald-500/20">
+            <TrendingUp className="w-6 h-6 text-emerald-500" />
           </div>
-          <h3 className="text-2xl font-bold text-gold tracking-wide">Evolución de tu Patrimonio</h3>
+          <h3 className="text-2xl font-bold text-emerald-500 tracking-wide">Evolución de tu Patrimonio</h3>
         </div>
         <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
-          <p className="text-red-600 dark:text-red-400 text-sm">⚠️ Error: Los datos del historial existen pero todos los valores son 0</p>
+          <p className="text-red-600 dark:text-red-400 text-sm">⚠️ Los datos del historial existen pero todos los valores son 0</p>
         </div>
       </motion.div>
     );
   }
 
-  const minValor = Math.min(...todosLosValores);
-  const maxValor = Math.max(...todosLosValores);
+  const minValor = Math.min(...todosLosValores) * 0.95;
+  const maxValor = Math.max(...todosLosValores) * 1.05;
   const rangoValor = maxValor - minValor || 1;
 
-  const puntosUE = historial.map((item, index) => {
-    const valor = Number(item.valor_total_ues_real || 0);
-    return {
-      x: padding.left + (index / (historial.length - 1)) * chartWidth,
-      y: padding.top + chartHeight - ((valor - minValor) / rangoValor) * chartHeight,
-      fecha: item.fecha,
-      valor: valor
-    };
-  });
-
-  const puntosPatrimonio = historial.map((item, index) => {
+  const allPoints = historial.map((item, index) => {
     const valor = Number(item.patrimonio_total_real || 0);
     return {
       x: padding.left + (index / (historial.length - 1)) * chartWidth,
       y: padding.top + chartHeight - ((valor - minValor) / rangoValor) * chartHeight,
       fecha: item.fecha,
-      valor: valor
+      valor,
+      index
     };
   });
 
-  const pathUE = puntosUE.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-  const pathPatrimonio = puntosPatrimonio.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  // Smooth curve (Catmull-Rom → cubic Bezier)
+  function smoothPath(pts) {
+    if (pts.length < 2) return pts.map(p => `${p.x},${p.y}`).join(' ');
+    return pts.map((p, i, a) => {
+      if (i === 0) return `M ${p.x} ${p.y}`;
+      const prev = a[i - 1];
+      const next = a[i + 1] || p;
+      const tension = 0.3;
+      const cp1x = prev.x + (p.x - prev.x) * tension;
+      const cp1y = prev.y + (p.y - prev.y) * tension;
+      const cp2x = p.x - (next.x - prev.x) * tension;
+      const cp2y = p.y - (next.y - prev.y) * tension;
+      return `C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p.x},${p.y}`;
+    }).join(' ');
+  }
 
-  const valorUEFinal = valoresUE[valoresUE.length - 1];
+  const pathD = smoothPath(allPoints);
+  const areaPathD = pathD + ` L ${allPoints[allPoints.length - 1].x} ${height - padding.bottom} L ${padding.left} ${height - padding.bottom} Z`;
+
   const valorPatrimonioFinal = valoresPatrimonio[valoresPatrimonio.length - 1];
+  const valorInicial = valoresPatrimonio[0];
+  const cambioAbsoluto = valorPatrimonioFinal - valorInicial;
+  const cambioPorcentaje = valorInicial > 0 ? ((cambioAbsoluto / valorInicial) * 100).toFixed(2) : '0.00';
+  const esPositivo = cambioAbsoluto >= 0;
+
+  const handleMouseMove = (e) => {
+    const svg = e.currentTarget;
+    const rect = svg.getBoundingClientRect();
+    const scaleX = svg.width.baseVal.value / rect.width;
+    const mouseX = (e.clientX - rect.left) * scaleX;
+    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    if (mouseX < padding.left - 10 || mouseX > width - padding.right + 5) {
+      setHoveredPoint(null);
+      return;
+    }
+    const idx = Math.round(((mouseX - padding.left) / chartWidth) * (allPoints.length - 1));
+    const clamped = Math.max(0, Math.min(idx, allPoints.length - 1));
+    setHoveredPoint(allPoints[clamped]);
+  };
+
+  const handleMouseLeave = () => setHoveredPoint(null);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className="bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-900/95 dark:via-gray-800/90 dark:to-black/95 backdrop-blur-xl border border-gray-300 dark:border-gold/30 rounded-3xl p-8 shadow-2xl"
+      className="bg-white dark:bg-gradient-to-br dark:from-gray-900/95 dark:via-gray-800/90 dark:to-black/95 border border-gray-300 dark:border-emerald-500/30 rounded-3xl p-8 shadow-2xl backdrop-blur-sm relative overflow-hidden"
     >
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-gold/20 dark:bg-gold/10 rounded-lg backdrop-blur-sm border border-gold/30 dark:border-gold/20">
-            <TrendingUp className="w-6 h-6 text-gold" />
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent pointer-events-none"></div>
+      <div className="relative z-10">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <motion.div whileHover={{ scale: 1.05 }} className="p-3 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 dark:from-emerald-500/20 dark:to-emerald-500/10 rounded-xl">
+              <TrendingUp className="w-6 h-6 text-emerald-500" />
+            </motion.div>
+            <div>
+              <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-green-400 to-emerald-500">
+                Evolución de tu Patrimonio
+              </h3>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+                {formatUSD(valorPatrimonioFinal)}
+              </p>
+            </div>
           </div>
-          <h3 className="text-2xl font-bold text-gold tracking-wide drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]">
-            Evolución de tu Patrimonio
-          </h3>
+          <motion.div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800/50 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700/50">
+            <Calendar className="w-4 h-4 text-emerald-500" />
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Últimos 30 días</span>
+          </motion.div>
         </div>
-        <div className="flex items-center gap-2 bg-gray-200/80 dark:bg-gray-800/50 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700/50 backdrop-blur-sm">
-          <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Últimos 30 días</span>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+            className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/60 dark:to-gray-900/60 rounded-xl p-5 border border-gray-300 dark:border-gray-700/50 backdrop-blur-sm hover:border-emerald-500/50 dark:hover:border-emerald-500/30 transition-all duration-300"
+          >
+            <p className="text-xs uppercase tracking-wider text-gray-700 dark:text-gray-400 mb-2 font-semibold">💰 Patrimonio Actual</p>
+            <p className="text-3xl font-extrabold tracking-wide text-gray-900 dark:text-white">
+              {formatUSD(valorPatrimonioFinal)}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">{formatCLP(valorPatrimonioFinal, fxRate)}</p>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+            className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/60 dark:to-gray-900/60 rounded-xl p-5 border border-gray-300 dark:border-gray-700/50 backdrop-blur-sm hover:border-emerald-500/50 dark:hover:border-emerald-500/30 transition-all duration-300"
+          >
+            <p className="text-xs uppercase tracking-wider text-gray-700 dark:text-gray-400 mb-2 font-semibold">📈 Cambio Total</p>
+            <p className={`text-3xl font-extrabold tracking-wide ${esPositivo ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              {esPositivo ? '+' : ''}{cambioPorcentaje}%
+            </p>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+            className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/60 dark:to-gray-900/60 rounded-xl p-5 border border-gray-300 dark:border-gray-700/50 backdrop-blur-sm hover:border-emerald-500/50 dark:hover:border-emerald-500/30 transition-all duration-300"
+          >
+            <p className="text-xs uppercase tracking-wider text-gray-700 dark:text-gray-400 mb-2 font-semibold">🪙 Patrimonio en CLP</p>
+            <p className="text-3xl font-extrabold tracking-wide text-gray-900 dark:text-white">
+              {formatCLP(valorPatrimonioFinal, fxRate)}
+            </p>
+          </motion.div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-2 gap-6 mb-8">
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800/60 dark:to-gray-900/60 rounded-xl p-5 border border-gray-300 dark:border-gray-700/50 backdrop-blur-sm hover:border-gold/40 dark:hover:border-gold/30 transition-all duration-300"
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+          className="overflow-hidden rounded-2xl p-6 border border-gray-300/60 dark:border-emerald-500/20 relative"
+          style={{ background: '#0b0c10', backgroundImage: `radial-gradient(circle, rgba(160,160,160,0.25) 0.5px, transparent 0.5px)`, backgroundSize: '12px 12px' }}
         >
-          <p className="text-xs uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-2 font-semibold">Valor UEs Actual</p>
-          <p
-            className="text-2xl font-extrabold text-gold"
-            style={{ textShadow: '0 0 15px rgba(212, 175, 55, 0.3)' }}
-          >
-            {valorUEFinal.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}
-          </p>
+          <svg width={width} height={height} className="mx-auto" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}
+            style={{ cursor: 'crosshair' }} shapeRendering="geometricPrecision">
+            <defs>
+              <linearGradient id="gradientGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#10B981" stopOpacity="0.4" />
+                <stop offset="30%" stopColor="#10B981" stopOpacity="0.18" />
+                <stop offset="60%" stopColor="#10B981" stopOpacity="0.06" />
+                <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
+              </linearGradient>
+              <filter id="lineGlowGreen">
+                <feGaussianBlur stdDeviation="3.5" result="blur" />
+                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+              </filter>
+              <linearGradient id="lineGradientGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#34D399" />
+                <stop offset="50%" stopColor="#10B981" />
+                <stop offset="100%" stopColor="#059669" />
+              </linearGradient>
+              <filter id="nodeGlowGreen">
+                <feGaussianBlur stdDeviation="1.5" result="blur" />
+                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+              </filter>
+            </defs>
+
+            {[0, 0.25, 0.5, 0.75, 1].map((f, i) => {
+              const yPos = padding.top + chartHeight * (1 - f);
+              const valorEtiqueta = minValor + rangoValor * f;
+              return (
+                <g key={i}>
+                  <line x1={padding.left} y1={yPos} x2={width - padding.right} y2={yPos}
+                    className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="1" strokeDasharray="4 6" opacity="0.3" />
+                  <text x={padding.left - 12} y={yPos + 4} textAnchor="end" fill="#b0b0b0" fontSize="11" fontWeight="400">
+                    ${(valorEtiqueta / 1000).toFixed(1)}k
+                  </text>
+                </g>
+              );
+            })}
+
+            <path d={areaPathD} fill="url(#gradientGreen)" opacity="0.5" />
+            <path d={pathD} fill="none" stroke="#10B981" strokeWidth="10" strokeLinecap="round" opacity="0.12" />
+            <path d={pathD} fill="none" stroke="url(#lineGradientGreen)" strokeWidth="2.5" strokeLinecap="round" filter="url(#lineGlowGreen)" />
+
+            <circle cx={allPoints[allPoints.length - 1].x} cy={allPoints[allPoints.length - 1].y} r="5" fill="#10B981" stroke="#fff" strokeWidth="2" filter="url(#nodeGlowGreen)" />
+
+            {hoveredPoint && (
+              <>
+                <line x1={hoveredPoint.x} y1={padding.top} x2={hoveredPoint.x} y2={height - padding.bottom}
+                  stroke="#10B981" strokeWidth="1" strokeDasharray="3 4" opacity="0.4" />
+                <circle cx={hoveredPoint.x} cy={hoveredPoint.y} r="6" fill="#10B981" stroke="#fff" strokeWidth="2.5" filter="url(#lineGlowGreen)" />
+                <circle cx={hoveredPoint.x} cy={hoveredPoint.y} r="12" fill="none" stroke="#10B981" strokeWidth="1.5" opacity="0.25">
+                  <animate attributeName="r" from="6" to="18" dur="2s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" from="0.4" to="0" dur="2s" repeatCount="indefinite" />
+                </circle>
+              </>
+            )}
+          </svg>
+
+          {hoveredPoint && (
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+              className="absolute bg-white dark:bg-gray-900 border border-emerald-500/40 rounded-2xl px-5 py-3 shadow-2xl backdrop-blur-md pointer-events-none"
+              style={{ left: Math.min(mousePos.x + 15, width - 200), top: Math.max(mousePos.y - 80, 10) }}>
+              <p className="text-xs text-emerald-500 font-bold uppercase tracking-wider mb-1">
+                {new Date(hoveredPoint.fecha).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' })}
+              </p>
+              <p className="text-lg font-bold text-white">{formatUSD(hoveredPoint.valor)}</p>
+              <p className="text-xs text-gray-400">{formatCLP(hoveredPoint.valor, fxRate)}</p>
+            </motion.div>
+          )}
         </motion.div>
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800/60 dark:to-gray-900/60 rounded-xl p-5 border border-gray-300 dark:border-gray-700/50 backdrop-blur-sm hover:border-green-500/40 dark:hover:border-green-500/30 transition-all duration-300"
-        >
-          <p className="text-xs uppercase tracking-wider text-gray-600 dark:text-gray-400 mb-2 font-semibold">Patrimonio Total Actual</p>
-          <p
-            className="text-2xl font-extrabold text-green-600 dark:text-green-400"
-            style={{ textShadow: '0 0 15px rgba(74, 222, 128, 0.3)' }}
-          >
-            {valorPatrimonioFinal.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}
-          </p>
-        </motion.div>
-      </div>
-
-      <div className="overflow-x-auto bg-white/50 dark:bg-gray-900/30 rounded-xl p-4 border border-gray-300 dark:border-gray-800/50 backdrop-blur-sm">
-        <svg width={width} height={height} className="mx-auto">
-          <defs>
-            <linearGradient id="gradientGold" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#d4af37" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#d4af37" stopOpacity="0.1" />
-            </linearGradient>
-            <linearGradient id="gradientVerde" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#4ade80" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#4ade80" stopOpacity="0.05" />
-            </linearGradient>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-
-          {[0, 0.25, 0.5, 0.75, 1].map((factor, i) => {
-            const y = padding.top + chartHeight * (1 - factor);
-            const valor = minValor + rangoValor * factor;
-            return (
-              <g key={i}>
-                <line
-                  x1={padding.left}
-                  y1={y}
-                  x2={width - padding.right}
-                  y2={y}
-                  className="stroke-gray-400 dark:stroke-gray-600"
-                  strokeWidth="1"
-                  strokeDasharray="4 4"
-                  opacity="0.5"
-                />
-                <text
-                  x={padding.left - 10}
-                  y={y + 5}
-                  textAnchor="end"
-                  className="text-xs fill-gray-700 dark:fill-gray-400 font-medium"
-                >
-                  ${(valor / 1000).toFixed(0)}k
-                </text>
-              </g>
-            );
-          })}
-
-          <path
-            d={pathUE}
-            fill="none"
-            stroke="#D4AF37"
-            strokeWidth="5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            opacity="1"
-          />
-
-          <path
-            d={pathPatrimonio}
-            fill="none"
-            stroke="#10B981"
-            strokeWidth="5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeDasharray="10 5"
-            opacity="0.8"
-          />
-
-          <circle cx={puntosUE[0].x} cy={puntosUE[0].y} r="8" fill="#D4AF37" className="stroke-white dark:stroke-white" strokeWidth="2" />
-          <circle cx={puntosUE[puntosUE.length - 1].x} cy={puntosUE[puntosUE.length - 1].y} r="8" fill="#D4AF37" className="stroke-white dark:stroke-white" strokeWidth="2" />
-
-          <circle cx={puntosPatrimonio[0].x} cy={puntosPatrimonio[0].y} r="8" fill="#10B981" className="stroke-white dark:stroke-white" strokeWidth="2" />
-          <circle cx={puntosPatrimonio[puntosPatrimonio.length - 1].x} cy={puntosPatrimonio[puntosPatrimonio.length - 1].y} r="8" fill="#10B981" className="stroke-white dark:stroke-white" strokeWidth="2" />
-
-          <g transform={`translate(${width - padding.right - 220}, ${padding.top + 10})`}>
-            <rect x="0" y="0" width="18" height="18" fill="#D4AF37" rx="3" />
-            <text x="26" y="14" className="text-sm fill-gray-800 dark:fill-gray-200 font-semibold">Valor UEs (dorado)</text>
-
-            <rect x="0" y="30" width="18" height="18" fill="#10B981" rx="3" />
-            <text x="26" y="44" className="text-sm fill-gray-800 dark:fill-gray-200 font-semibold">Patrimonio (verde)</text>
-          </g>
-        </svg>
       </div>
     </motion.div>
   );
@@ -227,6 +260,7 @@ const MyUnits = () => {
   const [historial, setHistorial] = useState([]);
   const [lucro, setLucro] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [fxRate, setFxRate] = useState(930);
 
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState('');
@@ -322,6 +356,14 @@ const MyUnits = () => {
         await loadSavedBankAccounts();
         await loadWithdrawHistory(withdrawHistoryLimit);
         await loadSaldoDisponible();
+
+        // Cargar tipo de cambio USD/CLP
+        const { data: fx } = await supabase
+          .from('fx_config')
+          .select('manual_rate')
+          .eq('is_active', true)
+          .maybeSingle();
+        if (fx?.manual_rate) setFxRate(parseFloat(fx.manual_rate));
 
       } catch (error) {
         console.error('Error fetching units data:', error);
@@ -727,20 +769,20 @@ const MyUnits = () => {
                 maximumFractionDigits: 3
               })}
             </p>
-            <p className="text-xs text-gray-600/80 dark:text-gray-400/70 mt-1">
-              ≈ ${Number(lucro.valor_actual).toLocaleString('es-CL')} CLP
-            </p>
           </div>
 
           <div className="bg-white dark:bg-card border-2 border-gray-300 dark:border-gold/20 rounded-xl p-5 shadow-lg dark:shadow-none">
             <div className="flex justify-between items-start mb-2">
-              <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Valor Actual</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Valor de mis UEs</p>
               <div className="p-2 bg-green-500/20 dark:bg-green-500/10 rounded-lg">
                 <Wallet className="w-4 h-4 text-green-600 dark:text-green-400" />
               </div>
             </div>
             <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-              ${Number(lucro.valor_actual).toLocaleString('es-CL')}
+              {formatUSD(lucro.valor_actual)}
+            </p>
+            <p className="text-xs text-green-600/60 dark:text-green-400/60 mt-1">
+              {formatCLP(lucro.valor_actual, fxRate)}
             </p>
           </div>
 
@@ -752,7 +794,10 @@ const MyUnits = () => {
               </div>
             </div>
             <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 break-words">
-              ${Math.round(Number(lucro.total_invertido)).toLocaleString('es-CL')}
+              {formatUSD(lucro.total_invertido)}
+            </p>
+            <p className="text-xs text-blue-600/60 dark:text-blue-400/60 mt-1">
+              {formatCLP(lucro.total_invertido, fxRate)}
             </p>
 
           </div>
@@ -772,7 +817,10 @@ const MyUnits = () => {
               {Number(lucro.porcentaje_lucro).toFixed(2)}%
             </p>
             <p className={`text-xs ${Number(lucro.lucro_total) >= 0 ? 'text-green-600/80 dark:text-green-500/70' : 'text-red-600/80 dark:text-red-500/70'}`}>
-              {Number(lucro.lucro_total) >= 0 ? '+' : ''}${Number(lucro.lucro_total).toLocaleString('es-CL')}
+              {Number(lucro.lucro_total) >= 0 ? '+' : ''}{formatUSD(Math.abs(Number(lucro.lucro_total)))}
+            </p>
+            <p className={`text-[10px] ${Number(lucro.lucro_total) >= 0 ? 'text-green-500/60' : 'text-red-500/60'}`}>
+              {formatCLP(Math.abs(Number(lucro.lucro_total)), fxRate)}
             </p>
           </div>
 
@@ -814,7 +862,7 @@ const MyUnits = () => {
         </div>
       )}
 
-      <PatrimonioChart historial={historial} />
+      <PatrimonioChart historial={historial} fxRate={fxRate} />
 
       {/* BOTONES DE ACCIÓN: Cambiar Divisas + Retirar Fondos */}
       <motion.div
