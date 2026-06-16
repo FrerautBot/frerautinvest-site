@@ -617,6 +617,7 @@ const Market = () => {
   const [loading, setLoading] = useState(true);
   const [userWallet, setUserWallet] = useState(null);
   const [buyAmount, setBuyAmount] = useState('');
+  const [buyMode, setBuyMode] = useState('ues');
   const [sellAmount, setSellAmount] = useState('');
   const [isBuying, setIsBuying] = useState(false);
   const [isSelling, setIsSelling] = useState(false);
@@ -774,16 +775,24 @@ const Market = () => {
   }, [showDepositModal, session]);
 
   const handleBuyUnits = async () => {
-    const normalizedAmount = Number(buyAmount.replace(',', '.'));
-    if (!session?.user?.id || !navPrice || isNaN(normalizedAmount) || normalizedAmount <= 0) {
+    const raw = Number(buyAmount.replace(',', '.'));
+    if (!session?.user?.id || !navPrice || isNaN(raw) || raw <= 0) {
       toast({ variant: "destructive", title: "Datos de compra inválidos", description: "Ingresa una cantidad válida y asegúrate de estar logueado." });
+      return;
+    }
+    // Convertir CLP o USD a UEs segun el modo
+    const cantidadUEs = buyMode === 'clp' ? raw / fxRate / navPrice
+      : buyMode === 'usd' ? raw / navPrice
+      : raw;
+    if (isNaN(cantidadUEs) || cantidadUEs <= 0) {
+      toast({ variant: "destructive", title: "Cantidad inválida", description: "Revisa el valor ingresado." });
       return;
     }
     setIsBuying(true);
     try {
       const { data, error } = await supabase.rpc("procesar_compra_ue_con_ajuste", {
         p_usuario_id: session.user.id,
-        p_cantidad: normalizedAmount
+        p_cantidad: cantidadUEs
       });
       if (error) {
         toast({ variant: "destructive", title: "Error al procesar compra", description: error.message });
@@ -961,14 +970,32 @@ const Market = () => {
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="buy-amount" className={`block text-sm font-semibold mb-2 uppercase tracking-wider ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>Cantidad de UEs</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className={`text-sm font-semibold uppercase tracking-wider ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
+                    {buyMode === 'ues' ? 'Cantidad de UEs' : buyMode === 'clp' ? 'Monto en CLP' : 'Monto en USD'}
+                  </label>
+                  <div className="flex rounded-lg overflow-hidden border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}">
+                    <button
+                      onClick={() => setBuyMode('ues')}
+                      className={`px-3 py-1 text-xs font-semibold transition-all ${buyMode === 'ues' ? 'bg-green-500 text-white' : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                    >UEs</button>
+                    <button
+                      onClick={() => setBuyMode('clp')}
+                      className={`px-3 py-1 text-xs font-semibold transition-all ${buyMode === 'clp' ? 'bg-green-500 text-white' : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                    >CLP</button>
+                    <button
+                      onClick={() => setBuyMode('usd')}
+                      className={`px-3 py-1 text-xs font-semibold transition-all ${buyMode === 'usd' ? 'bg-green-500 text-white' : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+                    >USD</button>
+                  </div>
+                </div>
                 <input
                   type="text"
                   id="buy-amount"
                   value={buyAmount}
                   onChange={(e) => setBuyAmount(e.target.value.replace(/[^0-9.,]/g, ''))}
-                  placeholder="0.00000000"
+                  placeholder={buyMode === 'ues' ? "0.00000000" : "0"}
                   className={`w-full p-4 backdrop-blur-sm border rounded-xl text-lg transition-all ${isDarkMode
                     ? 'bg-gray-900/60 border-green-500/30 text-white focus:ring-2 focus:ring-green-500'
                     : 'bg-white border-green-300 text-gray-900 focus:ring-2 focus:ring-green-400'
@@ -977,23 +1004,75 @@ const Market = () => {
                   inputMode="decimal"
                   autoComplete="off"
                 />
+                {buyMode !== 'ues' && navPrice && buyAmount && (
+                  <p className={`text-xs mt-2 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
+                    ≈ {buyMode === 'clp'
+                      ? (Number(buyAmount.replace(',', '.')) / fxRate / navPrice).toFixed(8)
+                      : (Number(buyAmount.replace(',', '.')) / navPrice).toFixed(8)
+                    } UEs
+                  </p>
+                )}
               </div>
 
               <div className={`p-4 rounded-xl backdrop-blur-sm border ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-gray-200'
                 }`}>
                 <p className={`text-xs uppercase tracking-wider mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'
                   }`}>Costo Estimado</p>
-                <p className="text-xl font-bold text-green-400">
-                  {buyAmount && navPrice ? '$' + (Number(buyAmount.replace(',', '.')) * navPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD' : '$0.00 USD'}
-                </p>
-                <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                  {buyAmount && navPrice ? '$' + Math.round(Number(buyAmount.replace(',', '.')) * navPrice * fxRate).toLocaleString('es-CL') + ' CLP' : '$0 CLP'}
-                </p>
+                {buyAmount && navPrice && (
+                  <>
+                    {buyMode === 'ues' && (
+                      <>
+                        <p className="text-xl font-bold text-green-400">
+                          {'$' + (Number(buyAmount.replace(',', '.')) * navPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD'}
+                        </p>
+                        <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                          {'$' + Math.round(Number(buyAmount.replace(',', '.')) * navPrice * fxRate).toLocaleString('es-CL') + ' CLP'}
+                        </p>
+                      </>
+                    )}
+                    {buyMode === 'clp' && (
+                      <>
+                        <p className="text-xl font-bold text-green-400">
+                          {'$' + Math.round(Number(buyAmount.replace(',', '.')) / fxRate * 100) / 100 + ' USD'}
+                        </p>
+                        <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                          {'$' + Number(buyAmount.replace(',', '.')).toLocaleString('es-CL') + ' CLP'}
+                        </p>
+                        <p className={`text-xs mt-1 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
+                          ≈ {(Number(buyAmount.replace(',', '.')) / fxRate / navPrice).toFixed(8)} UEs
+                        </p>
+                      </>
+                    )}
+                    {buyMode === 'usd' && (
+                      <>
+                        <p className="text-xl font-bold text-green-400">
+                          {'$' + Number(buyAmount.replace(',', '.')).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD'}
+                        </p>
+                        <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                          {'$' + Math.round(Number(buyAmount.replace(',', '.')) * fxRate).toLocaleString('es-CL') + ' CLP'}
+                        </p>
+                        <p className={`text-xs mt-1 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
+                          ≈ {(Number(buyAmount.replace(',', '.')) / navPrice).toFixed(8)} UEs
+                        </p>
+                      </>
+                    )}
+                  </>
+                )}
+                {(!buyAmount || !navPrice) && (
+                  <>
+                    <p className="text-xl font-bold text-green-400">$0.00 USD</p>
+                    <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>$0 CLP</p>
+                  </>
+                )}
               </div>
 
               <TradingActionButton
                 onClick={handleBuyUnits}
-                disabled={!session || !navPrice || !buyAmount || Number(buyAmount.replace(',', '.')) <= 0 || (userWallet && (Number(buyAmount.replace(',', '.')) * navPrice) > (userWallet.saldo_usd || 0))}
+                disabled={!session || !navPrice || !buyAmount || Number(buyAmount.replace(',', '.')) <= 0 || (userWallet && (
+                  buyMode === 'clp' ? Number(buyAmount.replace(',', '.')) > (userWallet.saldo_clp || 0)
+                    : buyMode === 'usd' ? Number(buyAmount.replace(',', '.')) > (userWallet.saldo_usd || 0)
+                    : (Number(buyAmount.replace(',', '.')) * navPrice) > (userWallet.saldo_usd || 0)
+                ))}
                 loading={isBuying}
                 text="Comprar UEs"
                 icon={<Plus size={22} />}
