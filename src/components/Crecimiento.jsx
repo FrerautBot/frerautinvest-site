@@ -629,7 +629,15 @@ const Crecimiento = () => {
       return;
     }
     const { data: { session: currentSession } } = await supabase.auth.getSession();
-    setIsAdmin(currentSession?.user?.email === 'frerautgroups.a@gmail.com');
+    const email = currentSession?.user?.email;
+    // Admin si es el email institucional, el fundador, o tiene rol co_administrador
+    const isAdminEmail = email === 'frerautgroups.a@gmail.com' || email === 'valdeslukas5@gmail.com';
+    if (!isAdminEmail && email) {
+      const { data: roles } = await supabase.from('user_roles').select('role').eq('usuario_id', currentSession.user.id);
+      setIsAdmin((roles || []).some(r => r.role === 'co_administrador' || r.role === 'gestor_activos'));
+    } else {
+      setIsAdmin(isAdminEmail);
+    }
   }, [session]);
 
   useEffect(() => {
