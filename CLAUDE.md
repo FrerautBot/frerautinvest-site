@@ -63,7 +63,8 @@ Para arreglar la raíz, actualizar la vista `vista_patrimonio_usuario` y la RPC 
 - Los cambios se pushean a GitHub, no deploy directo
 - `git pull --rebase` antes de `git push` (por si hay cambios remotos)
 - Testear en localhost:3000 antes de desplegar
-- MAPA-SISTEMAS.md tiene el mapa completo de la arquitectura
+- **MAPA-SISTEMAS.md** tiene el mapa completo de la arquitectura (ver ese archivo para detalle de cada sistema)
+- **CONTEXTO.md** es el registro cronológico de todo lo que se ha hecho en el proyecto. Leerlo al inicio de cada sesión y actualizarlo al finalizar cada tarea.
 
 ## Rutas clave del proyecto
 - `src/components/Index.jsx` — Dashboard principal con tarjeta Patrimonio Total
