@@ -999,21 +999,27 @@ const Market = () => {
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className={`text-sm font-semibold uppercase tracking-wider ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  <label htmlFor="buy-amount" className={`text-sm font-semibold uppercase tracking-wider ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
                     }`}>
                     {buyMode === 'ues' ? 'Cantidad de UEs' : buyMode === 'clp' ? 'Monto en CLP' : 'Monto en USD'}
                   </label>
-                  <div className="flex rounded-lg overflow-hidden border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}">
+                  <div role="tablist" className="flex rounded-lg overflow-hidden border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}">
                     <button
                       onClick={() => setBuyMode('ues')}
+                      role="tab"
+                      aria-selected={buyMode === 'ues'}
                       className={`px-3 py-1 text-xs font-semibold transition-all ${buyMode === 'ues' ? 'bg-green-500 text-white' : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                     >UEs</button>
                     <button
                       onClick={() => setBuyMode('clp')}
+                      role="tab"
+                      aria-selected={buyMode === 'clp'}
                       className={`px-3 py-1 text-xs font-semibold transition-all ${buyMode === 'clp' ? 'bg-green-500 text-white' : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                     >CLP</button>
                     <button
                       onClick={() => setBuyMode('usd')}
+                      role="tab"
+                      aria-selected={buyMode === 'usd'}
                       className={`px-3 py-1 text-xs font-semibold transition-all ${buyMode === 'usd' ? 'bg-green-500 text-white' : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                     >USD</button>
                   </div>
@@ -1136,21 +1142,27 @@ const Market = () => {
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className={`text-sm font-semibold uppercase tracking-wider ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
+                  <label htmlFor="sell-amount" className={`text-sm font-semibold uppercase tracking-wider ${isDarkMode ? 'text-gray-300' : 'text-gray-700'
                     }`}>
                     {sellMode === 'ues' ? 'Cantidad de UEs' : sellMode === 'clp' ? 'Monto en CLP' : 'Monto en USD'}
                   </label>
-                  <div className="flex rounded-lg overflow-hidden border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}">
+                  <div role="tablist" className="flex rounded-lg overflow-hidden border ${isDarkMode ? 'border-gray-700' : 'border-gray-300'}">
                     <button
                       onClick={() => setSellMode('ues')}
+                      role="tab"
+                      aria-selected={sellMode === 'ues'}
                       className={`px-3 py-1 text-xs font-semibold transition-all ${sellMode === 'ues' ? 'bg-red-500 text-white' : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                     >UEs</button>
                     <button
                       onClick={() => setSellMode('clp')}
+                      role="tab"
+                      aria-selected={sellMode === 'clp'}
                       className={`px-3 py-1 text-xs font-semibold transition-all ${sellMode === 'clp' ? 'bg-red-500 text-white' : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                     >CLP</button>
                     <button
                       onClick={() => setSellMode('usd')}
+                      role="tab"
+                      aria-selected={sellMode === 'usd'}
                       className={`px-3 py-1 text-xs font-semibold transition-all ${sellMode === 'usd' ? 'bg-red-500 text-white' : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                     >USD</button>
                   </div>
@@ -1424,23 +1436,24 @@ const Market = () => {
         </div>
 
         {showDepositModal && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-md z-50 p-4">
+          <div role="dialog" aria-modal="true" aria-labelledby="deposit-title" onKeyDown={(e) => e.key === 'Escape' && setShowDepositModal(false)} className="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-md z-50 p-4">
             <div className={`rounded-2xl p-8 shadow-2xl max-w-md w-full border relative overflow-hidden ${isDarkMode
                 ? 'bg-gradient-to-br from-gray-900 to-gray-800 border-yellow-500/30'
                 : 'bg-gradient-to-br from-white to-gray-50 border-yellow-500/50'
               }`}>
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent" />
               <div className="relative z-10">
-                <h3 className="text-3xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-400 bg-clip-text text-transparent mb-6">
+                <h3 id="deposit-title" className="text-3xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-400 bg-clip-text text-transparent mb-6">
                   Registrar NOMBRE Bancario
                 </h3>
 
                 <div className="mb-6">
-                  <label className={`block text-sm font-semibold mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <label htmlFor="bank-name" className={`block text-sm font-semibold mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     NOMBRE EXACTO de cuenta bancaria
                   </label>
                   <input
                     type="text"
+                    id="bank-name"
                     value={userBankAccount}
                     onChange={(e) => setUserBankAccount(e.target.value)}
                     className={`w-full border p-4 rounded-xl backdrop-blur-sm text-lg transition-all ${isDarkMode
@@ -1448,6 +1461,7 @@ const Market = () => {
                         : 'bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-yellow-500 placeholder-gray-400'
                       } focus:border-transparent`}
                     placeholder="Ej: JUAN PEREZ PEREZ"
+                    autoFocus
                   />
                   <p className={`text-xs mt-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-600'}`}>
                     Este NOMBRE se usarÃ¡ para identificar tus transferencias automÃ¡ticamente

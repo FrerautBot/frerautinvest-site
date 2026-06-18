@@ -65,16 +65,16 @@ body {
 
 /* Contenedores y paneles grandes */
 [class*="rounded-2xl"] {
-  border-radius: 1.75rem !important;
+  border-radius: 1rem !important;
 }
 [class*="rounded-xl"] {
-  border-radius: 1.5rem !important;
+  border-radius: 0.75rem !important;
 }
 [class*="rounded-lg"] {
-  border-radius: 1.25rem !important;
+  border-radius: 0.5rem !important;
 }
 [class*="rounded-md"] {
-  border-radius: 1rem !important;
+  border-radius: 0.375rem !important;
 }
 
 /* Botones */

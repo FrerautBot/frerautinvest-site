@@ -27,6 +27,7 @@ import FrerautAnalyzer from '@/components/FrerautAnalyzer';
 import GestionRoles from '@/components/GestionRoles';
 import LakeExecutor from '@/components/LakeExecutor';
 import TaxCenter from '@/components/TaxCenter';
+import HomePage from '@/pages/HomePage';
 import { SkyBackground, useSkyMode } from '@/components/SkyBackground';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -244,9 +245,25 @@ function App() {
 
   useEffect(() => { if (session && (activeTab === 'pactos' || activeTab === 'bonos')) fetchFinanceEvents(); }, [session, activeTab]);
 
+  // Landing page para usuarios no autenticados
+  if (!loading && !session) {
+    return (
+      <>
+        <Helmet><title>Freraut Invest — Inversión Inteligente con Estándares Europeos</title><meta name="description" content="Gestión profesional de patrimonios con presencia en Chile y Francia. Unidades de Efectivo respaldadas por activos reales." /></Helmet>
+        <AnimatePresence mode="wait">
+          {showSplash ? <SplashScreen key="splash" /> : (
+            <motion.div key="main" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+              <HomePage onOpenAuth={() => setShowAuthModal(true)} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+        <Toaster />
+      </>
+    );
+  }
   const renderContent = () => {
     if (loading) return <div className="text-center p-10">Cargando...</div>;
-    if (!session) return <div className="text-center p-10">Inicia sesión para ver el dashboard.</div>;
     if (showSettings) return <Settings onBack={() => setShowSettings(false)} />;
     switch (activeTab) {
       case 'dashboard':   return <Index onNavigate={setActiveTab} />;
