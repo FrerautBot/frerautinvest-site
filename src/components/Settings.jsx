@@ -49,6 +49,16 @@ const Settings = ({ onBack }) => {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  // Escape key handler for Privacy Policy modal
+  useEffect(() => {
+    if (!showPoliticas) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setShowPoliticas(false);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showPoliticas]);
+
 
 
   const loadUserData = async () => {
@@ -409,6 +419,8 @@ const Settings = ({ onBack }) => {
                       </p>
                     </div>
                     <button
+                      role="switch"
+                      aria-checked={notifications[item.key]}
                       onClick={() => toggleNotification(item.key)}
                       className={`relative h-7 w-12 rounded-full transition-all duration-300 focus:ring-2 focus:ring-offset-2 shadow-inner ${notifications[item.key]
                           ? 'bg-gradient-to-r from-yellow-500 via-yellow-600 to-yellow-700 shadow-yellow-500/30 focus:ring-yellow-500'

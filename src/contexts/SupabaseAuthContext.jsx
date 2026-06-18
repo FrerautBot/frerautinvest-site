@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
           setSession(null);
           setUser(null);
           setLoading(false);
-        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);

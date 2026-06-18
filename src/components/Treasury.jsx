@@ -103,7 +103,7 @@ const Treasury = ({ onBack }) => {
         .select('*')
         .order('fecha_creacion', { ascending: false });
 
-      if (eventosError) throw eventosData;
+      if (eventosError) throw eventosError;
 
       const { data: participacionesData } = await supabase
         .from('participaciones_tesoreria')

@@ -280,6 +280,14 @@ const Pool = ({ onBack }) => {
     }).format(amount || 0);
   };
 
+  const formatCurrencyCLP = (amount) => {
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      minimumFractionDigits: 0
+    }).format(amount || 0);
+  };
+
   const formatPercent = (amount) => {
     return `${parseFloat(amount || 0).toFixed(2)}%`;
   };
@@ -661,9 +669,9 @@ const Pool = ({ onBack }) => {
                         </div>
                         <div className="text-right">
                           <p className={`text-lg font-black ${move.tipo === 'deposito' ? 'text-emerald-400' : 'text-red-400'}`}>
-                            {move.tipo === 'deposito' ? '+' : '-'}{formatCurrency(move.monto_clp)}
+                            {move.tipo === 'deposito' ? '+' : '-'}{formatCurrencyCLP(move.monto_clp)}
                           </p>
-                          <p className="text-[10px] text-gray-500 font-mono uppercase">Balance: {formatCurrency(move.capital_despues)}</p>
+                          <p className="text-[10px] text-gray-500 font-mono uppercase">Balance: {formatCurrencyCLP(move.capital_despues)}</p>
                         </div>
                       </div>
                     ))}

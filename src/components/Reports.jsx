@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  FileText, Download, Upload, Trash2, Loader, BarChart3, 
-  Eye, Calendar, User, TrendingUp, TrendingDown, MoreVertical, 
-  Search, Filter, X, AlertCircle, Users, Clock, Share2, 
+  FileText, Download, Upload, Trash2, Loader, BarChart3,
+  Eye, Calendar, MoreVertical,
+  Search, X, Share2,
   PieChart, LineChart, ShieldCheck, History
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -530,7 +530,11 @@ const Reports = () => {
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
         document.head.appendChild(script);
-        await new Promise(r => script.onload = r);
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error('CDN load timeout')), 10000);
+          script.onload = () => { clearTimeout(timeout); resolve(); };
+          script.onerror = () => { clearTimeout(timeout); reject(new Error('Failed to load jspdf from CDN')); };
+        });
       }
 
       // 1. Fetch data

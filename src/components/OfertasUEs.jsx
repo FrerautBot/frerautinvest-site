@@ -39,9 +39,9 @@ const OfertasUEs = ({
     plazo_lockup_dias: ''
   });
 
-  // 🔥 NUEVO: Obtener balance del usuario
+  // 🔥 NUEVO: Obtener balance del usuario y retornarlo
   const obtenerBalanceUsuario = async () => {
-    if (isAdmin) return;
+    if (isAdmin) return 0;
 
     try {
       const { data, error } = await supabase
@@ -52,10 +52,13 @@ const OfertasUEs = ({
 
       if (error) throw error;
 
-      setBalanceUsuario(data?.saldo_clp || 0);
+      const balance = parseFloat(data?.saldo_clp || 0);
+      setBalanceUsuario(balance);
+      return balance;
     } catch (err) {
       console.error('Error obteniendo balance:', err);
       setBalanceUsuario(0);
+      return 0;
     }
   };
 
@@ -182,9 +185,9 @@ const OfertasUEs = ({
     }
 
     // 🔥 VALIDAR BALANCE ANTES DE CONTINUAR
-    await obtenerBalanceUsuario();
+    const currentBalance = await obtenerBalanceUsuario();
 
-    if (monto > balanceUsuario) {
+    if (monto > currentBalance) {
       toast({
         title: "Fondos insuficientes",
         description: `Tu saldo disponible es $${balanceUsuario.toLocaleString('es-CL')}. No puedes invertir $${monto.toLocaleString('es-CL')}.`,
@@ -205,7 +208,7 @@ const OfertasUEs = ({
 
       if (error) throw error;
 
-      if (!data.success) {
+      if (!data?.success) {
         throw new Error(data.mensaje || 'Error al procesar la suscripción');
       }
 

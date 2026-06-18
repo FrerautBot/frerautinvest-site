@@ -1,7 +1,11 @@
+// Configurable origin for the Browserbase iframe.
+// Change this if your Browserbase session URLs use a different origin.
+const BROWSERBASE_ORIGIN = 'https://www.browserbase.com';
+
 export function initLakeBrowserAPI({ iframeRef, setUrl }) {
   const post = (action, payload = {}) => {
     if (iframeRef.current && iframeRef.current.contentWindow) {
-      iframeRef.current.contentWindow.postMessage({ action, ...payload }, '*');
+      iframeRef.current.contentWindow.postMessage({ action, ...payload }, BROWSERBASE_ORIGIN);
     }
   };
 
@@ -31,6 +35,7 @@ export function initLakeBrowserAPI({ iframeRef, setUrl }) {
     read: (selector) => {
       return new Promise((resolve) => {
         const handler = (event) => {
+          if (event.origin !== BROWSERBASE_ORIGIN) return;
           if (event.data && event.data.type === 'read_response') {
             window.removeEventListener('message', handler);
             resolve(event.data.content);
@@ -49,6 +54,7 @@ export function initLakeBrowserAPI({ iframeRef, setUrl }) {
     evaluate: (code) => {
       return new Promise((resolve) => {
         const handler = (event) => {
+          if (event.origin !== BROWSERBASE_ORIGIN) return;
           if (event.data && event.data.type === 'eval_response') {
             window.removeEventListener('message', handler);
             resolve(event.data.result);

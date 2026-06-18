@@ -44,6 +44,16 @@ export default function BonosCorporativos({ events = [], onRefresh }) {
       return;
     }
 
+    const minAmount = selectedBono?.monto_minimo || selectedBono?.monto_total || 0;
+    if (Number(investmentAmount) < minAmount) {
+      toast({
+        variant: "destructive",
+        title: "Minimum Not Met",
+        description: `The minimum investment for this bond is $${Number(minAmount).toLocaleString()}.`,
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {

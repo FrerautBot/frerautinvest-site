@@ -356,7 +356,7 @@ export const EventoDetailModal = ({
                     <div>
                       <p className="text-xs text-slate-400 mb-1">Interés Generado</p>
                       <p className="text-lg font-bold text-emerald-400">
-                        ${datosUsuario.interesGenerado?.toFixed(0).toLocaleString('es-CL')}
+                        ${Number(datosUsuario.interesGenerado || 0).toLocaleString('es-CL', { maximumFractionDigits: 0 })}
                       </p>
                     </div>
                   )}

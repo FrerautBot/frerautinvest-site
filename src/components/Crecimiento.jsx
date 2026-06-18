@@ -17,6 +17,10 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
   const [liveData, setLiveData] = useState([]);
   const prevCapitalRef = useRef(null);
 
+  // ref + state para SVG responsivo
+  const chartRef = useRef(null);
+  const [chartWidth, setChartWidth] = useState(900);
+
   // 🔥 Inicializar datos
   useEffect(() => {
     if (!historial || historial.length === 0) {
@@ -88,6 +92,18 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
     return () => cancelAnimationFrame(animationFrame);
   }, [hoveredPoint]);
 
+  // Medir el contenedor del SVG para que sea responsivo
+  useEffect(() => {
+    const measure = () => {
+      if (chartRef.current) {
+        setChartWidth(chartRef.current.clientWidth);
+      }
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+
   const dataToRender = liveData.length > 0 ? liveData : historial || [];
 
   if (!dataToRender || dataToRender.length === 0) {
@@ -124,10 +140,9 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
     return `Desde ${fechaInicial.toLocaleDateString('es-CL')}`;
   };
 
-  const width = 900;
   const height = 400;
   const padding = { top: 50, right: 50, bottom: 70, left: 110 };
-  const chartWidth = width - padding.left - padding.right;
+  const innerChartWidth = chartWidth - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
 
   const valores = dataToRender.map((h) => parseFloat(h.capital_total));
@@ -149,7 +164,7 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
   const rangoValor = maxValor - minValor;
 
   const points = dataToRender.map((item, index) => {
-    const x = padding.left + (index / (dataToRender.length - 1 || 1)) * chartWidth;
+    const x = padding.left + (index / (dataToRender.length - 1 || 1)) * innerChartWidth;
     const valorPunto = parseFloat(item.capital_total);
     const y = padding.top + chartHeight - ((valorPunto - minValor) / rangoValor) * chartHeight;
     return {
@@ -165,7 +180,7 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
 
   const yActual = padding.top + chartHeight - ((valorActualNum - minValor) / rangoValor) * chartHeight;
   const puntoActual = {
-    x: padding.left + chartWidth,
+    x: padding.left + innerChartWidth,
     y: yActual,
     fecha: new Date().toISOString(),
     valor: valorActualNum,
@@ -213,7 +228,7 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
     // mousePos en CSS para posicionar el tooltip correctamente
     setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
 
-    if (mouseX < padding.left - 10 || mouseX > width - padding.right + 5 ||
+    if (mouseX < padding.left - 10 || mouseX > chartWidth - padding.right + 5 ||
       mouseY < padding.top - 5 || mouseY > height - padding.bottom + 5) {
       setHoveredPoint(null);
       return;
@@ -257,7 +272,7 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
     let left = mousePos.x + 20;
     let top = mousePos.y - 100;
 
-    if (left + 250 > width) {
+    if (left + 250 > chartWidth) {
       left = mousePos.x - 270;
     }
 
@@ -355,6 +370,7 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
         </div>
 
         <motion.div
+          ref={chartRef}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
@@ -366,7 +382,7 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
           }}
         >
           <svg
-            width={width}
+            width={chartWidth}
             height={height}
             className="mx-auto"
             onMouseMove={handleMouseMove}
@@ -410,7 +426,7 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
                   <line
                     x1={padding.left}
                     y1={yPos}
-                    x2={width - padding.right}
+                    x2={chartWidth - padding.right}
                     y2={yPos}
                     className="stroke-gray-300 dark:stroke-gray-600"
                     strokeWidth="1"
@@ -501,12 +517,25 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
             <line
               x1={padding.left}
               y1={height - padding.bottom}
-              x2={width - padding.right}
+              x2={chartWidth - padding.right}
               y2={height - padding.bottom}
               stroke="#d4af37"
               strokeWidth="1"
               opacity="0.3"
             />
+            {/* baseline label */}
+            <text
+              x={chartWidth - padding.right}
+              y={height - padding.bottom + 25}
+              textAnchor="end"
+              fill="#d4af37"
+              fontSize="11"
+              fontFamily="'Inter', system-ui, sans-serif"
+              fontWeight="500"
+              letterSpacing="1.5"
+            >
+              Ahora
+            </text>
 
             <text
               x={padding.left}
@@ -520,18 +549,6 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
               {formatFecha(dataToRender[0].fecha)}
             </text>
 
-            <text
-              x={width - padding.right}
-              y={height - padding.bottom + 25}
-              textAnchor="end"
-              fill="#d4af37"
-              fontSize="11"
-              fontFamily="'Inter', system-ui, sans-serif"
-              fontWeight="500"
-              letterSpacing="1.5"
-            >
-              Ahora
-            </text>
           </svg>
 
           <AnimatePresence>
@@ -595,13 +612,18 @@ const Crecimiento = () => {
   }, []);
 
   const fetchMarketMetrics = useCallback(async () => {
-    const { data, error: metricsError } = await supabase.rpc('obtener_metricas_mercado');
-    if (metricsError) {
-      console.error("❌ Error fetching market metrics:", metricsError.message);
-    } else if (data && data.length > 0) {
-      setMarketMetrics(data[0]);
+    try {
+      const { data, error: metricsError } = await supabase.rpc('obtener_metricas_mercado');
+      if (metricsError) {
+        console.error("❌ Error fetching market metrics:", metricsError.message);
+      } else if (data && data.length > 0) {
+        setMarketMetrics(data[0]);
+      }
+    } catch (err) {
+      console.error('fetchMarketMetrics error:', err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   // Traer el valor base desde parametros_fondo

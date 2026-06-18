@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/customSupabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/components/ui/use-toast';
-import { TrendingUp, Calendar, Wallet, PieChart, ArrowUpRight, ArrowDownRight, Loader2, DollarSign, X, Save, Trash2, RefreshCw, ArrowRightLeft } from 'lucide-react';
+import { TrendingUp, Calendar, Wallet, PieChart, ArrowUpRight, ArrowDownRight, Loader2, DollarSign, X, Trash2, RefreshCw, ArrowRightLeft } from 'lucide-react';
 
 const formatUSD = (val) => {
   if (val == null || isNaN(val)) return '$0.00 USD';
@@ -12,7 +12,7 @@ const formatUSD = (val) => {
 const formatCLP = (val, fx) => {
   if (val == null || isNaN(val) || !fx) return '';
   const clp = Number(val) * fx;
-  return '≈ $' + Math.round(clp).toLocaleString('es-CL') + ' CLP';
+  return 'â‰ˆ $' + Math.round(clp).toLocaleString('es-CL') + ' CLP';
 };
 
 function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
@@ -28,9 +28,9 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
           <div className="p-2 bg-[#C9A227]/10 rounded-lg">
             <TrendingUp className="w-5 h-5 text-[#C9A227]" />
           </div>
-          <h3 className="text-lg font-semibold text-[#1A1D2B] dark:text-white tracking-tight">Evolución de tu Patrimonio</h3>
+          <h3 className="text-lg font-semibold text-[#1A1D2B] dark:text-white tracking-tight">EvoluciÃ³n de tu Patrimonio</h3>
         </div>
-        <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-sm text-center py-8">No hay suficiente historial para mostrar el gráfico</p>
+        <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-sm text-center py-8">No hay suficiente historial para mostrar el grÃ¡fico</p>
       </motion.div>
     );
   }
@@ -53,7 +53,7 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
           <div className="p-2 bg-[#C9A227]/10 rounded-lg">
             <TrendingUp className="w-5 h-5 text-[#C9A227]" />
           </div>
-          <h3 className="text-lg font-semibold text-[#1A1D2B] dark:text-white tracking-tight">Evolución de tu Patrimonio</h3>
+          <h3 className="text-lg font-semibold text-[#1A1D2B] dark:text-white tracking-tight">EvoluciÃ³n de tu Patrimonio</h3>
         </div>
         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
           <p className="text-red-600 dark:text-red-400 text-xs">Los datos del historial existen pero todos los valores son 0</p>
@@ -77,7 +77,7 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
     };
   });
 
-  // Smooth curve (Catmull-Rom → cubic Bezier)
+  // Smooth curve (Catmull-Rom â†’ cubic Bezier)
   function smoothPath(pts) {
     if (pts.length < 2) return pts.map(p => `${p.x},${p.y}`).join(' ');
     return pts.map((p, i, a) => {
@@ -138,7 +138,7 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-[#1A1D2B] dark:text-white tracking-tight">
-                Evolución de tu Patrimonio
+                EvoluciÃ³n de tu Patrimonio
               </h3>
               <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF] mt-0.5">
                 {formatUSD(totalPatrimonioUSD)}
@@ -147,7 +147,7 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
           </div>
           <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700/50">
             <Calendar className="w-3.5 h-3.5 text-[#C9A227]" />
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Últimos 30 días</span>
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Ãšltimos 30 dÃ­as</span>
           </div>
         </div>
 
@@ -282,7 +282,7 @@ const MyUnits = () => {
   const [hasMoreWithdraws, setHasMoreWithdraws] = useState(false);
 
   // ============================================
-  // NUEVOS ESTADOS: Modal de cambio CLP → USD
+  // NUEVOS ESTADOS: Modal de cambio CLP â†’ USD
   // ============================================
   const [showExchangeModal, setShowExchangeModal] = useState(false);
   const [exchangeAmount, setExchangeAmount] = useState('');
@@ -364,6 +364,12 @@ const MyUnits = () => {
 
       } catch (error) {
         console.error('Error fetching units data:', error);
+        toast({
+          title: 'Error al cargar datos',
+          description: 'No se pudieron cargar los datos de tu cartera. Intenta nuevamente.',
+          variant: 'destructive',
+          duration: 4000
+        });
       } finally {
         setLoading(false);
       }
@@ -414,8 +420,11 @@ const MyUnits = () => {
 
       if (error) throw error;
 
-      setSaldoDisponible(Number(usuarioData?.saldo_clp || 0));
-      setSaldoUSD(Number(usuarioData?.saldo_usd || 0));
+      const saldoCLP = Number(usuarioData?.saldo_clp || 0);
+      const saldoUSD = Number(usuarioData?.saldo_usd || 0);
+      setSaldoDisponible(saldoCLP);
+      setSaldoUSD(saldoUSD);
+      return { saldoCLP, saldoUSD };
     } catch (error) {
       console.error('Error cargando saldo disponible:', error);
     }
@@ -424,7 +433,7 @@ const MyUnits = () => {
   const saveBankData = async () => {
     if (!bankData.banco || !bankData.numeroCuenta || !bankData.rutTitular || !bankData.nombreTitular) {
       toast({
-        title: '❌ Datos incompletos',
+        title: 'âŒ Datos incompletos',
         description: 'Completa todos los datos bancarios',
         variant: 'destructive',
         duration: 3000
@@ -447,7 +456,7 @@ const MyUnits = () => {
       if (error) throw error;
 
       toast({
-        title: '✅ Datos guardados',
+        title: 'âœ… Datos guardados',
         description: 'Tus datos bancarios se guardaron correctamente',
         duration: 3000
       });
@@ -458,7 +467,7 @@ const MyUnits = () => {
     } catch (error) {
       console.error('Error guardando datos bancarios:', error);
       toast({
-        title: '❌ Error',
+        title: 'âŒ Error',
         description: error.message,
         variant: 'destructive',
         duration: 4000
@@ -471,10 +480,11 @@ const MyUnits = () => {
   // RETIRO: Usa solicitar_retiro RPC + guarda datos bancarios en usuarios
   // ============================================
   const handleWithdraw = async () => {
-    if (!withdrawAmount || Number(withdrawAmount) <= 0) {
+    const montoNum = Number(withdrawAmount);
+    if (!withdrawAmount || isNaN(montoNum) || montoNum <= 0) {
       toast({
-        title: '❌ Monto inválido',
-        description: 'Ingresa un monto válido para retirar',
+        title: 'âŒ Monto invÃ¡lido',
+        description: 'Ingresa un monto vÃ¡lido para retirar',
         variant: 'destructive',
         duration: 3000
       });
@@ -483,7 +493,7 @@ const MyUnits = () => {
 
     if (!bankData.banco || !bankData.numeroCuenta || !bankData.rutTitular || !bankData.nombreTitular) {
       toast({
-        title: '❌ Datos incompletos',
+        title: 'âŒ Datos incompletos',
         description: 'Completa todos los datos bancarios',
         variant: 'destructive',
         duration: 3000
@@ -495,8 +505,8 @@ const MyUnits = () => {
 
     if (montoRetiro < 1000) {
       toast({
-        title: '❌ Monto mínimo',
-        description: 'El monto mínimo de retiro es $1.000 CLP',
+        title: 'âŒ Monto mÃ­nimo',
+        description: 'El monto mÃ­nimo de retiro es $1.000 CLP',
         variant: 'destructive',
         duration: 3000
       });
@@ -507,12 +517,12 @@ const MyUnits = () => {
       setIsProcessingWithdraw(true);
 
       // Recargar saldo actualizado
-      await loadSaldoDisponible();
+      const { saldoCLP: saldoActual } = (await loadSaldoDisponible()) || {};
 
-      if (montoRetiro > saldoDisponible) {
+      if (montoRetiro > saldoActual) {
         toast({
-          title: '❌ Saldo insuficiente',
-          description: `Solo tienes $${saldoDisponible.toLocaleString('es-CL')} disponibles para retirar.`,
+          title: 'âŒ Saldo insuficiente',
+          description: `Solo tienes $${(saldoActual || 0).toLocaleString('es-CL')} disponibles para retirar.`,
           variant: 'destructive',
           duration: 5000
         });
@@ -550,21 +560,21 @@ const MyUnits = () => {
       if (error) {
         if (error.message.includes('Saldo insuficiente') || error.message.includes('insuficiente')) {
           toast({
-            title: '❌ Saldo insuficiente',
+            title: 'âŒ Saldo insuficiente',
             description: error.message,
             variant: 'destructive',
             duration: 5000
           });
-        } else if (error.message.includes('mínimo') || error.message.includes('1000')) {
+        } else if (error.message.includes('mÃ­nimo') || error.message.includes('1000')) {
           toast({
-            title: '❌ Monto mínimo',
+            title: 'âŒ Monto mÃ­nimo',
             description: error.message,
             variant: 'destructive',
             duration: 5000
           });
         } else if (error.message.includes('bancarios')) {
           toast({
-            title: '❌ Datos bancarios faltantes',
+            title: 'âŒ Datos bancarios faltantes',
             description: error.message,
             variant: 'destructive',
             duration: 5000
@@ -577,8 +587,8 @@ const MyUnits = () => {
       }
 
       toast({
-        title: '✅ Solicitud de retiro creada',
-        description: `Se procesará tu retiro de $${montoRetiro.toLocaleString('es-CL')} CLP en las próximas 24-48 horas`,
+        title: 'âœ… Solicitud de retiro creada',
+        description: `Se procesarÃ¡ tu retiro de $${montoRetiro.toLocaleString('es-CL')} CLP en las prÃ³ximas 24-48 horas`,
         duration: 5000
       });
 
@@ -591,7 +601,7 @@ const MyUnits = () => {
     } catch (error) {
       console.error('Error retiro:', error);
       toast({
-        title: '❌ Error al procesar retiro',
+        title: 'âŒ Error al procesar retiro',
         description: error.message,
         variant: 'destructive',
         duration: 5000
@@ -602,14 +612,23 @@ const MyUnits = () => {
   };
 
   // ============================================
-  // CAMBIO CLP → USD: Cotizar
+  // CAMBIO CLP â†’ USD: Cotizar
   // ============================================
   const handleGetQuote = async () => {
     const monto = Number(exchangeAmount);
     if (!monto || monto <= 0) {
       toast({
-        title: '❌ Monto inválido',
+        title: 'âŒ Monto invÃ¡lido',
         description: 'Ingresa un monto en pesos para convertir',
+        variant: 'destructive',
+        duration: 3000
+      });
+      return;
+    }
+    if (monto < 1000) {
+      toast({
+        title: '❌ Monto mínimo',
+        description: 'El monto mínimo para cambiar es de $1.000 CLP',
         variant: 'destructive',
         duration: 3000
       });
@@ -630,7 +649,7 @@ const MyUnits = () => {
     } catch (error) {
       console.error('Error cotizando cambio:', error);
       toast({
-        title: '❌ Error al cotizar',
+        title: 'âŒ Error al cotizar',
         description: error.message,
         variant: 'destructive',
         duration: 4000
@@ -641,11 +660,20 @@ const MyUnits = () => {
   };
 
   // ============================================
-  // CAMBIO CLP → USD: Ejecutar conversión
+  // CAMBIO CLP â†’ USD: Ejecutar conversiÃ³n
   // ============================================
   const handleExecuteExchange = async () => {
     const monto = Number(exchangeAmount);
     if (!monto || monto <= 0) return;
+    if (monto < 1000) {
+      toast({
+        title: '❌ Monto mínimo',
+        description: 'El monto mínimo para cambiar es de $1.000 CLP',
+        variant: 'destructive',
+        duration: 3000
+      });
+      return;
+    }
 
     try {
       setIsProcessingExchange(true);
@@ -658,7 +686,7 @@ const MyUnits = () => {
       if (error) {
         if (error.message.includes('insuficiente')) {
           toast({
-            title: '❌ Saldo insuficiente',
+            title: 'âŒ Saldo insuficiente',
             description: error.message,
             variant: 'destructive',
             duration: 5000
@@ -670,7 +698,7 @@ const MyUnits = () => {
       }
 
       toast({
-        title: '✅ Cambio realizado',
+        title: 'âœ… Cambio realizado',
         description: `Convertiste $${monto.toLocaleString('es-CL')} CLP a $${Number(data.monto_usd).toFixed(2)} USD`,
         duration: 5000
       });
@@ -684,7 +712,7 @@ const MyUnits = () => {
     } catch (error) {
       console.error('Error ejecutando cambio:', error);
       toast({
-        title: '❌ Error al realizar cambio',
+        title: 'âŒ Error al realizar cambio',
         description: error.message,
         variant: 'destructive',
         duration: 5000
@@ -704,8 +732,8 @@ const MyUnits = () => {
       if (error) throw error;
 
       toast({
-        title: '✅ Cuenta eliminada',
-        description: 'La cuenta bancaria se eliminó correctamente',
+        title: 'âœ… Cuenta eliminada',
+        description: 'La cuenta bancaria se eliminÃ³ correctamente',
         duration: 3000
       });
 
@@ -726,7 +754,7 @@ const MyUnits = () => {
     } catch (error) {
       console.error('Error eliminando cuenta:', error);
       toast({
-        title: '❌ Error',
+        title: 'âŒ Error',
         description: error.message,
         variant: 'destructive',
         duration: 4000
@@ -736,8 +764,8 @@ const MyUnits = () => {
 
   // Corregir historial: patrimonio_total_real (bug) = saldo_clp (CLP) + valor_ue (USD)
   // USD correcto = saldo_usd + valor_ue + (saldo_clp/fxRate)
-  // 1) factor = clpRatio/fxRate + ueRatio  → transforma raw buggy a USD (sin saldo_usd)
-  // 2) se suma saldoUSD a todos los puntos (saldo_usd no está en patrimonio_total_real)
+  // 1) factor = clpRatio/fxRate + ueRatio  â†’ transforma raw buggy a USD (sin saldo_usd)
+  // 2) se suma saldoUSD a todos los puntos (saldo_usd no estÃ¡ en patrimonio_total_real)
   const chartHistorial = useMemo(() => {
     if (!lucro || historial.length === 0) return historial;
     const sCLP = saldoDisponible || 0;
@@ -800,10 +828,10 @@ const MyUnits = () => {
             </p>
           </div>
 
-          {/* Inversión Total */}
+          {/* InversiÃ³n Total */}
           <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl p-4">
             <div className="flex justify-between items-start mb-2">
-              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Inversión Total</p>
+              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">InversiÃ³n Total</p>
               <div className="p-1.5 bg-[#C9A227]/10 rounded-lg">
                 <TrendingUp className="w-3.5 h-3.5 text-[#C9A227]" />
               </div>
@@ -856,10 +884,10 @@ const MyUnits = () => {
             </p>
           </div>
 
-          {/* Saldo en Dólares */}
+          {/* Saldo en DÃ³lares */}
           <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl p-4">
             <div className="flex justify-between items-start mb-2">
-              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Saldo en Dólares</p>
+              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Saldo en DÃ³lares</p>
               <div className="p-1.5 bg-[#C9A227]/10 rounded-lg">
                 <DollarSign className="w-3.5 h-3.5 text-[#C9A227]" />
               </div>
@@ -876,7 +904,7 @@ const MyUnits = () => {
 
       <PatrimonioChart historial={chartHistorial} fxRate={fxRate} lucro={lucro} saldoCLP={saldoDisponible} saldoUSD={saldoUSD} />
 
-      {/* BOTONES DE ACCIÓN: Cambiar Divisas + Retirar Fondos */}
+      {/* BOTONES DE ACCIÃ“N: Cambiar Divisas + Retirar Fondos */}
       <div className="flex justify-center gap-3 flex-wrap">
         <button
           onClick={() => setShowExchangeModal(true)}
@@ -917,7 +945,7 @@ const MyUnits = () => {
           <div className="text-center py-10 mx-4 mb-4 bg-gray-50/50 dark:bg-gray-800/30 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
             <DollarSign className="w-8 h-8 text-[#6E6E6E]/40 mx-auto mb-2" />
             <p className="text-sm text-[#6E6E6E] dark:text-[#9CA3AF] font-medium">No tienes retiros registrados</p>
-            <p className="text-xs text-[#6E6E6E]/60 dark:text-[#9CA3AF]/60 mt-0.5">Tus solicitudes aparecerán aquí</p>
+            <p className="text-xs text-[#6E6E6E]/60 dark:text-[#9CA3AF]/60 mt-0.5">Tus solicitudes aparecerÃ¡n aquÃ­</p>
           </div>
         ) : (
           <div className="overflow-x-auto px-2">
@@ -950,11 +978,11 @@ const MyUnits = () => {
 
                   const getStatusIcon = (estado) => {
                     switch (estado) {
-                      case 'completado': return '✓';
-                      case 'rechazado': return '✕';
-                      case 'pendiente': return '●';
-                      case 'procesando': return '◌';
-                      default: return '●';
+                      case 'completado': return 'âœ“';
+                      case 'rechazado': return 'âœ•';
+                      case 'pendiente': return 'â—';
+                      case 'procesando': return 'â—Œ';
+                      default: return 'â—';
                     }
                   };
 
@@ -1021,7 +1049,7 @@ const MyUnits = () => {
               className="px-4 py-2 bg-[#C9A227]/10 hover:bg-[#C9A227]/20 text-[#C9A227] text-xs font-medium rounded-lg transition-colors duration-200 flex items-center gap-1.5"
             >
               <ArrowDownRight className="w-3.5 h-3.5" />
-              Ver más retiros
+              Ver mÃ¡s retiros
             </button>
           </div>
         )}
@@ -1036,7 +1064,7 @@ const MyUnits = () => {
       </div>
 
       {/* ============================================ */}
-      {/* MODAL: CAMBIO CLP → USD */}
+      {/* MODAL: CAMBIO CLP â†’ USD */}
       {/* ============================================ */}
       <AnimatePresence>
         {showExchangeModal && (
@@ -1044,8 +1072,11 @@ const MyUnits = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            role="dialog"
+            aria-modal="true"
             className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             onClick={() => !isProcessingExchange && setShowExchangeModal(false)}
+            onKeyDown={(e) => e.key === 'Escape' && !isProcessingExchange && setShowExchangeModal(false)}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -1062,7 +1093,7 @@ const MyUnits = () => {
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Cambiar Divisas</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      CLP → USD
+                      CLP â†’ USD
                     </p>
                   </div>
                 </div>
@@ -1108,6 +1139,7 @@ const MyUnits = () => {
                       }}
                       placeholder="Ej: 100000"
                       disabled={isProcessingExchange}
+                      autoFocus
                       className="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-700 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all text-gray-900 dark:text-white font-semibold text-lg"
                     />
                   </div>
@@ -1124,7 +1156,7 @@ const MyUnits = () => {
                   )}
                 </div>
 
-                {/* Botón cotizar */}
+                {/* BotÃ³n cotizar */}
                 {!exchangeQuote && (
                   <button
                     onClick={handleGetQuote}
@@ -1145,7 +1177,7 @@ const MyUnits = () => {
                   </button>
                 )}
 
-                {/* Resultado cotización */}
+                {/* Resultado cotizaciÃ³n */}
                 {exchangeQuote && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
@@ -1162,7 +1194,7 @@ const MyUnits = () => {
 
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600 dark:text-gray-400">Envías</span>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">EnvÃ­as</span>
                           <span className="text-lg font-bold text-gray-900 dark:text-white">
                             ${Number(exchangeQuote.monto_clp).toLocaleString('es-CL')} CLP
                           </span>
@@ -1209,7 +1241,7 @@ const MyUnits = () => {
                 {/* Nota informativa */}
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                   <p className="text-xs text-blue-800 dark:text-blue-300">
-                    <strong>💱 Tipo de cambio:</strong> El tipo de cambio se calcula en tiempo real. Una vez confirmado, la conversión es instantánea y se refleja en tus saldos.
+                    <strong>ðŸ’± Tipo de cambio:</strong> El tipo de cambio se calcula en tiempo real. Una vez confirmado, la conversiÃ³n es instantÃ¡nea y se refleja en tus saldos.
                   </p>
                 </div>
               </div>
@@ -1227,8 +1259,11 @@ const MyUnits = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            role="dialog"
+            aria-modal="true"
             className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             onClick={() => !isProcessingWithdraw && setShowWithdrawModal(false)}
+            onKeyDown={(e) => e.key === 'Escape' && !isProcessingWithdraw && setShowWithdrawModal(false)}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -1269,14 +1304,15 @@ const MyUnits = () => {
                     onChange={(e) => setWithdrawAmount(e.target.value)}
                     placeholder="Ej: 50000"
                     disabled={isProcessingWithdraw}
+                    autoFocus
                     className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-700 rounded-xl focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all text-gray-900 dark:text-white font-semibold text-lg"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Monto mínimo: $1.000 CLP</p>
+                  <p className="text-xs text-gray-500 mt-1">Monto mÃ­nimo: $1.000 CLP</p>
                 </div>
 
                 {savedBankAccounts.length > 0 && (
                   <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl p-4">
-                    <h4 className="text-sm font-bold text-blue-900 dark:text-blue-300 mb-3">💳 Cuentas Guardadas</h4>
+                    <h4 className="text-sm font-bold text-blue-900 dark:text-blue-300 mb-3">ðŸ’³ Cuentas Guardadas</h4>
                     <div className="space-y-2">
                       {savedBankAccounts.map((cuenta) => (
                         <div
@@ -1293,13 +1329,13 @@ const MyUnits = () => {
                           <div className="flex-1">
                             <p className="text-sm font-bold text-gray-900 dark:text-white">{cuenta.banco}</p>
                             <p className="text-xs text-gray-600 dark:text-gray-400">
-                              {cuenta.tipo_cuenta.toUpperCase()} • ***{cuenta.numero_cuenta.slice(-4)}
+                              {cuenta.tipo_cuenta.toUpperCase()} â€¢ ***{cuenta.numero_cuenta.slice(-4)}
                             </p>
                           </div>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (window.confirm('¿Eliminar esta cuenta?')) {
+                              if (window.confirm('Â¿Eliminar esta cuenta?')) {
                                 deleteBankAccount(cuenta.id);
                               }
                             }}
@@ -1347,7 +1383,7 @@ const MyUnits = () => {
                         <option value="Banco Estado">Banco Estado</option>
                         <option value="BCI">BCI</option>
                         <option value="Scotiabank">Scotiabank</option>
-                        <option value="Banco Itaú">Banco Itaú</option>
+                        <option value="Banco ItaÃº">Banco ItaÃº</option>
                         <option value="Banco Security">Banco Security</option>
                         <option value="Banco Falabella">Banco Falabella</option>
                         <option value="Banco Ripley">Banco Ripley</option>
@@ -1371,7 +1407,7 @@ const MyUnits = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Número de Cuenta</label>
+                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">NÃºmero de Cuenta</label>
                     <input
                       type="text"
                       value={bankData.numeroCuenta}
@@ -1401,7 +1437,7 @@ const MyUnits = () => {
                         type="text"
                         value={bankData.nombreTitular}
                         onChange={(e) => setBankData({ ...bankData, nombreTitular: e.target.value })}
-                        placeholder="Juan Pérez"
+                        placeholder="Juan PÃ©rez"
                         disabled={isProcessingWithdraw}
                         className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none text-sm"
                       />
@@ -1409,7 +1445,7 @@ const MyUnits = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Email de Confirmación</label>
+                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Email de ConfirmaciÃ³n</label>
                     <input
                       type="email"
                       value={bankData.email}
@@ -1438,8 +1474,8 @@ const MyUnits = () => {
 
                 <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4">
                   <p className="text-xs text-blue-800 dark:text-blue-300">
-                    <strong>📝 Importante:</strong> El retiro será procesado en un plazo de 24-48 horas hábiles.
-                    Recibirás un email de confirmación cuando se complete la transferencia.
+                    <strong>ðŸ“ Importante:</strong> El retiro serÃ¡ procesado en un plazo de 24-48 horas hÃ¡biles.
+                    RecibirÃ¡s un email de confirmaciÃ³n cuando se complete la transferencia.
                   </p>
                 </div>
 

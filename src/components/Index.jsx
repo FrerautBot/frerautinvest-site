@@ -15,7 +15,7 @@ import {
   ExternalLink,
   Sparkles,
   Globe2,
-  Crown, Star, BarChart2, Zap
+  Crown, Star
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -162,10 +162,19 @@ const Index = ({ onNavigate }) => {
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('es-CL', { 
-      style: 'currency', 
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
       currency: 'CLP',
-      minimumFractionDigits: 0 
+      minimumFractionDigits: 0
+    }).format(amount);
+  };
+
+  const formatUSDshort = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(amount);
   };
 
@@ -301,7 +310,7 @@ const Index = ({ onNavigate }) => {
             ) : (
               <div className="space-y-3">
                 <div className="text-3xl font-light text-slate-900 dark:text-white tracking-tight">
-                  {formatCurrency(marketMetrics?.nav_actual || 0)}
+                  {formatUSDshort(marketMetrics?.nav_actual || 0)}
                 </div>
                 <div className="h-12 w-full -mb-2">
                   <ResponsiveContainer width="100%" height="100%">
@@ -345,7 +354,7 @@ const Index = ({ onNavigate }) => {
             ) : (
               <div className="space-y-2">
                 <div className="text-3xl font-light text-slate-900 dark:text-white tracking-tight">
-                  {formatCurrency(marketMetrics?.capital_total_invertido || 0)}
+                  {formatUSDshort(marketMetrics?.capital_total_invertido || 0)}
                 </div>
                 <div className="flex items-center gap-2 text-xs">
                   <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />

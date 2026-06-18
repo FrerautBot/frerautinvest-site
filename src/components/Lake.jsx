@@ -879,23 +879,34 @@ const ToolExecutionBlock = ({ toolCalls, isFinancialMode = false }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [animatedTools, setAnimatedTools] = useState([]);
   const [searchingTool, setSearchingTool] = useState(null);
+  const timerRef = useRef([]);
 
   useEffect(() => {
+    // Clear any lingering timers from previous effect run
+    timerRef.current.forEach(id => clearTimeout(id));
+    timerRef.current = [];
+
     if (toolCalls && toolCalls.length > 0) {
       toolCalls.forEach((tool, index) => {
-        setTimeout(() => {
+        const outerId = setTimeout(() => {
           setSearchingTool(tool.function.name);
           setAnimatedTools(prev => [...prev, tool]);
 
-          // Quitar indicador después de animación
-          setTimeout(() => {
+          const innerId = setTimeout(() => {
             if (index === toolCalls.length - 1) {
               setSearchingTool(null);
             }
           }, 1000);
+          timerRef.current.push(innerId);
         }, index * 1500);
+        timerRef.current.push(outerId);
       });
     }
+
+    return () => {
+      timerRef.current.forEach(id => clearTimeout(id));
+      timerRef.current = [];
+    };
   }, [toolCalls]);
 
   if (!toolCalls || toolCalls.length === 0) return null;
@@ -1920,6 +1931,9 @@ export function Lake() {
                     className="w-full h-full"
                     title="Browserbase Remote Browser"
                     style={{ border: 'none' }}
+                    // SECURITY: allow-same-origin + allow-scripts is an anti-pattern that nullifies
+                    // sandbox isolation. Browserbase remote browsing requires allow-same-origin
+                    // for session/cookie functionality. Evaluate alternative isolation if possible.
                     sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals"
                     allow="clipboard-read; clipboard-write; fullscreen; camera; microphone"
                   />
@@ -1929,7 +1943,7 @@ export function Lake() {
                     className="w-full h-full bg-white"
                     title="Reconstructed Interface"
                     style={{ border: 'none' }}
-                    sandbox="allow-same-origin allow-scripts"
+                    sandbox="allow-scripts"
                   />
                 ) : (
                   <motion.div

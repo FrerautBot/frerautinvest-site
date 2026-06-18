@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Receipt, Calculator, TrendingUp, TrendingDown,
@@ -11,12 +11,12 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { supabase } from '@/lib/customSupabaseClient';
 import { useToast } from '@/components/ui/use-toast';
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const isAdmin = (user) => user?.email === 'frerautgroups.a@gmail.com';
 
 const fmt = (value, currency = 'USD', decimals = 2) => {
-  if (value === null || value === undefined || isNaN(value)) return '—';
+  if (value === null || value === undefined || isNaN(value)) return 'â€”';
   const abs = Math.abs(parseFloat(value));
   const formatted = abs.toLocaleString('es-CL', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
   if (currency === 'USD') return `$${formatted}`;
@@ -25,7 +25,7 @@ const fmt = (value, currency = 'USD', decimals = 2) => {
 };
 
 const fmtCLP = (usd, rate) => {
-  if (!rate || !usd) return '—';
+  if (!rate || usd === null || usd === undefined || isNaN(usd)) return '—';
   return `$${(parseFloat(usd) * rate).toLocaleString('es-CL', { maximumFractionDigits: 0 })} CLP`;
 };
 
@@ -34,10 +34,10 @@ const MONTHS_ES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep'
 const CURRENT_YEAR = new Date().getFullYear();
 const YEAR_OPTIONS = [CURRENT_YEAR - 1, CURRENT_YEAR];
 
-// Approximate CLP/USD rate (static fallback – real app would fetch live)
-const CLP_PER_USD = 920;
+// Approximate CLP/USD rate (static fallback â€“ real app would fetch live)
+const FALLBACK_FX_RATE = 920;
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const GlassCard = ({ children, className = '', glow = false }) => (
   <div className={`bg-[#1a1d2b]/60 backdrop-blur-xl border border-white/10 rounded-[1.75rem] p-5 shadow-xl ${glow ? 'border-yellow-500/30 shadow-yellow-900/10' : ''} ${className}`}>
@@ -62,7 +62,7 @@ const KpiCard = ({ label, value, subvalue, icon: Icon, color = 'text-yellow-400'
   </motion.div>
 );
 
-// ─── Bar Chart (pure SVG) ────────────────────────────────────────────────────
+// â”€â”€â”€ Bar Chart (pure SVG) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function MonthlyBarChart({ trades, year }) {
   const monthly = useMemo(() => {
@@ -153,7 +153,7 @@ function MonthlyBarChart({ trades, year }) {
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function TaxCenter({ onBack }) {
   const { session } = useAuth();
@@ -161,10 +161,11 @@ export default function TaxCenter({ onBack }) {
   const user = session?.user;
   const userIsAdmin = isAdmin(user);
 
-  // ── State
+  // â”€â”€ State
   const [year, setYear] = useState(CURRENT_YEAR);
   const [currency, setCurrency] = useState('USD'); // 'USD' | 'CLP'
   const [loading, setLoading] = useState(true);
+  const [fxRate, setFxRate] = useState(FALLBACK_FX_RATE);
   const [trades, setTrades] = useState([]);
   const [dividends, setDividends] = useState([]);
   const [expensesVat, setExpensesVat] = useState([]);
@@ -180,11 +181,11 @@ export default function TaxCenter({ onBack }) {
   const [logsEnVivo, setLogsEnVivo] = useState([{ type: 'info', text: 'Sistema Lake Contribuyente inicializado', time: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }]);
   const [tareaActual, setTareaActual] = useState(null);
 
-  // ── Fetch
+  // â”€â”€ Fetch
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [trR, divR, vatR, cfgR] = await Promise.all([
+      const [trR, divR, vatR, cfgR, fxR] = await Promise.all([
         supabase
           .from('tax_trades')
           .select('*')
@@ -208,6 +209,11 @@ export default function TaxCenter({ onBack }) {
           .select('*')
           .limit(1)
           .maybeSingle(),
+        supabase
+          .from('fx_config')
+          .select('manual_rate')
+          .eq('is_active', true)
+          .maybeSingle(),
       ]);
 
       if (trR.error) throw trR.error;
@@ -218,6 +224,7 @@ export default function TaxCenter({ onBack }) {
       setDividends(divR.data || []);
       setExpensesVat(vatR.data || []);
       setTaxConfig(cfgR.data || null);
+      setFxRate(fxR?.data?.manual_rate ? parseFloat(fxR.data.manual_rate) : FALLBACK_FX_RATE);
     } catch (err) {
       toast({ title: 'Error cargando datos', description: err.message, variant: 'destructive' });
     } finally {
@@ -227,7 +234,7 @@ export default function TaxCenter({ onBack }) {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // ── Derived KPIs
+  // â”€â”€ Derived KPIs
   const kpis = useMemo(() => {
     let grossProfit = 0;
     let totalTax = 0;
@@ -257,7 +264,7 @@ export default function TaxCenter({ onBack }) {
 
   // Display value helper (USD or CLP)
   const display = (usdVal) => {
-    if (currency === 'CLP') return fmtCLP(usdVal, CLP_PER_USD);
+    if (currency === 'CLP') return fmtCLP(usdVal, fxRate);
     return fmt(usdVal);
   };
 
@@ -269,8 +276,8 @@ export default function TaxCenter({ onBack }) {
     setChatInput('');
     
     setTimeout(() => {
-      setChatMessages(prev => [...prev, { sender: 'bot', text: '🚧 This feature isn\'t implemented yet—but don\'t worry! You can request it in your next prompt! 🚀', time: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) }]);
-      toast({ title: '🚧 Funcionalidad en desarrollo', description: '🚧 This feature isn\'t implemented yet—but don\'t worry! You can request it in your next prompt! 🚀', variant: 'default' });
+      setChatMessages(prev => [...prev, { sender: 'bot', text: 'ðŸš§ This feature isn\'t implemented yetâ€”but don\'t worry! You can request it in your next prompt! ðŸš€', time: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) }]);
+      toast({ title: 'ðŸš§ Funcionalidad en desarrollo', description: 'ðŸš§ This feature isn\'t implemented yetâ€”but don\'t worry! You can request it in your next prompt! ðŸš€', variant: 'default' });
     }, 1000);
   };
 
@@ -280,7 +287,7 @@ export default function TaxCenter({ onBack }) {
     toast({ title: !botActivo ? 'Bot Activado' : 'Bot Desactivado', description: 'Estado del Bot Contador actualizado.' });
   };
 
-  // ─── Loading state
+  // â”€â”€â”€ Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0b0c10] flex items-center justify-center">
@@ -292,13 +299,13 @@ export default function TaxCenter({ onBack }) {
     );
   }
 
-  // ─── Render
+  // â”€â”€â”€ Render
   return (
     <div className="min-h-screen bg-[#0b0c10] text-white pb-16">
 
-      {/* ══════════════════════════════════════════════
-          BLOCK 1 — HEADER
-      ══════════════════════════════════════════════ */}
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+          BLOCK 1 â€” HEADER
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       <div className="px-5 pt-6 pb-4 max-w-5xl mx-auto">
         <div className="flex items-center justify-between flex-wrap gap-4">
           {/* Left: back + title */}
@@ -318,7 +325,7 @@ export default function TaxCenter({ onBack }) {
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 bg-clip-text text-transparent">
                   Impuestos
                 </h1>
-                <p className="text-xs text-gray-500">Centro tributario estimado · {trades.length} trades · {dividends.length} dividendos</p>
+                <p className="text-xs text-gray-500">Centro tributario estimado Â· {trades.length} trades Â· {dividends.length} dividendos</p>
               </div>
             </div>
           </div>
@@ -364,9 +371,9 @@ export default function TaxCenter({ onBack }) {
 
       <div className="px-5 max-w-5xl mx-auto space-y-6">
 
-        {/* ══════════════════════════════════════════════
-            NEW BLOCK — BOT CONTADOR (Admin Only)
-        ══════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            NEW BLOCK â€” BOT CONTADOR (Admin Only)
+        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         {userIsAdmin && (
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
             <div className="bg-gradient-to-br from-[#0f1a2e]/80 to-[#0f1118]/80 backdrop-blur-xl border border-emerald-500/20 rounded-[1.75rem] p-5 shadow-xl">
@@ -386,7 +393,7 @@ export default function TaxCenter({ onBack }) {
                         </span>
                       </div>
                     </h2>
-                    <p className="text-xs text-gray-400">Lake Contribuyente — Automatización SII</p>
+                    <p className="text-xs text-gray-400">Lake Contribuyente â€” AutomatizaciÃ³n SII</p>
                   </div>
                 </div>
                 
@@ -400,8 +407,8 @@ export default function TaxCenter({ onBack }) {
                   </button>
                   <button 
                     onClick={() => {
-                      toast({ title: '🚧 Verificando Impuestos', description: '🚧 This feature isn\'t implemented yet—but don\'t worry! You can request it in your next prompt! 🚀' });
-                      setLogsEnVivo(prev => [...prev, { type: 'info', text: 'Iniciando verificación de impuestos manual...', time: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }]);
+                      toast({ title: 'ðŸš§ Verificando Impuestos', description: 'ðŸš§ This feature isn\'t implemented yetâ€”but don\'t worry! You can request it in your next prompt! ðŸš€' });
+                      setLogsEnVivo(prev => [...prev, { type: 'info', text: 'Iniciando verificaciÃ³n de impuestos manual...', time: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }]);
                     }}
                     className="flex-1 md:flex-none px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold transition-all shadow-lg shadow-blue-900/30 flex items-center justify-center gap-2"
                   >
@@ -432,7 +439,7 @@ export default function TaxCenter({ onBack }) {
                       type="text" 
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
-                      placeholder="Solicita cálculos o reportes..." 
+                      placeholder="Solicita cÃ¡lculos o reportes..." 
                       className="flex-1 bg-[#1a1d2b] border border-white/5 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/30"
                     />
                     <button type="submit" className="p-2 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-colors">
@@ -469,9 +476,9 @@ export default function TaxCenter({ onBack }) {
           </motion.div>
         )}
 
-        {/* ══════════════════════════════════════════════
-            BLOCK 2 — KPI CARDS (6)
-        ══════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            BLOCK 2 â€” KPI CARDS (6)
+        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -490,7 +497,7 @@ export default function TaxCenter({ onBack }) {
           <KpiCard
             label="Impuestos Estimados"
             value={display(kpis.totalTax)}
-            subvalue={taxConfig ? `Tasa: ${taxConfig.tax_rate_pct ?? '—'}%` : undefined}
+            subvalue={taxConfig ? `Tasa: ${taxConfig.tax_rate_pct ?? 'â€”'}%` : undefined}
             icon={Percent}
             color="text-red-400"
             bg="bg-red-500/10"
@@ -515,7 +522,7 @@ export default function TaxCenter({ onBack }) {
             border="border-blue-500/20"
           />
           <KpiCard
-            label="Retención Extranjera"
+            label="RetenciÃ³n Extranjera"
             value={display(kpis.foreignWithholding)}
             subvalue="WHT deducible"
             icon={TrendingDown}
@@ -534,14 +541,14 @@ export default function TaxCenter({ onBack }) {
           />
         </motion.div>
 
-        {/* ══════════════════════════════════════════════
-            BLOCK 3 — BAR CHART
-        ══════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            BLOCK 3 â€” BAR CHART
+        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <GlassCard>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-bold text-yellow-400 uppercase tracking-wider flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" /> Evolución Mensual {year}
+                <TrendingUp className="w-4 h-4" /> EvoluciÃ³n Mensual {year}
               </h2>
               <span className="text-[10px] text-gray-600">{currency}</span>
             </div>
@@ -556,12 +563,12 @@ export default function TaxCenter({ onBack }) {
           </GlassCard>
         </motion.div>
 
-        {/* ══════════════════════════════════════════════
-            BLOCK 4 — FORMULA DISPLAY
-        ══════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            BLOCK 4 â€” FORMULA DISPLAY
+        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <GlassCard glow>
-            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-4 text-center">Fórmula Tributaria Estimada {year}</p>
+            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-4 text-center">FÃ³rmula Tributaria Estimada {year}</p>
             <div className="flex flex-wrap items-center justify-center gap-3 md:gap-5">
               {/* Gross profit */}
               <div className="text-center">
@@ -571,7 +578,7 @@ export default function TaxCenter({ onBack }) {
                 <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Ganancia Bruta</p>
               </div>
               {/* Minus */}
-              <div className="text-3xl md:text-5xl font-thin text-gray-600 select-none">−</div>
+              <div className="text-3xl md:text-5xl font-thin text-gray-600 select-none">âˆ’</div>
               {/* Tax */}
               <div className="text-center">
                 <p className="text-2xl md:text-4xl font-black text-red-400 tabular-nums">
@@ -591,15 +598,15 @@ export default function TaxCenter({ onBack }) {
             </div>
             {currency === 'CLP' && (
               <p className="text-center text-[10px] text-gray-600 mt-4">
-                Tipo de cambio estimado: 1 USD = {CLP_PER_USD.toLocaleString('es-CL')} CLP
+                Tipo de cambio estimado: 1 USD = {fxRate.toLocaleString('es-CL')} CLP
               </p>
             )}
           </GlassCard>
         </motion.div>
 
-        {/* ══════════════════════════════════════════════
-            BLOCK 5 — EXPANDABLE TRADES TABLE
-        ══════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            BLOCK 5 â€” EXPANDABLE TRADES TABLE
+        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
           <GlassCard>
             <button
@@ -637,7 +644,7 @@ export default function TaxCenter({ onBack }) {
                       <table className="w-full text-xs border-separate border-spacing-y-1" style={{ minWidth: 700 }}>
                         <thead>
                           <tr>
-                            {['Fecha', 'Símbolo', 'Tipo', 'Qty', 'Entrada', 'Salida', 'PnL Bruto', 'Comisión', 'Impuesto Est.', 'Neto', 'Broker'].map(h => (
+                            {['Fecha', 'SÃ­mbolo', 'Tipo', 'Qty', 'Entrada', 'Salida', 'PnL Bruto', 'ComisiÃ³n', 'Impuesto Est.', 'Neto', 'Broker'].map(h => (
                               <th key={h} className="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-widest text-gray-500 whitespace-nowrap">
                                 {h}
                               </th>
@@ -659,22 +666,22 @@ export default function TaxCenter({ onBack }) {
                                   onClick={() => setExpandedRow(isExpanded ? null : idx)}
                                 >
                                   <td className="px-3 py-2.5 rounded-l-xl text-gray-400 whitespace-nowrap">
-                                    {t.closed_at ? new Date(t.closed_at).toLocaleDateString('es-CL') : '—'}
+                                    {t.closed_at ? new Date(t.closed_at).toLocaleDateString('es-CL') : 'â€”'}
                                   </td>
-                                  <td className="px-3 py-2.5 font-bold text-white">{t.symbol || '—'}</td>
+                                  <td className="px-3 py-2.5 font-bold text-white">{t.symbol || 'â€”'}</td>
                                   <td className="px-3 py-2.5">
                                     <span className={`px-2 py-0.5 rounded-md font-bold ${t.side_open === 'long' || t.side_open === 'buy' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'}`}>
-                                      {(t.side_open || '—').toUpperCase()}
+                                      {(t.side_open || 'â€”').toUpperCase()}
                                     </span>
                                   </td>
-                                  <td className="px-3 py-2.5 text-gray-300 tabular-nums">{t.qty ?? '—'}</td>
+                                  <td className="px-3 py-2.5 text-gray-300 tabular-nums">{t.qty ?? 'â€”'}</td>
                                   <td className="px-3 py-2.5 text-gray-300 tabular-nums">{fmt(t.entry_price)}</td>
                                   <td className="px-3 py-2.5 text-gray-300 tabular-nums">{fmt(t.exit_price)}</td>
                                   <td className={`px-3 py-2.5 font-bold tabular-nums ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(pnl)}</td>
                                   <td className="px-3 py-2.5 text-gray-500 tabular-nums">{fmt(comm)}</td>
                                   <td className="px-3 py-2.5 text-red-400 tabular-nums">{fmt(tax)}</td>
                                   <td className={`px-3 py-2.5 font-bold tabular-nums ${net >= 0 ? 'text-yellow-400' : 'text-red-400'}`}>{fmt(net)}</td>
-                                  <td className="px-3 py-2.5 text-gray-500">{t.source_broker || '—'}</td>
+                                  <td className="px-3 py-2.5 text-gray-500">{t.source_broker || 'â€”'}</td>
                                   <td className="px-3 py-2.5 rounded-r-xl text-gray-600">
                                     <ChevronRight className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                                   </td>
@@ -689,14 +696,14 @@ export default function TaxCenter({ onBack }) {
                                           exit={{ opacity: 0, y: -6 }}
                                           className="mx-1 mb-1 p-4 bg-[#0f1118]/80 border border-yellow-500/10 rounded-2xl"
                                         >
-                                          <p className="text-[10px] font-bold text-yellow-400 uppercase tracking-widest mb-2">Cálculo Detallado</p>
+                                          <p className="text-[10px] font-bold text-yellow-400 uppercase tracking-widest mb-2">CÃ¡lculo Detallado</p>
                                           <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
                                             <span className="text-gray-500">PnL Bruto:</span>
                                             <span className={`font-bold ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(pnl)}</span>
-                                            <span className="text-gray-700">−</span>
-                                            <span className="text-gray-500">Comisión:</span>
+                                            <span className="text-gray-700">âˆ’</span>
+                                            <span className="text-gray-500">ComisiÃ³n:</span>
                                             <span className="text-gray-300 font-bold">{fmt(comm)}</span>
-                                            <span className="text-gray-700">−</span>
+                                            <span className="text-gray-700">âˆ’</span>
                                             <span className="text-gray-500">Impuesto est.:</span>
                                             <span className="text-red-400 font-bold">{fmt(tax)}</span>
                                             <span className="text-gray-700">=</span>
@@ -708,7 +715,7 @@ export default function TaxCenter({ onBack }) {
                                           )}
                                           {taxConfig?.tax_rate_pct && (
                                             <p className="mt-1 text-[10px] text-gray-600">
-                                              Tasa aplicada: {taxConfig.tax_rate_pct}% · Impuesto = PnL Bruto × {taxConfig.tax_rate_pct}% = {fmt(pnl * (taxConfig.tax_rate_pct / 100))}
+                                              Tasa aplicada: {taxConfig.tax_rate_pct}% Â· Impuesto = PnL Bruto Ã— {taxConfig.tax_rate_pct}% = {fmt(pnl * (taxConfig.tax_rate_pct / 100))}
                                             </p>
                                           )}
                                         </motion.div>
@@ -729,9 +736,9 @@ export default function TaxCenter({ onBack }) {
           </GlassCard>
         </motion.div>
 
-        {/* ══════════════════════════════════════════════
-            BLOCK 6 — DIVIDENDS TABLE
-        ══════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            BLOCK 6 â€” DIVIDENDS TABLE
+        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <GlassCard>
             <h2 className="text-sm font-bold text-blue-400 uppercase tracking-wider flex items-center gap-2 mb-5">
@@ -751,7 +758,7 @@ export default function TaxCenter({ onBack }) {
                 <table className="w-full text-xs border-separate border-spacing-y-1" style={{ minWidth: 480 }}>
                   <thead>
                     <tr>
-                      {['Símbolo', 'Fecha', 'Bruto', 'Retención', 'Neto'].map(h => (
+                      {['SÃ­mbolo', 'Fecha', 'Bruto', 'RetenciÃ³n', 'Neto'].map(h => (
                         <th key={h} className="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-widest text-gray-500">
                           {h}
                         </th>
@@ -765,9 +772,9 @@ export default function TaxCenter({ onBack }) {
                       const net = gross - wht;
                       return (
                         <tr key={d.id || idx} className="bg-[#0f1118]/60 border border-white/5 rounded-xl">
-                          <td className="px-3 py-2.5 rounded-l-xl font-bold text-white">{d.symbol || '—'}</td>
+                          <td className="px-3 py-2.5 rounded-l-xl font-bold text-white">{d.symbol || 'â€”'}</td>
                           <td className="px-3 py-2.5 text-gray-400">
-                            {d.payment_date ? new Date(d.payment_date).toLocaleDateString('es-CL') : '—'}
+                            {d.payment_date ? new Date(d.payment_date).toLocaleDateString('es-CL') : 'â€”'}
                           </td>
                           <td className="px-3 py-2.5 text-blue-400 font-bold tabular-nums">{display(gross)}</td>
                           <td className="px-3 py-2.5 text-orange-400 tabular-nums">{display(wht)}</td>
@@ -791,77 +798,17 @@ export default function TaxCenter({ onBack }) {
           </GlassCard>
         </motion.div>
 
-                {/* ════════════════════════════════════════════
-                            BLOCK 6 — DIVIDENDS TABLE
-                                    ════════════════════════════════════════════ */}
-                                            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                                                      <GlassCard>
-                                                                  <h2 className="text-sm font-bold text-blue-400 uppercase tracking-wider flex items-center gap-2 mb-5">
-                                                                                <DollarSign className="w-4 h-4" /> Dividendos {year}
-                                                                                              <span className="text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-lg text-[10px]">
-                                                                                                              {dividends.length}
-                                                                                                                            </span>
-                                                                                                                                        </h2>
 
-                                                                                                                                                    {dividends.length === 0 ? (
-                                                                                                                                                                  <div className="text-center py-8 text-gray-600">
-                                                                                                                                                                                  <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                                                                                                                                                                                                  <p className="text-sm">Sin dividendos para {year}</p>
-                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                            ) : (
-                                                                                                                                                                                                                                          <div className="overflow-x-auto">
-                                                                                                                                                                                                                                                          <table className="w-full text-xs border-separate border-spacing-y-1" style={{ minWidth: 480 }}>
-                                                                                                                                                                                                                                                                            <thead>
-                                                                                                                                                                                                                                                                                                <tr>
-                                                                                                                                                                                                                                                                                                                      {['Símbol', 'Fecha', 'Bruto', 'Retención', 'Neto'].map(h => (
-                                                                                                                                                                                                                                                                                                                                              <th key={h} className="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-widest text-gray-500">
-                                                                                                                                                                                                                                                                                                                                                                        {h}
-                                                                                                                                                                                                                                                                                                                                                                                                </th>
-                                                                                                                                                                                                                                                                                                                                                                                                                      ))}
-                                                                                                                                                                                                                                                                                                                                                                                                                                          </tr>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            </thead>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                              <tbody>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  {dividends.map((d, idx) => {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        const gross = parseFloat(d.gross_dividend_usd || 0);
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              const wht = parseFloat(d.foreign_withholding_usd || 0);
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    const net = gross - wht;
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          return (
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  <tr key={d.id || idx} className="bg-[#0f1118]/60 border border-white/5 rounded-xl">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <td className="px-3 py-2.5 rounded-l-xl font-bold text-white">{d.symbol || '—'}</td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      <td className="px-3 py-2.5 text-gray-400">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  {d.payment_date ? new Date(d.payment_date).toLocaleDateString('es-CL') : '—'}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      <td className="px-3 py-2.5 text-blue-400 font-bold tabular-nums">{display(gross)}</td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <td className="px-3 py-2.5 text-orange-400 tabular-nums">{display(wht)}</td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          <td className="px-3 py-2.5 rounded-r-xl text-emerald-400 font-bold tabular-nums">{display(net)}</td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  </tr>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        );
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            })}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              </tbody>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <tfoot>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <tr>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          <td colSpan={2} className="px-3 py-2.5 text-[10px] font-bold uppercase text-gray-500 tracking-widest">Total</td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <td className="px-3 py-2.5 text-blue-300 font-black tabular-nums">{display(kpis.grossDividends)}</td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      <td className="px-3 py-2.5 text-orange-300 font-black tabular-nums">{display(kpis.foreignWithholding)}</td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <td className="px-3 py-2.5 text-emerald-300 font-black tabular-nums">{display(kpis.grossDividends - kpis.foreignWithholding)}</td>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </tr>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  </tfoot>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  </table>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            )}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      </GlassCard>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              </motion.div>
-
-        {/* ══════════════════════════════════════════════
-            BLOCK 7 — DISCLAIMER
-        ══════════════════════════════════════════════ */}
+        {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            BLOCK 7 â€” DISCLAIMER
+        â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
           <div className="flex items-start gap-3 px-4 py-3 bg-yellow-500/5 border border-yellow-500/10 rounded-[1.25rem]">
             <AlertCircle className="w-4 h-4 text-yellow-500/60 flex-shrink-0 mt-0.5" />
             <p className="text-[11px] text-gray-500 leading-relaxed">
               <span className="text-yellow-500/80 font-bold">Aviso importante: </span>
-              Cifras tributarias estimadas. Los cálculos mostrados son una aproximación basada en los datos registrados en el sistema.
-              Validar con contador o asesor tributario calificado antes de presentar declaración de impuestos.
+              Cifras tributarias estimadas. Los cÃ¡lculos mostrados son una aproximaciÃ³n basada en los datos registrados en el sistema.
+              Validar con contador o asesor tributario calificado antes de presentar declaraciÃ³n de impuestos.
               Freraut Invest no asume responsabilidad por decisiones tributarias tomadas en base a estas cifras.
             </p>
           </div>
@@ -879,7 +826,7 @@ export default function TaxCenter({ onBack }) {
                 <table className="w-full text-xs border-separate border-spacing-y-1" style={{ minWidth: 400 }}>
                   <thead>
                     <tr>
-                      {['Fecha', 'Descripción', 'Neto', 'IVA', 'Total'].map(h => (
+                      {['Fecha', 'DescripciÃ³n', 'Neto', 'IVA', 'Total'].map(h => (
                         <th key={h} className="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-widest text-gray-500">{h}</th>
                       ))}
                     </tr>
@@ -892,9 +839,9 @@ export default function TaxCenter({ onBack }) {
                       return (
                         <tr key={e.id || idx} className="bg-[#0f1118]/60 border border-white/5 rounded-xl">
                           <td className="px-3 py-2.5 rounded-l-xl text-gray-400">
-                            {e.expense_date ? new Date(e.expense_date).toLocaleDateString('es-CL') : '—'}
+                            {e.expense_date ? new Date(e.expense_date).toLocaleDateString('es-CL') : 'â€”'}
                           </td>
-                          <td className="px-3 py-2.5 text-gray-300">{e.description || '—'}</td>
+                          <td className="px-3 py-2.5 text-gray-300">{e.description || 'â€”'}</td>
                           <td className="px-3 py-2.5 text-white font-bold tabular-nums">{net.toLocaleString('es-CL')}</td>
                           <td className="px-3 py-2.5 text-yellow-400 tabular-nums">{vat.toLocaleString('es-CL')}</td>
                           <td className="px-3 py-2.5 rounded-r-xl text-white font-bold tabular-nums">{total.toLocaleString('es-CL')}</td>

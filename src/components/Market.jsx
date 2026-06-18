@@ -1,9 +1,16 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { supabase } from '@/lib/customSupabaseClient';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Plus, ShoppingCart, TrendingDown, ArrowDownLeft, History, Wallet, TrendingUp, ChevronDown } from 'lucide-react';
+
+// Parse Chilean-formatted numbers: removes dots (thousands separators) and replaces comma with dot
+const parseChileanNumber = (str) => {
+  if (!str) return NaN;
+  const cleaned = str.replace(/\./g, '').replace(',', '.');
+  return parseFloat(cleaned);
+};
 
 // Utility for downsampling chart data to prevent UI freezes
 const useDownsampledData = (data, maxPoints = 150) => {
@@ -35,7 +42,7 @@ const VolumeChart = ({ isDarkMode }) => {
         .order('fecha', { ascending: true });
 
       if (error) {
-        console.error('❌ Error fetching volume:', error);
+        console.error('âŒ Error fetching volume:', error);
       } else {
         setVolumeData(data || []);
       }
@@ -90,13 +97,13 @@ const VolumeChart = ({ isDarkMode }) => {
   if (!volumeData.length) return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-bold text-yellow-500">Análisis de Volumen</h3>
+        <h3 className="text-2xl font-bold text-yellow-500">AnÃ¡lisis de Volumen</h3>
         <TrendingUp className="text-green-400" size={24} />
       </div>
       <div className="text-center py-16">
-        <div className="text-6xl mb-4 opacity-30">📊</div>
-        <p className={`text-lg mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Volumen de mercado aún no disponible</p>
-        <p className={`text-sm ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>El volumen aparecerá automáticamente cuando se registren operaciones de compra/venta</p>
+        <div className="text-6xl mb-4 opacity-30">ðŸ“Š</div>
+        <p className={`text-lg mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Volumen de mercado aÃºn no disponible</p>
+        <p className={`text-sm ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>El volumen aparecerÃ¡ automÃ¡ticamente cuando se registren operaciones de compra/venta</p>
       </div>
     </div>
   );
@@ -133,7 +140,7 @@ const VolumeChart = ({ isDarkMode }) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-2xl font-bold text-yellow-500">Análisis de Volumen</h3>
+        <h3 className="text-2xl font-bold text-yellow-500">AnÃ¡lisis de Volumen</h3>
         <TrendingUp className="text-green-400" size={24} />
       </div>
 
@@ -191,7 +198,7 @@ const VolumeChart = ({ isDarkMode }) => {
               <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#d4af37" floodOpacity="0.6" />
             </filter>
           </defs>
-          <text x={padding.left} y={padding.top - 15} className={`text-xs font-semibold ${isDarkMode ? 'fill-gray-400' : 'fill-gray-600'}`}>Índice de Volumen (Compras - Ventas)</text>
+          <text x={padding.left} y={padding.top - 15} className={`text-xs font-semibold ${isDarkMode ? 'fill-gray-400' : 'fill-gray-600'}`}>Ãndice de Volumen (Compras - Ventas)</text>
           <line x1={padding.left} y1={padding.top + (height - padding.top - padding.bottom) / 2} x2={width - padding.right} y2={padding.top + (height - padding.top - padding.bottom) / 2} stroke={isDarkMode ? "#374151" : "#d1d5db"} strokeWidth="1" strokeDasharray="4 4" opacity="0.5" />
 
           {chartPoints.filter((_, i) => i % Math.max(Math.floor(chartPoints.length / 6), 1) === 0).map((point, i) => (
@@ -390,15 +397,15 @@ const NavHistoricoChart = ({ isDarkMode, navPrice }) => {
   if (!historial?.length && !loading) return (
     <div className={`rounded-2xl p-8 shadow-sm border ${isDarkMode ? 'bg-black border-gray-800' : 'bg-white border-gray-300'
       }`}>
-      <h3 className="text-2xl font-bold text-yellow-500 mb-2">Precio UE - Histórico</h3>
+      <h3 className="text-2xl font-bold text-yellow-500 mb-2">Precio UE - HistÃ³rico</h3>
       <div className="text-center py-12">
         <p className={`text-lg mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          {timeRange === '1D' ? 'No hay actividad registrada hoy' : 'No hay datos de precio para este período'}
+          {timeRange === '1D' ? 'No hay actividad registrada hoy' : 'No hay datos de precio para este perÃ­odo'}
         </p>
         <p className={`text-sm ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`}>
           {timeRange === '1D'
-            ? 'Los snapshots de precio se registran en días hábiles. Prueba 5D o 1M.'
-            : 'Selecciona un rango de tiempo más amplio (1M, 6M, etc.) para ver el histórico'}
+            ? 'Los snapshots de precio se registran en dÃ­as hÃ¡biles. Prueba 5D o 1M.'
+            : 'Selecciona un rango de tiempo mÃ¡s amplio (1M, 6M, etc.) para ver el histÃ³rico'}
         </p>
       </div>
     </div>
@@ -459,7 +466,7 @@ const NavHistoricoChart = ({ isDarkMode, navPrice }) => {
             <span className="text-sm">({isPositive ? '+' : ''}{cambioPorcentual.toFixed(2)}%)</span>
           </span>
         </div>
-        <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Última actualización: {new Date().toLocaleString('es-CL', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+        <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Ãšltima actualizaciÃ³n: {new Date().toLocaleString('es-CL', { dateStyle: 'medium', timeStyle: 'short' })}</p>
       </div>
 
       <div className={`flex items-center gap-2 mb-6 rounded-lg p-1 w-fit border relative ${isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-100 border-gray-300'
@@ -613,7 +620,6 @@ const TradingActionButton = ({ onClick, disabled, loading, text, icon, colorConf
 const Market = () => {
   const { toast } = useToast();
   const { session } = useAuth();
-  const [navData, setNavData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userWallet, setUserWallet] = useState(null);
   const [buyAmount, setBuyAmount] = useState('');
@@ -632,6 +638,7 @@ const Market = () => {
   const [marketMetrics, setMarketMetrics] = useState({ ues_circulacion: 0, capital_total: 0, inversores: 0, nav_actual: 0 });
   const [latestCapitalTotal, setLatestCapitalTotal] = useState(0);
   const [navPrice, setNavPrice] = useState(0);
+  const [userUEHoldings, setUserUEHoldings] = useState(0);
   const [visibleTransactions, setVisibleTransactions] = useState(3);
   const [visibleOrders, setVisibleOrders] = useState(3);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -649,18 +656,19 @@ const Market = () => {
   }, []);
 
   const fetchFxRate = useCallback(async () => {
-    const { data } = await supabase.from('fx_config').select('manual_rate').eq('is_active', true).maybeSingle();
+    const { data, error } = await supabase.from('fx_config').select('manual_rate').eq('is_active', true).maybeSingle();
+    if (error) {
+      console.error("Error fetching fx rate:", error);
+    }
     if (data?.manual_rate) setFxRate(parseFloat(data.manual_rate));
   }, []);
 
   const fetchNavPrice = useCallback(async () => {
-    const { data } = await supabase.from('precio_actual_ue').select('*').single();
+    const { data, error } = await supabase.from('precio_actual_ue').select('*').single();
+    if (error) {
+      console.error("Error fetching NAV price:", error);
+    }
     if (data) setNavPrice(data.precio_actual);
-  }, []);
-
-  const fetchNavData = useCallback(async () => {
-    const { data, error } = await supabase.from('nav_historico').select('nav').order('fecha', { ascending: false }).limit(1).single();
-    setNavData(error && error.code !== 'PGRST116' ? null : data);
   }, []);
 
   const fetchUserWallet = useCallback(async () => {
@@ -675,6 +683,9 @@ const Market = () => {
     } else {
       setUserWallet(data);
     }
+    // Also fetch UE holdings for sell validation
+    const { data: ueData, error: ueError } = await supabase.from('unidades_usuario').select('cantidad').eq('usuario_id', session.user.id).maybeSingle();
+    if (!ueError && ueData) setUserUEHoldings(parseFloat(ueData.cantidad) || 0);
   }, [session]);
 
   const fetchUserTransactions = useCallback(async () => {
@@ -725,19 +736,19 @@ const Market = () => {
     setLoading(true);
     Promise.all([
       fetchMarketMetrics(),
-      fetchNavData(),
       fetchNavPrice(),
       fetchUserWallet(),
       fetchUserTransactions(),
       fetchAllOrders(),
       fetchCapitalTotal(),
       fetchFxRate()
-    ]).finally(() => setLoading(false));
+    ]).catch((err) => {
+      console.error("Error in initial data fetch:", err);
+    }).finally(() => setLoading(false));
 
     const marketChannel = supabase.channel('market_main_channel')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'metricas_mercado' }, fetchMarketMetrics)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'nav_historico' }, () => {
-        fetchNavData();
         fetchCapitalTotal();
         fetchNavPrice();
       })
@@ -756,19 +767,23 @@ const Market = () => {
       supabase.removeChannel(marketChannel);
       if (walletChannel) supabase.removeChannel(walletChannel);
     };
-  }, [session, fetchMarketMetrics, fetchNavData, fetchNavPrice, fetchUserWallet, fetchUserTransactions, fetchAllOrders, fetchCapitalTotal, fetchFxRate]);
+  }, [session, fetchMarketMetrics, fetchNavPrice, fetchUserWallet, fetchUserTransactions, fetchAllOrders, fetchCapitalTotal, fetchFxRate]);
 
   useEffect(() => {
     const loadUserBankId = async () => {
       if (showDepositModal && session?.user?.id) {
-        const { data } = await supabase
-          .from('usuarios')
-          .select('id_bancario')
-          .eq('id', session.user.id)
-          .single();
+        try {
+          const { data } = await supabase
+            .from('usuarios')
+            .select('id_bancario')
+            .eq('id', session.user.id)
+            .single();
 
-        if (data?.id_bancario) {
-          setUserBankAccount(data.id_bancario);
+          if (data?.id_bancario) {
+            setUserBankAccount(data.id_bancario);
+          }
+        } catch (e) {
+          console.error("Error loading user bank ID:", e);
         }
       }
     };
@@ -776,9 +791,9 @@ const Market = () => {
   }, [showDepositModal, session]);
 
   const handleBuyUnits = async () => {
-    const raw = Number(buyAmount.replace(',', '.'));
+    const raw = parseChileanNumber(buyAmount);
     if (!session?.user?.id || !navPrice || isNaN(raw) || raw <= 0) {
-      toast({ variant: "destructive", title: "Datos de compra inválidos", description: "Ingresa una cantidad válida y asegúrate de estar logueado." });
+      toast({ variant: "destructive", title: "Datos de compra invÃ¡lidos", description: "Ingresa una cantidad vÃ¡lida y asegÃºrate de estar logueado." });
       return;
     }
     // Convertir CLP o USD a UEs segun el modo
@@ -786,7 +801,7 @@ const Market = () => {
       : buyMode === 'usd' ? raw / navPrice
       : raw;
     if (isNaN(cantidadUEs) || cantidadUEs <= 0) {
-      toast({ variant: "destructive", title: "Cantidad inválida", description: "Revisa el valor ingresado." });
+      toast({ variant: "destructive", title: "Cantidad invÃ¡lida", description: "Revisa el valor ingresado." });
       return;
     }
     setIsBuying(true);
@@ -800,9 +815,11 @@ const Market = () => {
         return;
       }
       if (data?.length > 0 && data[0]?.ok) {
-        toast({ title: "✅ Compra realizada", description: data[0]?.mensaje || "La compra fue procesada con éxito." });
+        toast({ title: "âœ… Compra realizada", description: data[0]?.mensaje || "La compra fue procesada con Ã©xito." });
         setBuyAmount('');
-        Promise.all([fetchUserWallet(), fetchUserTransactions(), fetchAllOrders(), fetchNavPrice()]);
+        await Promise.all([fetchUserWallet(), fetchUserTransactions(), fetchAllOrders(), fetchNavPrice()]).catch((err) => {
+          console.error("Error refreshing data after buy:", err);
+        });
       } else {
         toast({ variant: "destructive", title: "Compra rechazada", description: data[0]?.mensaje || "No se pudo completar la compra." });
       }
@@ -814,17 +831,17 @@ const Market = () => {
   };
 
   const handleSellUnits = async () => {
-    const raw = Number(sellAmount.replace(',', '.'));
+    const raw = parseChileanNumber(sellAmount);
     if (!session?.user?.id || !navPrice || isNaN(raw) || raw <= 0) {
-      toast({ variant: "destructive", title: "Datos de venta inválidos", description: "Ingresa una cantidad válida y asegúrate de estar logueado." });
+      toast({ variant: "destructive", title: "Datos de venta invÃ¡lidos", description: "Ingresa una cantidad vÃ¡lida y asegÃºrate de estar logueado." });
       return;
     }
-    // Convertir CLP ou USD a UEs según el modo
+    // Convertir CLP ou USD a UEs segÃºn el modo
     const cantidadUEs = sellMode === 'clp' ? raw / fxRate / navPrice
       : sellMode === 'usd' ? raw / navPrice
       : raw;
     if (isNaN(cantidadUEs) || cantidadUEs <= 0) {
-      toast({ variant: "destructive", title: "Cantidad inválida", description: "Revisa el valor ingresado." });
+      toast({ variant: "destructive", title: "Cantidad invÃ¡lida", description: "Revisa el valor ingresado." });
       return;
     }
     setIsSelling(true);
@@ -835,9 +852,11 @@ const Market = () => {
       });
       if (error) throw error;
       if (data?.length > 0 && data[0]?.ok) {
-        toast({ title: "✅ Venta realizada", description: data[0]?.mensaje || "La venta fue procesada con éxito." });
+        toast({ title: "âœ… Venta realizada", description: data[0]?.mensaje || "La venta fue procesada con Ã©xito." });
         setSellAmount('');
-        Promise.all([fetchAllOrders(), fetchUserWallet(), fetchUserTransactions(), fetchNavPrice()]);
+        await Promise.all([fetchAllOrders(), fetchUserWallet(), fetchUserTransactions(), fetchNavPrice()]).catch((err) => {
+          console.error("Error refreshing data after sell:", err);
+        });
       } else {
         toast({ variant: "destructive", title: "Venta rechazada", description: data[0]?.mensaje || "No se pudo completar." });
       }
@@ -850,11 +869,11 @@ const Market = () => {
 
   const handleDeposit = async () => {
     if (!session?.user?.id) {
-      toast({ variant: "destructive", title: "No autenticado", description: "Debes iniciar sesión para registrar tu nombre bancario." });
+      toast({ variant: "destructive", title: "No autenticado", description: "Debes iniciar sesiÃ³n para registrar tu nombre bancario." });
       return;
     }
     if (!userBankAccount || userBankAccount.trim().length < 3) {
-      toast({ variant: "destructive", title: "ID inválido", description: "Debes ingresar un nombre bancario válido (mínimo 3 caracteres)." });
+      toast({ variant: "destructive", title: "ID invÃ¡lido", description: "Debes ingresar un nombre bancario vÃ¡lido (mÃ­nimo 3 caracteres)." });
       return;
     }
 
@@ -868,8 +887,8 @@ const Market = () => {
       if (error) throw error;
 
       toast({
-        title: "✅ nombre bancario guardado",
-        description: `Tu nombre bancario "${userBankAccount}" ha sido registrado. Úsalo como glosa en tus transferencias.`
+        title: "âœ… nombre bancario guardado",
+        description: `Tu nombre bancario "${userBankAccount}" ha sido registrado. Ãšsalo como glosa en tus transferencias.`
       });
 
       setShowDepositModal(false);
@@ -902,7 +921,7 @@ const Market = () => {
       }`}>
       <Helmet>
         <title>Mercado - Freraut Invest</title>
-        <meta name="description" content="Visualiza el valor actual de la Unidad de Inversión (NAV) y realiza operaciones de compra/venta." />
+        <meta name="description" content="Visualiza el valor actual de la Unidad de InversiÃ³n (NAV) y realiza operaciones de compra/venta." />
       </Helmet>
 
       <div className="space-y-8 pb-8">
@@ -915,7 +934,7 @@ const Market = () => {
 
         <div className="grid md:grid-cols-3 gap-6">
           <WalletCard
-            icon="📊"
+            icon="ðŸ“Š"
             title="Precio Actual UE"
             value={navPrice ? `$${parseFloat(navPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })} USD` : 'Cargando...'}
             valueClassName="text-blue-400"
@@ -923,17 +942,17 @@ const Market = () => {
             isDarkMode={isDarkMode}
           />
           <WalletCard
-            icon="💰"
+            icon="ðŸ’°"
             title="Capital Total"
             value={`$${parseFloat(latestCapitalTotal).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`}
-            subtext="Capitalización total de mercado"
+            subtext="CapitalizaciÃ³n total de mercado"
             valueClassName="text-green-400"
             gradient={isDarkMode ? "from-green-900/20 to-gray-900/40" : "from-green-100 to-gray-50"}
             isDarkMode={isDarkMode}
           />
           <WalletCard
-            icon="📈"
-            title="UEs en Circulación"
+            icon="ðŸ“ˆ"
+            title="UEs en CirculaciÃ³n"
             value={marketMetrics.ues_circulacion.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             subtext={`${marketMetrics.inversores} inversores activos`}
             valueClassName="text-blue-400"
@@ -950,7 +969,7 @@ const Market = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Sección de Compra */}
+          {/* SecciÃ³n de Compra */}
           <div className={`backdrop-blur-xl rounded-2xl p-6 border shadow-2xl transition-all duration-300 ${isDarkMode
             ? 'bg-gradient-to-br from-green-900/10 to-gray-900/40 border-green-500/20 hover:shadow-green-500/10'
             : 'bg-gradient-to-br from-green-50 to-white border-green-300 hover:shadow-green-300/30'
@@ -1015,9 +1034,9 @@ const Market = () => {
                 />
                 {buyMode !== 'ues' && navPrice && buyAmount && (
                   <p className={`text-xs mt-2 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
-                    ≈ {buyMode === 'clp'
-                      ? (Number(buyAmount.replace(',', '.')) / fxRate / navPrice).toFixed(8)
-                      : (Number(buyAmount.replace(',', '.')) / navPrice).toFixed(8)
+                    â‰ˆ {buyMode === 'clp'
+                      ? (parseChileanNumber(buyAmount) / fxRate / navPrice).toFixed(8)
+                      : (parseChileanNumber(buyAmount) / navPrice).toFixed(8)
                     } UEs
                   </p>
                 )}
@@ -1032,36 +1051,36 @@ const Market = () => {
                     {buyMode === 'ues' && (
                       <>
                         <p className="text-xl font-bold text-green-400">
-                          {'$' + (Number(buyAmount.replace(',', '.')) * navPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD'}
+                          {'$' + (parseChileanNumber(buyAmount) * navPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD'}
                         </p>
                         <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                          {'$' + Math.round(Number(buyAmount.replace(',', '.')) * navPrice * fxRate).toLocaleString('es-CL') + ' CLP'}
+                          {'$' + Math.round(parseChileanNumber(buyAmount) * navPrice * fxRate).toLocaleString('es-CL') + ' CLP'}
                         </p>
                       </>
                     )}
                     {buyMode === 'clp' && (
                       <>
                         <p className="text-xl font-bold text-green-400">
-                          {'$' + Math.round(Number(buyAmount.replace(',', '.')) / fxRate * 100) / 100 + ' USD'}
+                          {'$' + Math.round(parseChileanNumber(buyAmount) / fxRate * 100) / 100 + ' USD'}
                         </p>
                         <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                          {'$' + Number(buyAmount.replace(',', '.')).toLocaleString('es-CL') + ' CLP'}
+                          {'$' + parseChileanNumber(buyAmount).toLocaleString('es-CL') + ' CLP'}
                         </p>
                         <p className={`text-xs mt-1 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
-                          ≈ {(Number(buyAmount.replace(',', '.')) / fxRate / navPrice).toFixed(8)} UEs
+                          â‰ˆ {(parseChileanNumber(buyAmount) / fxRate / navPrice).toFixed(8)} UEs
                         </p>
                       </>
                     )}
                     {buyMode === 'usd' && (
                       <>
                         <p className="text-xl font-bold text-green-400">
-                          {'$' + Number(buyAmount.replace(',', '.')).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD'}
+                          {'$' + parseChileanNumber(buyAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD'}
                         </p>
                         <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                          {'$' + Math.round(Number(buyAmount.replace(',', '.')) * fxRate).toLocaleString('es-CL') + ' CLP'}
+                          {'$' + Math.round(parseChileanNumber(buyAmount) * fxRate).toLocaleString('es-CL') + ' CLP'}
                         </p>
                         <p className={`text-xs mt-1 ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}>
-                          ≈ {(Number(buyAmount.replace(',', '.')) / navPrice).toFixed(8)} UEs
+                          â‰ˆ {(parseChileanNumber(buyAmount) / navPrice).toFixed(8)} UEs
                         </p>
                       </>
                     )}
@@ -1077,10 +1096,10 @@ const Market = () => {
 
               <TradingActionButton
                 onClick={handleBuyUnits}
-                disabled={!session || !navPrice || !buyAmount || Number(buyAmount.replace(',', '.')) <= 0 || (userWallet && (
-                  buyMode === 'clp' ? Number(buyAmount.replace(',', '.')) > (userWallet.saldo_clp || 0)
-                    : buyMode === 'usd' ? Number(buyAmount.replace(',', '.')) > (userWallet.saldo_usd || 0)
-                    : (Number(buyAmount.replace(',', '.')) * navPrice) > (userWallet.saldo_usd || 0)
+                disabled={!session || !navPrice || !buyAmount || parseChileanNumber(buyAmount) <= 0 || (userWallet && (
+                  buyMode === 'clp' ? parseChileanNumber(buyAmount) > (userWallet.saldo_clp || 0)
+                    : buyMode === 'usd' ? parseChileanNumber(buyAmount) > (userWallet.saldo_usd || 0)
+                    : (parseChileanNumber(buyAmount) * navPrice) > (userWallet.saldo_usd || 0)
                 ))}
                 loading={isBuying}
                 text="Comprar UEs"
@@ -1094,7 +1113,7 @@ const Market = () => {
             </div>
           </div>
 
-          {/* Sección de Venta */}
+          {/* SecciÃ³n de Venta */}
           <div className={`backdrop-blur-xl rounded-2xl p-6 border shadow-2xl transition-all duration-300 ${isDarkMode
             ? 'bg-gradient-to-br from-red-900/10 to-gray-900/40 border-red-500/20 hover:shadow-red-500/10'
             : 'bg-gradient-to-br from-red-50 to-white border-red-300 hover:shadow-red-300/30'
@@ -1152,9 +1171,9 @@ const Market = () => {
                 />
                 {sellMode !== 'ues' && navPrice && sellAmount && (
                   <p className={`text-xs mt-2 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
-                    ≈ {sellMode === 'clp'
-                      ? (Number(sellAmount.replace(',', '.')) / fxRate / navPrice).toFixed(8)
-                      : (Number(sellAmount.replace(',', '.')) / navPrice).toFixed(8)
+                    â‰ˆ {sellMode === 'clp'
+                      ? (parseChileanNumber(sellAmount) / fxRate / navPrice).toFixed(8)
+                      : (parseChileanNumber(sellAmount) / navPrice).toFixed(8)
                     } UEs
                   </p>
                 )}
@@ -1169,36 +1188,36 @@ const Market = () => {
                     {sellMode === 'ues' && (
                       <>
                         <p className="text-xl font-bold text-red-400">
-                          {'$' + (Number(sellAmount.replace(',', '.')) * navPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD'}
+                          {'$' + (parseChileanNumber(sellAmount) * navPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD'}
                         </p>
                         <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                          {'$' + Math.round(Number(sellAmount.replace(',', '.')) * navPrice * fxRate).toLocaleString('es-CL') + ' CLP'}
+                          {'$' + Math.round(parseChileanNumber(sellAmount) * navPrice * fxRate).toLocaleString('es-CL') + ' CLP'}
                         </p>
                       </>
                     )}
                     {sellMode === 'clp' && (
                       <>
                         <p className="text-xl font-bold text-red-400">
-                          {'$' + Math.round(Number(sellAmount.replace(',', '.')) / fxRate * 100) / 100 + ' USD'}
+                          {'$' + Math.round(parseChileanNumber(sellAmount) / fxRate * 100) / 100 + ' USD'}
                         </p>
                         <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                          {'$' + Number(sellAmount.replace(',', '.')).toLocaleString('es-CL') + ' CLP'}
+                          {'$' + parseChileanNumber(sellAmount).toLocaleString('es-CL') + ' CLP'}
                         </p>
                         <p className={`text-xs mt-1 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
-                          ≈ {(Number(sellAmount.replace(',', '.')) / fxRate / navPrice).toFixed(8)} UEs
+                          â‰ˆ {(parseChileanNumber(sellAmount) / fxRate / navPrice).toFixed(8)} UEs
                         </p>
                       </>
                     )}
                     {sellMode === 'usd' && (
                       <>
                         <p className="text-xl font-bold text-red-400">
-                          {'$' + Number(sellAmount.replace(',', '.')).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD'}
+                          {'$' + parseChileanNumber(sellAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' USD'}
                         </p>
                         <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                          {'$' + Math.round(Number(sellAmount.replace(',', '.')) * fxRate).toLocaleString('es-CL') + ' CLP'}
+                          {'$' + Math.round(parseChileanNumber(sellAmount) * fxRate).toLocaleString('es-CL') + ' CLP'}
                         </p>
                         <p className={`text-xs mt-1 ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
-                          ≈ {(Number(sellAmount.replace(',', '.')) / navPrice).toFixed(8)} UEs
+                          â‰ˆ {(parseChileanNumber(sellAmount) / navPrice).toFixed(8)} UEs
                         </p>
                       </>
                     )}
@@ -1214,7 +1233,7 @@ const Market = () => {
 
               <TradingActionButton
                 onClick={handleSellUnits}
-                disabled={!session || !navPrice || !sellAmount || Number(sellAmount.replace(',', '.')) <= 0}
+                disabled={!session || !navPrice || !sellAmount || parseChileanNumber(sellAmount) <= 0 || (sellMode === 'ues' && parseChileanNumber(sellAmount) > userUEHoldings) || (sellMode === 'clp' && parseChileanNumber(sellAmount) / fxRate / navPrice > userUEHoldings) || (sellMode === 'usd' && parseChileanNumber(sellAmount) / navPrice > userUEHoldings)}
                 loading={isSelling}
                 text="Vender UEs"
                 icon={<ArrowDownLeft size={22} />}
@@ -1228,27 +1247,27 @@ const Market = () => {
           </div>
         </div>
 
-        {/* Libro de Órdenes FIFO */}
+        {/* Libro de Ã“rdenes FIFO */}
         <div className={`backdrop-blur-xl rounded-2xl p-6 border shadow-2xl ${isDarkMode ? 'bg-gray-900/40 border-white/10' : 'bg-white/80 border-gray-300'
           }`}>
           <h3 className="text-3xl font-bold mb-6 flex items-center gap-3">
             <div className="p-2 rounded-xl bg-gradient-to-br from-yellow-600/30 to-yellow-500/20 border border-yellow-500/30">
-              <span className="text-2xl">📖</span>
+              <span className="text-2xl">ðŸ“–</span>
             </div>
             <span className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text text-transparent tracking-wide" style={{ fontFamily: "'Playfair Display', 'Georgia', serif", letterSpacing: '0.02em', textShadow: '0 0 30px rgba(234, 179, 8, 0.3)' }}>
-              Libro de Órdenes FIFO
+              Libro de Ã“rdenes FIFO
             </span>
           </h3>
 
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-green-900/10 border-green-500/20' : 'bg-green-50 border-green-300'
               }`}>
-              <p className={`text-xs mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Órdenes de Compra</p>
+              <p className={`text-xs mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Ã“rdenes de Compra</p>
               <p className="text-2xl font-bold text-green-400">{allOrders.filter(o => o.tipo === 'compra').length}</p>
             </div>
             <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-red-900/10 border-red-500/20' : 'bg-red-50 border-red-300'
               }`}>
-              <p className={`text-xs mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Órdenes de Venta</p>
+              <p className={`text-xs mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Ã“rdenes de Venta</p>
               <p className="text-2xl font-bold text-red-400">{allOrders.filter(o => o.tipo === 'venta').length}</p>
             </div>
           </div>
@@ -1259,7 +1278,10 @@ const Market = () => {
                 <Loader2 className="w-8 h-8 animate-spin text-yellow-500" />
               </div>
             ) : !allOrders.length ? (
-              <div className={`text-center py-8 italic ${isDarkMode ? 'text-gray-500' : 'text-gray-600'}`}>No hay órdenes registradas</div>
+              <div className="text-center py-8">
+                <div className="text-5xl mb-3 opacity-30">ðŸ“‹</div>
+                <p className={`text-lg ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>No hay Ã³rdenes registradas</p>
+              </div>
             ) : (
               <>
                 <div className={`grid grid-cols-6 gap-4 p-4 rounded-xl border font-semibold text-xs uppercase ${isDarkMode ? 'bg-white/5 border-white/20 text-gray-400' : 'bg-gray-100 border-gray-300 text-gray-700'
@@ -1273,24 +1295,24 @@ const Market = () => {
                 </div>
 
                 {allOrders.slice(0, visibleOrders).map(order => {
-                  const totalUSD = order.cantidad_restante * order.precio_nav;
-                  const estadoBadge = order.estado === 'completada' ? '✅' : order.estado === 'parcial' ? '⏳' : '🔄';
+                  const totalUSD = (order.cantidad_restante || 0) * (order.precio_nav || 0);
+                  const estadoBadge = order.estado === 'completada' ? 'âœ…' : order.estado === 'parcial' ? 'â³' : 'ðŸ”„';
                   return (
                     <div key={order.id} className={`grid grid-cols-6 gap-4 items-center p-4 backdrop-blur-sm rounded-xl border transition-all ${isDarkMode
                       ? 'bg-white/5 border-white/10 hover:bg-white/10'
                       : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                       }`}>
                       <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {new Date(order.fecha_creacion).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                        {new Date(order.fecha_creacion || '').toLocaleString('es-CL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                       </span>
                       <span className={`font-bold text-lg ${order.tipo === 'compra' ? 'text-green-400' : 'text-red-400'}`}>
                         {order.tipo.toUpperCase()}
                       </span>
                       <span className={`text-center ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {order.cantidad_restante.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}
+                        {(order.cantidad_restante || 0).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}
                       </span>
                       <span className={`font-semibold text-center ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                        ${order.precio_nav.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
+                        ${(order.precio_nav || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
                       </span>
                       <span className="text-blue-400 font-semibold text-right">
                         ${totalUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -1309,7 +1331,7 @@ const Market = () => {
                       className="bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-xl flex items-center gap-2 border border-yellow-400/20"
                     >
                       <ChevronDown size={20} />
-                      Ver más ({Math.min(10, allOrders.length - visibleOrders)} órdenes)
+                      Ver mÃ¡s ({Math.min(10, allOrders.length - visibleOrders)} Ã³rdenes)
                     </button>
                   </div>
                 )}
@@ -1335,7 +1357,10 @@ const Market = () => {
                 <Loader2 className="w-8 h-8 animate-spin text-yellow-500" />
               </div>
             ) : !transactions.length ? (
-              <div className={`text-center py-12 italic ${isDarkMode ? 'text-gray-500' : 'text-gray-600'}`}>No tienes transacciones registradas</div>
+              <div className="text-center py-12">
+                <div className="text-5xl mb-3 opacity-30">ðŸ“„</div>
+                <p className={`text-lg ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>No tienes transacciones registradas</p>
+              </div>
             ) : (
               <>
                 <table className="min-w-full">
@@ -1350,7 +1375,7 @@ const Market = () => {
                       <th className={`px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-gray-400' : 'text-gray-700'
                         }`}>Precio UE</th>
                       <th className={`px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-gray-400' : 'text-gray-700'
-                        }`}>Total USD</th>
+                        }`}>Total</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1375,7 +1400,7 @@ const Market = () => {
                           ${parseFloat(tx.nav_ue || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
                         </td>
                         <td className={`px-4 py-4 text-right font-bold ${tx.tipo === 'compra' ? 'text-red-400' : 'text-green-400'}`}>
-                          {tx.tipo === 'compra' ? '-' : '+'}${Math.abs(parseFloat(tx.monto_clp)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          {tx.tipo === 'compra' ? '-' : '+'}${tx.monto_clp != null ? Math.abs(parseFloat(tx.monto_clp || 0)).toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0'}
                         </td>
                       </tr>
                     ))}
@@ -1389,7 +1414,7 @@ const Market = () => {
                       className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-xl flex items-center gap-2 border border-blue-400/20"
                     >
                       <ChevronDown size={20} />
-                      Ver más ({Math.min(10, transactions.length - visibleTransactions)} transacciones)
+                      Ver mÃ¡s ({Math.min(10, transactions.length - visibleTransactions)} transacciones)
                     </button>
                   </div>
                 )}
@@ -1425,7 +1450,7 @@ const Market = () => {
                     placeholder="Ej: JUAN PEREZ PEREZ"
                   />
                   <p className={`text-xs mt-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-600'}`}>
-                    Este NOMBRE se usará para identificar tus transferencias automáticamente
+                    Este NOMBRE se usarÃ¡ para identificar tus transferencias automÃ¡ticamente
                   </p>
                 </div>
 
@@ -1434,7 +1459,7 @@ const Market = () => {
                     : 'bg-blue-50 border-blue-300'
                   }`}>
                   <p className={`text-sm font-bold mb-3 ${isDarkMode ? 'text-blue-400' : 'text-blue-700'}`}>
-                    📋 Datos para transferencia
+                    ðŸ“‹ Datos para transferencia
                   </p>
                   <div className={`space-y-2 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     <div className="flex justify-between">
@@ -1454,7 +1479,7 @@ const Market = () => {
                       <span>Cuenta vista</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="font-semibold">N° Cuenta:</span>
+                      <span className="font-semibold">NÂ° Cuenta:</span>
                       <span className="font-mono">12349815</span>
                     </div>
                     <div className="flex justify-between">
@@ -1465,7 +1490,7 @@ const Market = () => {
                   <div className={`mt-3 p-2 rounded-lg ${isDarkMode ? 'bg-yellow-900/20' : 'bg-yellow-100'
                     }`}>
                     <p className={`text-xs ${isDarkMode ? 'text-yellow-300' : 'text-yellow-800'}`}>
-                      ⚠️ <strong>Importante:</strong> Usa tu NOMBRE bancario <strong className="font-mono">{userBankAccount || '[tu nombre]'}</strong> como glosa/mensaje de la transferencia para que sea detectada automáticamente por Global66
+                      âš ï¸ <strong>Importante:</strong> Usa tu NOMBRE bancario <strong className="font-mono">{userBankAccount || '[tu nombre]'}</strong> como glosa/mensaje de la transferencia para que sea detectada automÃ¡ticamente por Global66
                     </p>
                   </div>
                 </div>

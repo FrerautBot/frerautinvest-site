@@ -30,7 +30,7 @@ function MarketDashboard({onAnalyze}){
       const[nav,setNav]=useState([]);
         const[ibkr,setIbkr]=useState(null);
           const[ind,setInd]=useState(null);
-            const[loading,setLoading]=true;
+            const[loading,setLoading]=useState(true);
               const[lu,setLu]=useState(null);
                 const[tab,setTab]=useState('overview');
                   useEffect(()=>{load();},[]);

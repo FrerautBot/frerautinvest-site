@@ -131,7 +131,7 @@ Mantén un tono profesional, analítico y conciso.`;
 
     // 2. Add user message to messages array
     const userMessage = {
-      id: Date.now(),
+      id: crypto.randomUUID(),
       role: 'user',
       content: userContent,
       timestamp: new Date().toISOString(), // Using ISO string here so formatTime does not break, it will be rendered as es-CL
@@ -207,7 +207,7 @@ ESTADO ACTUAL DEL PORTAFOLIO:
       const reply = data?.message?.content || data?.message?.contenido || data?.reply || data?.answer || 'Sin respuesta';
 
       const assistantMessage = {
-        id: Date.now() + 1,
+        id: crypto.randomUUID(),
         role: 'assistant',
         content: reply,
         timestamp: new Date().toISOString(),
@@ -220,7 +220,7 @@ ESTADO ACTUAL DEL PORTAFOLIO:
       console.error('Error sending message:', err);
       
       const errorMessage = {
-        id: Date.now() + 1,
+        id: crypto.randomUUID(),
         role: 'assistant',
         content: '❌ Error de comunicación con Lake Executor. Verifica la conexión.',
         timestamp: new Date().toISOString(),

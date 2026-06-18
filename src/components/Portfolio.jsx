@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { supabase } from '@/lib/customSupabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
-import { Loader2, TrendingUp, TrendingDown, DollarSign, BarChart3, RefreshCw, Briefcase, Wallet } from 'lucide-react';
+import { Loader2, TrendingUp, DollarSign, BarChart3, RefreshCw, Briefcase, Wallet } from 'lucide-react';
 
 const COLORS = ['#FFD700', '#FF6B6B', '#4ECDC4', '#95E1D3', '#A78BFA', '#F472B6', '#FBBF24', '#60A5FA', '#34D399', '#F87171', '#818CF8', '#FB923C', '#22D3EE', '#E879F9', '#84CC16'];
 const ASSET_TYPES = {

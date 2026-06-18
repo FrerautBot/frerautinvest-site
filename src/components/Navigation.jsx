@@ -73,8 +73,17 @@ const Navigation = ({ activeTab, onTabChange }) => {
         setCompetenciasOpen(false);
       }
     };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setCompetenciasOpen(false);
+      }
+    };
     document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const canAccessAnalyzer = isAdmin 
@@ -127,7 +136,7 @@ const Navigation = ({ activeTab, onTabChange }) => {
   };
 
   return (
-    <nav className="bg-white/80 dark:bg-black/40 backdrop-blur-xl border-b border-gray-200 dark:border-white/10 sticky top-[72px] z-30 transition-colors duration-300">
+    <nav aria-label="Navegación principal" className="bg-white/80 dark:bg-black/40 backdrop-blur-xl border-b border-gray-200 dark:border-white/10 sticky top-[72px] z-30 transition-colors duration-300">
       <div className="mx-auto px-2 sm:px-4 max-w-full">
         <div className="flex items-center gap-1 sm:gap-1.5 py-2">
           {/* Scrollable nav tabs */}
@@ -167,6 +176,8 @@ const Navigation = ({ activeTab, onTabChange }) => {
           {competenciasTabs.length > 0 && (
             <div ref={dropdownRef} className="relative flex-shrink-0">
               <button
+                aria-haspopup="true"
+                aria-expanded={competenciasOpen}
                 onClick={() => setCompetenciasOpen(!competenciasOpen)}
                 className={`
                   flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap outline-none border
@@ -188,6 +199,7 @@ const Navigation = ({ activeTab, onTabChange }) => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
+                    role="menu"
                     className="absolute top-full right-0 mt-2 w-64 bg-[#1a1d2b]/95 backdrop-blur-xl border border-yellow-500/20 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-50"
                   >
                     <div className="p-2">
@@ -200,6 +212,7 @@ const Navigation = ({ activeTab, onTabChange }) => {
                         return (
                           <button
                             key={tab.id}
+                            role="menuitem"
                             onClick={() => handleCompetenciaClick(tab.id, tab.isAdminLogin)}
                             className={`
                               w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-200
