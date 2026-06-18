@@ -741,16 +741,9 @@ const MyUnits = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 text-gold animate-spin" />
-      </div>
-    );
-  }
-
   // Corregir historial: patrimonio_total_real (bug) = saldo_clp (CLP) + valor_ue (USD)
   // USD correcto = saldo_clp/fxRate + valor_ue → factor = clpRatio/fxRate + ueRatio
+  // NOTA: debe ir ANTES del early return loading para no violar Rules of Hooks
   const chartHistorial = useMemo(() => {
     if (!lucro || historial.length === 0) return historial;
     const sCLP = saldoDisponible || 0;
@@ -764,6 +757,14 @@ const MyUnits = () => {
       patrimonio_total_real: Number(h.patrimonio_total_real || 0) * factor
     }));
   }, [historial, lucro, fxRate, saldoDisponible]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 text-gold animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
