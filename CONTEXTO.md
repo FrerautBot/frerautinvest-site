@@ -19,3 +19,29 @@ Registro cronológico de cambios, bugs y decisiones del proyecto.
 **Pendiente (DB):** Actualizar `vista_patrimonio_usuario` y `obtener_historial_patrimonio` en Supabase con cálculo correcto.
 
 **Preview:** `http://localhost:3000` corriendo con el build nuevo.
+
+---
+
+## 2026-06-18 — DiseñoFreraut: landing page completa + 50+ fixes
+
+**Landing page (`src/pages/HomePage.jsx`):**
+- DiseñoFreraut aplicado con paleta institucional (gold #C9A227, bg #0B0C10, panel #F5F1E8)
+- Hero con badge "Patrimonio Privado", panel informativo NAV ($5.24 USD), indicadores de confianza
+- Sección Servicios (6 cards: Gestión Patrimonio, Mercado UEs, Lake Intelligence, Portafolio, Gobierno Corp, Reportes)
+- Sección Cómo Funciona (4 pasos: Crear Cuenta → Depositar → Adquirir UEs → Seguir Inversión)
+- Sección Estadísticas ($2.4M+, 52 inversores, +18.4%, 4 años)
+- Sección Testimonios (3 inversores)
+- CTA con "Crear Cuenta Gratis" y "Contactar" (mailto)
+- Footer expandido 3 columnas (brand + LinkedIn/Twitter, servicios, contacto + horario)
+- SEO meta tags (Helmet, OG, Twitter Card)
+
+**Fixes aplicados (50+ workers):**
+- Stagger animations corregidas (framer-motion hidden/visible keys)
+- WCAG AA: muted #9C9C9C (ratio 5.25:1)
+- Border-radius reducido a max 16px en cards (index.css)
+- Menú mobile con backdrop overlay y aria-expanded
+- a11y en Market.jsx (htmlFor, role=tab, aria-selected, aria-modal, autoFocus)
+- Scroll-behavior con restore, overflow-x-hidden
+- Icon imports limpios, easing corregido, texto con caracteres chinos reparado
+
+**Commit:** `e8c7338` — push a GitHub main
