@@ -742,21 +742,23 @@ const MyUnits = () => {
   };
 
   // Corregir historial: patrimonio_total_real (bug) = saldo_clp (CLP) + valor_ue (USD)
-  // USD correcto = saldo_clp/fxRate + valor_ue → factor = clpRatio/fxRate + ueRatio
-  // NOTA: debe ir ANTES del early return loading para no violar Rules of Hooks
+  // USD correcto = saldo_usd + valor_ue + (saldo_clp/fxRate)
+  // 1) factor = clpRatio/fxRate + ueRatio  → transforma raw buggy a USD (sin saldo_usd)
+  // 2) se suma saldoUSD a todos los puntos (saldo_usd no está en patrimonio_total_real)
   const chartHistorial = useMemo(() => {
     if (!lucro || historial.length === 0) return historial;
     const sCLP = saldoDisponible || 0;
     const ueUSD = lucro?.valor_actual || 0;
+    const sUSD = saldoUSD || 0;
     const rawTotal = sCLP + ueUSD;
     const f = fxRate > 0 ? fxRate : 930;
     const factor = rawTotal > 0 ? (sCLP / rawTotal / f) + (ueUSD / rawTotal) : 0;
     if (factor <= 0) return historial;
     return historial.map(h => ({
       ...h,
-      patrimonio_total_real: Number(h.patrimonio_total_real || 0) * factor
+      patrimonio_total_real: Number(h.patrimonio_total_real || 0) * factor + sUSD
     }));
-  }, [historial, lucro, fxRate, saldoDisponible]);
+  }, [historial, lucro, fxRate, saldoDisponible, saldoUSD]);
 
   if (loading) {
     return (
