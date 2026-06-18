@@ -22,15 +22,15 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
   if (!historial || historial.length === 0) {
     return (
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-gradient-to-br dark:from-gray-900/95 dark:via-gray-900/90 dark:to-black/95 border border-gray-300 dark:border-emerald-500/30 rounded-3xl p-8 shadow-2xl backdrop-blur-sm"
+        className="bg-white dark:bg-gradient-to-br dark:from-gray-900/95 dark:via-gray-900/90 dark:to-black/95 border border-gray-200 dark:border-[#C9A227]/20 rounded-2xl p-6 shadow-sm"
       >
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-emerald-500/10 rounded-lg backdrop-blur-sm border border-emerald-500/20">
-            <TrendingUp className="w-6 h-6 text-emerald-500" />
+          <div className="p-2 bg-[#C9A227]/10 rounded-lg">
+            <TrendingUp className="w-5 h-5 text-[#C9A227]" />
           </div>
-          <h3 className="text-2xl font-bold text-emerald-500 tracking-wide">Evolución de tu Patrimonio</h3>
+          <h3 className="text-lg font-semibold text-[#1A1D2B] dark:text-white tracking-tight">Evolución de tu Patrimonio</h3>
         </div>
-        <p className="text-gray-600 dark:text-gray-400 text-center py-12 text-lg">No hay suficiente historial para mostrar el gráfico</p>
+        <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-sm text-center py-8">No hay suficiente historial para mostrar el gráfico</p>
       </motion.div>
     );
   }
@@ -47,16 +47,16 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
   if (todosLosValores.length === 0) {
     return (
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-gradient-to-br dark:from-gray-900/95 dark:via-gray-900/90 dark:to-black/95 border border-gray-300 dark:border-emerald-500/30 rounded-3xl p-8 shadow-2xl backdrop-blur-sm"
+        className="bg-white dark:bg-gradient-to-br dark:from-gray-900/95 dark:via-gray-900/90 dark:to-black/95 border border-gray-200 dark:border-[#C9A227]/20 rounded-2xl p-6 shadow-sm"
       >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-emerald-500/10 rounded-lg backdrop-blur-sm border border-emerald-500/20">
-            <TrendingUp className="w-6 h-6 text-emerald-500" />
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-[#C9A227]/10 rounded-lg">
+            <TrendingUp className="w-5 h-5 text-[#C9A227]" />
           </div>
-          <h3 className="text-2xl font-bold text-emerald-500 tracking-wide">Evolución de tu Patrimonio</h3>
+          <h3 className="text-lg font-semibold text-[#1A1D2B] dark:text-white tracking-tight">Evolución de tu Patrimonio</h3>
         </div>
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
-          <p className="text-red-600 dark:text-red-400 text-sm">⚠️ Los datos del historial existen pero todos los valores son 0</p>
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+          <p className="text-red-600 dark:text-red-400 text-xs">Los datos del historial existen pero todos los valores son 0</p>
         </div>
       </motion.div>
     );
@@ -128,81 +128,74 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className="bg-white dark:bg-gradient-to-br dark:from-gray-900/95 dark:via-gray-800/90 dark:to-black/95 border border-gray-300 dark:border-emerald-500/30 rounded-3xl p-8 shadow-2xl backdrop-blur-sm relative overflow-hidden"
+      className="bg-white dark:bg-gradient-to-br dark:from-gray-900/95 dark:via-gray-800/90 dark:to-black/95 border border-gray-200 dark:border-[#C9A227]/20 rounded-2xl p-6 shadow-sm relative overflow-hidden"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent pointer-events-none"></div>
       <div className="relative z-10">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <motion.div whileHover={{ scale: 1.05 }} className="p-3 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 dark:from-emerald-500/20 dark:to-emerald-500/10 rounded-xl">
-              <TrendingUp className="w-6 h-6 text-emerald-500" />
-            </motion.div>
+            <div className="p-2 bg-[#C9A227]/10 rounded-lg">
+              <TrendingUp className="w-5 h-5 text-[#C9A227]" />
+            </div>
             <div>
-              <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-green-400 to-emerald-500">
+              <h3 className="text-lg font-semibold text-[#1A1D2B] dark:text-white tracking-tight">
                 Evolución de tu Patrimonio
               </h3>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF] mt-0.5">
                 {formatUSD(totalPatrimonioUSD)}
               </p>
             </div>
           </div>
-          <motion.div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800/50 px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700/50">
-            <Calendar className="w-4 h-4 text-emerald-500" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Últimos 30 días</span>
-          </motion.div>
+          <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700/50">
+            <Calendar className="w-3.5 h-3.5 text-[#C9A227]" />
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Últimos 30 días</span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-            className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/60 dark:to-gray-900/60 rounded-xl p-5 border border-gray-300 dark:border-gray-700/50 backdrop-blur-sm hover:border-emerald-500/50 dark:hover:border-emerald-500/30 transition-all duration-300"
-          >
-            <p className="text-xs uppercase tracking-wider text-gray-700 dark:text-gray-400 mb-2 font-semibold">💰 Patrimonio Actual</p>
-            <p className="text-3xl font-extrabold tracking-wide text-gray-900 dark:text-white">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div className="bg-gray-50/80 dark:bg-gray-800/40 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+            <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF] font-medium mb-1 tracking-wide">Patrimonio Actual</p>
+            <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight">
               {formatUSD(totalPatrimonioUSD)}
             </p>
-            <p className="text-xs text-gray-500 mt-1">{formatCLP(totalPatrimonioUSD, fxRate)}</p>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-            className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/60 dark:to-gray-900/60 rounded-xl p-5 border border-gray-300 dark:border-gray-700/50 backdrop-blur-sm hover:border-emerald-500/50 dark:hover:border-emerald-500/30 transition-all duration-300"
-          >
-            <p className="text-xs uppercase tracking-wider text-gray-700 dark:text-gray-400 mb-2 font-semibold">📈 Cambio Total</p>
-            <p className={`text-3xl font-extrabold tracking-wide ${esPositivo ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+            <p className="text-xs text-[#6E6E6E]/70 dark:text-[#9CA3AF]/70 mt-0.5">{formatCLP(totalPatrimonioUSD, fxRate)}</p>
+          </div>
+          <div className="bg-gray-50/80 dark:bg-gray-800/40 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+            <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF] font-medium mb-1 tracking-wide">Cambio Total</p>
+            <p className={`text-2xl font-bold tracking-tight ${esPositivo ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
               {esPositivo ? '+' : ''}{cambioPorcentaje}%
             </p>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/60 dark:to-gray-900/60 rounded-xl p-5 border border-gray-300 dark:border-gray-700/50 backdrop-blur-sm hover:border-emerald-500/50 dark:hover:border-emerald-500/30 transition-all duration-300"
-          >
-            <p className="text-xs uppercase tracking-wider text-gray-700 dark:text-gray-400 mb-2 font-semibold">🪙 Patrimonio en CLP</p>
-            <p className="text-3xl font-extrabold tracking-wide text-gray-900 dark:text-white">
+          </div>
+          <div className="bg-gray-50/80 dark:bg-gray-800/40 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+            <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF] font-medium mb-1 tracking-wide">Patrimonio en CLP</p>
+            <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight">
               {formatCLP(totalPatrimonioUSD, fxRate)}
             </p>
-          </motion.div>
+          </div>
         </div>
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
-          className="overflow-hidden rounded-2xl p-6 border border-gray-300/60 dark:border-emerald-500/20 relative"
-          style={{ background: '#0b0c10', backgroundImage: `radial-gradient(circle, rgba(160,160,160,0.25) 0.5px, transparent 0.5px)`, backgroundSize: '12px 12px' }}
+          className="overflow-hidden rounded-xl p-5 border border-gray-200 dark:border-[#C9A227]/15 relative"
+          style={{ background: '#0b0c10', backgroundImage: `radial-gradient(circle, rgba(201,162,39,0.15) 0.5px, transparent 0.5px)`, backgroundSize: '12px 12px' }}
         >
           <svg width={width} height={height} className="mx-auto" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}
             style={{ cursor: 'crosshair' }} shapeRendering="geometricPrecision">
             <defs>
-              <linearGradient id="gradientGreen" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#10B981" stopOpacity="0.4" />
-                <stop offset="30%" stopColor="#10B981" stopOpacity="0.18" />
-                <stop offset="60%" stopColor="#10B981" stopOpacity="0.06" />
-                <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
+              <linearGradient id="gradientGold" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#C9A227" stopOpacity="0.35" />
+                <stop offset="30%" stopColor="#C9A227" stopOpacity="0.15" />
+                <stop offset="60%" stopColor="#C9A227" stopOpacity="0.05" />
+                <stop offset="100%" stopColor="#C9A227" stopOpacity="0" />
               </linearGradient>
-              <filter id="lineGlowGreen">
-                <feGaussianBlur stdDeviation="3.5" result="blur" />
+              <filter id="lineGlowGold">
+                <feGaussianBlur stdDeviation="3" result="blur" />
                 <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
               </filter>
-              <linearGradient id="lineGradientGreen" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#34D399" />
-                <stop offset="50%" stopColor="#10B981" />
-                <stop offset="100%" stopColor="#059669" />
+              <linearGradient id="lineGradientGold" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#C9A227" />
+                <stop offset="50%" stopColor="#D4AF37" />
+                <stop offset="100%" stopColor="#C9A227" />
               </linearGradient>
-              <filter id="nodeGlowGreen">
+              <filter id="nodeGlowGold">
                 <feGaussianBlur stdDeviation="1.5" result="blur" />
                 <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
               </filter>
@@ -214,28 +207,28 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
               return (
                 <g key={i}>
                   <line x1={padding.left} y1={yPos} x2={width - padding.right} y2={yPos}
-                    className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="1" strokeDasharray="4 6" opacity="0.3" />
-                  <text x={padding.left - 12} y={yPos + 4} textAnchor="end" fill="#b0b0b0" fontSize="11" fontWeight="400">
+                    stroke="#ffffff" strokeWidth="1" strokeDasharray="3 5" opacity="0.08" />
+                  <text x={padding.left - 12} y={yPos + 4} textAnchor="end" fill="#9CA3AF" fontSize="11" fontWeight="400">
                     ${(valorEtiqueta / 1000).toFixed(1)}k
                   </text>
                 </g>
               );
             })}
 
-            <path d={areaPathD} fill="url(#gradientGreen)" opacity="0.5" />
-            <path d={pathD} fill="none" stroke="#10B981" strokeWidth="10" strokeLinecap="round" opacity="0.12" />
-            <path d={pathD} fill="none" stroke="url(#lineGradientGreen)" strokeWidth="2.5" strokeLinecap="round" filter="url(#lineGlowGreen)" />
+            <path d={areaPathD} fill="url(#gradientGold)" opacity="0.6" />
+            <path d={pathD} fill="none" stroke="#C9A227" strokeWidth="8" strokeLinecap="round" opacity="0.15" />
+            <path d={pathD} fill="none" stroke="url(#lineGradientGold)" strokeWidth="2" strokeLinecap="round" filter="url(#lineGlowGold)" />
 
-            <circle cx={allPoints[allPoints.length - 1].x} cy={allPoints[allPoints.length - 1].y} r="5" fill="#10B981" stroke="#fff" strokeWidth="2" filter="url(#nodeGlowGreen)" />
+            <circle cx={allPoints[allPoints.length - 1].x} cy={allPoints[allPoints.length - 1].y} r="4" fill="#C9A227" stroke="#fff" strokeWidth="2" filter="url(#nodeGlowGold)" />
 
             {hoveredPoint && (
               <>
                 <line x1={hoveredPoint.x} y1={padding.top} x2={hoveredPoint.x} y2={height - padding.bottom}
-                  stroke="#10B981" strokeWidth="1" strokeDasharray="3 4" opacity="0.4" />
-                <circle cx={hoveredPoint.x} cy={hoveredPoint.y} r="6" fill="#10B981" stroke="#fff" strokeWidth="2.5" filter="url(#lineGlowGreen)" />
-                <circle cx={hoveredPoint.x} cy={hoveredPoint.y} r="12" fill="none" stroke="#10B981" strokeWidth="1.5" opacity="0.25">
-                  <animate attributeName="r" from="6" to="18" dur="2s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" from="0.4" to="0" dur="2s" repeatCount="indefinite" />
+                  stroke="#C9A227" strokeWidth="1" strokeDasharray="3 4" opacity="0.3" />
+                <circle cx={hoveredPoint.x} cy={hoveredPoint.y} r="5" fill="#C9A227" stroke="#fff" strokeWidth="2" filter="url(#nodeGlowGold)" />
+                <circle cx={hoveredPoint.x} cy={hoveredPoint.y} r="10" fill="none" stroke="#C9A227" strokeWidth="1" opacity="0.2">
+                  <animate attributeName="r" from="5" to="16" dur="2s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" from="0.3" to="0" dur="2s" repeatCount="indefinite" />
                 </circle>
               </>
             )}
@@ -243,12 +236,12 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
 
           {hoveredPoint && (
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-              className="absolute bg-white dark:bg-gray-900 border border-emerald-500/40 rounded-2xl px-5 py-3 shadow-2xl backdrop-blur-md pointer-events-none"
+              className="absolute bg-white dark:bg-gray-900 border border-[#C9A227]/30 rounded-xl px-4 py-2.5 shadow-lg backdrop-blur-md pointer-events-none"
               style={{ left: Math.min(mousePos.x + 15, width - 200), top: Math.max(mousePos.y - 80, 10) }}>
-              <p className="text-xs text-emerald-500 font-bold uppercase tracking-wider mb-1">
+              <p className="text-[10px] text-[#C9A227] font-semibold uppercase tracking-wider mb-1">
                 {new Date(hoveredPoint.fecha).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' })}
               </p>
-              <p className="text-lg font-bold text-white">{formatUSD(hoveredPoint.valor)}</p>
+              <p className="text-base font-bold text-white">{formatUSD(hoveredPoint.valor)}</p>
               <p className="text-xs text-gray-400">{formatCLP(hoveredPoint.valor, fxRate)}</p>
             </motion.div>
           )}
@@ -770,23 +763,22 @@ const MyUnits = () => {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Mis Unidades</h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Gestiona y visualiza el rendimiento de tus UEs</p>
-        </div>
+      <div>
+        <h2 className="text-xl font-semibold text-[#1A1D2B] dark:text-white tracking-tight">Mis Unidades</h2>
+        <p className="text-sm text-[#6E6E6E] dark:text-[#9CA3AF] mt-1">Resumen de tu cartera de UEs</p>
       </div>
 
       {lucro && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          <div className="bg-white dark:bg-card border-2 border-gray-300 dark:border-gold/20 rounded-xl p-5 shadow-lg dark:shadow-none">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+          {/* Total UEs */}
+          <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl p-4">
             <div className="flex justify-between items-start mb-2">
-              <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Total UEs</p>
-              <div className="p-2 bg-gold/20 dark:bg-gold/10 rounded-lg">
-                <PieChart className="w-4 h-4 text-gold" />
+              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Total UEs</p>
+              <div className="p-1.5 bg-[#C9A227]/10 rounded-lg">
+                <PieChart className="w-3.5 h-3.5 text-[#C9A227]" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+            <p className="text-xl font-semibold text-[#1A1D2B] dark:text-white">
               {Number(lucro.ue_totales).toLocaleString('es-CL', {
                 minimumFractionDigits: 3,
                 maximumFractionDigits: 3
@@ -794,91 +786,88 @@ const MyUnits = () => {
             </p>
           </div>
 
-          <div className="bg-white dark:bg-card border-2 border-gray-300 dark:border-gold/20 rounded-xl p-5 shadow-lg dark:shadow-none">
+          {/* Valor de mis UEs */}
+          <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl p-4">
             <div className="flex justify-between items-start mb-2">
-              <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Valor de mis UEs</p>
-              <div className="p-2 bg-green-500/20 dark:bg-green-500/10 rounded-lg">
-                <Wallet className="w-4 h-4 text-green-600 dark:text-green-400" />
+              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Valor de UEs</p>
+              <div className="p-1.5 bg-[#C9A227]/10 rounded-lg">
+                <Wallet className="w-3.5 h-3.5 text-[#C9A227]" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {formatUSD(lucro.valor_actual)}
-            </p>
-            <p className="text-xs text-green-600/60 dark:text-green-400/60 mt-1">
+            <p className="text-xl font-semibold text-[#C9A227]">{formatUSD(lucro.valor_actual)}</p>
+            <p className="text-[11px] text-[#6E6E6E]/70 dark:text-[#9CA3AF]/70 mt-0.5">
               {formatCLP(lucro.valor_actual, fxRate)}
             </p>
           </div>
 
-          <div className="bg-white dark:bg-card border-2 border-gray-300 dark:border-gold/20 rounded-xl p-5 shadow-lg dark:shadow-none">
+          {/* Inversión Total */}
+          <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl p-4">
             <div className="flex justify-between items-start mb-2">
-              <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Inversión Total</p>
-              <div className="p-2 bg-blue-500/20 dark:bg-blue-500/10 rounded-lg">
-                <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Inversión Total</p>
+              <div className="p-1.5 bg-[#C9A227]/10 rounded-lg">
+                <TrendingUp className="w-3.5 h-3.5 text-[#C9A227]" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 break-words">
+            <p className="text-xl font-semibold text-[#1A1D2B] dark:text-white break-words">
               {formatUSD(lucro.total_invertido)}
             </p>
-            <p className="text-xs text-blue-600/60 dark:text-blue-400/60 mt-1">
+            <p className="text-[11px] text-[#6E6E6E]/70 dark:text-[#9CA3AF]/70 mt-0.5">
               {formatCLP(lucro.total_invertido, fxRate)}
             </p>
-
           </div>
 
-          <div className="bg-white dark:bg-card border-2 border-gray-300 dark:border-gold/20 rounded-xl p-5 shadow-lg dark:shadow-none">
+          {/* Rentabilidad */}
+          <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl p-4">
             <div className="flex justify-between items-start mb-2">
-              <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Rentabilidad</p>
-              <div className={`p-2 rounded-lg ${Number(lucro.lucro_total) >= 0 ? 'bg-green-500/20 dark:bg-green-500/10' : 'bg-red-500/20 dark:bg-red-500/10'}`}>
+              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Rentabilidad</p>
+              <div className={`p-1.5 rounded-lg ${Number(lucro.lucro_total) >= 0 ? 'bg-emerald-500/10' : 'bg-red-500/10'}`}>
                 {Number(lucro.lucro_total) >= 0 ? (
-                  <ArrowUpRight className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  <ArrowUpRight className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 ) : (
-                  <ArrowDownRight className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  <ArrowDownRight className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
                 )}
               </div>
             </div>
-            <p className={`text-2xl font-bold ${Number(lucro.lucro_total) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+            <p className={`text-xl font-semibold ${Number(lucro.lucro_total) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
               {Number(lucro.porcentaje_lucro).toFixed(2)}%
             </p>
-            <p className={`text-xs ${Number(lucro.lucro_total) >= 0 ? 'text-green-600/80 dark:text-green-500/70' : 'text-red-600/80 dark:text-red-500/70'}`}>
-              {Number(lucro.lucro_total) >= 0 ? '+' : ''}{formatUSD(Math.abs(Number(lucro.lucro_total)))}
-            </p>
-            <p className={`text-[10px] ${Number(lucro.lucro_total) >= 0 ? 'text-green-500/60' : 'text-red-500/60'}`}>
-              {formatCLP(Math.abs(Number(lucro.lucro_total)), fxRate)}
+            <p className={`text-[11px] mt-0.5 ${Number(lucro.lucro_total) >= 0 ? 'text-emerald-600/60 dark:text-emerald-400/60' : 'text-red-600/60 dark:text-red-400/60'}`}>
+              {Number(lucro.lucro_total) >= 0 ? '+' : ''}{formatUSD(Math.abs(Number(lucro.lucro_total)))} &middot; {formatCLP(Math.abs(Number(lucro.lucro_total)), fxRate)}
             </p>
           </div>
 
-          {/* Saldo en Pesos - clickeable para abrir modal de cambio */}
+          {/* Saldo en Pesos */}
           <div
-            className="bg-white dark:bg-card border-2 border-gray-300 dark:border-purple-500/20 rounded-xl p-5 shadow-lg dark:shadow-none cursor-pointer hover:border-purple-500/50 dark:hover:border-purple-500/40 transition-all duration-300 group"
+            className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl p-4 cursor-pointer hover:border-[#C9A227]/30 transition-all duration-300 group"
             onClick={() => setShowExchangeModal(true)}
           >
             <div className="flex justify-between items-start mb-2">
-              <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Saldo en Pesos</p>
-              <div className="p-2 bg-purple-500/20 dark:bg-purple-500/10 rounded-lg">
-                <DollarSign className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Saldo en Pesos</p>
+              <div className="p-1.5 bg-[#C9A227]/10 rounded-lg">
+                <DollarSign className="w-3.5 h-3.5 text-[#C9A227]" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+            <p className="text-xl font-semibold text-[#1A1D2B] dark:text-white">
               ${saldoDisponible.toLocaleString('es-CL')}
             </p>
-            <p className="text-xs text-purple-600/80 dark:text-purple-400/70 mt-1 flex items-center gap-1">
-              <ArrowRightLeft className="w-3 h-3 group-hover:rotate-180 transition-transform duration-300" />
+            <p className="text-[11px] text-[#C9A227]/70 mt-0.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <ArrowRightLeft className="w-3 h-3" />
               Cambiar a USD
             </p>
           </div>
 
           {/* Saldo en Dólares */}
-          <div className="bg-white dark:bg-card border-2 border-gray-300 dark:border-emerald-500/20 rounded-xl p-5 shadow-lg dark:shadow-none">
+          <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl p-4">
             <div className="flex justify-between items-start mb-2">
-              <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Saldo en Dólares</p>
-              <div className="p-2 bg-emerald-500/20 dark:bg-emerald-500/10 rounded-lg">
-                <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Saldo en Dólares</p>
+              <div className="p-1.5 bg-[#C9A227]/10 rounded-lg">
+                <DollarSign className="w-3.5 h-3.5 text-[#C9A227]" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+            <p className="text-xl font-semibold text-[#1A1D2B] dark:text-white">
               ${saldoUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
             </p>
-            <p className="text-xs text-emerald-600/80 dark:text-emerald-400/70 mt-1">
+            <p className="text-[11px] text-[#6E6E6E]/70 dark:text-[#9CA3AF]/70 mt-0.5">
               Para compra de UEs
             </p>
           </div>
@@ -888,71 +877,58 @@ const MyUnits = () => {
       <PatrimonioChart historial={chartHistorial} fxRate={fxRate} lucro={lucro} saldoCLP={saldoDisponible} saldoUSD={saldoUSD} />
 
       {/* BOTONES DE ACCIÓN: Cambiar Divisas + Retirar Fondos */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex justify-center gap-4 flex-wrap"
-      >
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+      <div className="flex justify-center gap-3 flex-wrap">
+        <button
           onClick={() => setShowExchangeModal(true)}
-          className="bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center gap-3 border-2 border-purple-500/50"
+          className="px-5 py-2.5 bg-[#C9A227] hover:bg-[#B8921F] text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center gap-2"
         >
-          <ArrowRightLeft className="w-6 h-6" />
-          Cambiar CLP → USD
-        </motion.button>
+          <ArrowRightLeft className="w-4 h-4" />
+          Cambiar CLP a USD
+        </button>
 
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+        <button
           onClick={() => setShowWithdrawModal(true)}
-          className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center gap-3 border-2 border-red-500/50"
+          className="px-5 py-2.5 bg-white hover:bg-gray-50 dark:bg-[#1A1D2B] dark:hover:bg-[#232738] text-[#8B1E3F] dark:text-red-400 text-sm font-medium rounded-lg border border-[#8B1E3F]/30 dark:border-red-400/30 transition-colors duration-200 flex items-center gap-2"
         >
-          <DollarSign className="w-6 h-6" />
+          <DollarSign className="w-4 h-4" />
           Retirar Fondos
-        </motion.button>
-      </motion.div>
+        </button>
+      </div>
 
-      {/* TABLA DE HISTORIAL DE RETIROS (ahora lee de tabla retiros) */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-800 rounded-2xl p-6 shadow-lg"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-500/10 rounded-lg">
-              <DollarSign className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+      {/* TABLA DE HISTORIAL DE RETIROS */}
+      <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#C9A227]/10">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 bg-[#C9A227]/10 rounded-lg">
+              <DollarSign className="w-3.5 h-3.5 text-[#C9A227]" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Historial de Retiros</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Seguimiento de tus solicitudes de retiro</p>
+              <h3 className="text-sm font-semibold text-[#1A1D2B] dark:text-white">Historial de Retiros</h3>
+              <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF]">Seguimiento de tus solicitudes</p>
             </div>
           </div>
         </div>
 
         {loading ? (
           <div className="flex justify-center py-8">
-            <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+            <Loader2 className="w-5 h-5 text-[#C9A227] animate-spin" />
           </div>
         ) : withdrawHistory.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700">
-            <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-600 dark:text-gray-400 font-medium">No tienes retiros registrados</p>
-            <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">Tus solicitudes de retiro aparecerán aquí</p>
+          <div className="text-center py-10 mx-4 mb-4 bg-gray-50/50 dark:bg-gray-800/30 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
+            <DollarSign className="w-8 h-8 text-[#6E6E6E]/40 mx-auto mb-2" />
+            <p className="text-sm text-[#6E6E6E] dark:text-[#9CA3AF] font-medium">No tienes retiros registrados</p>
+            <p className="text-xs text-[#6E6E6E]/60 dark:text-[#9CA3AF]/60 mt-0.5">Tus solicitudes aparecerán aquí</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto px-2">
             <table className="w-full">
               <thead>
-                <tr className="border-b-2 border-gray-200 dark:border-gray-800">
-                  <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Fecha</th>
-                  <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Monto</th>
-                  <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Banco</th>
-                  <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Estado</th>
-                  <th className="text-left py-3 px-4 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Cuenta</th>
+                <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <th className="text-left py-3 px-3 text-[11px] font-medium text-[#6E6E6E] dark:text-[#9CA3AF] tracking-wide">Fecha</th>
+                  <th className="text-left py-3 px-3 text-[11px] font-medium text-[#6E6E6E] dark:text-[#9CA3AF] tracking-wide">Monto</th>
+                  <th className="text-left py-3 px-3 text-[11px] font-medium text-[#6E6E6E] dark:text-[#9CA3AF] tracking-wide">Banco</th>
+                  <th className="text-left py-3 px-3 text-[11px] font-medium text-[#6E6E6E] dark:text-[#9CA3AF] tracking-wide">Estado</th>
+                  <th className="text-left py-3 px-3 text-[11px] font-medium text-[#6E6E6E] dark:text-[#9CA3AF] tracking-wide">Cuenta</th>
                 </tr>
               </thead>
               <tbody>
@@ -1035,33 +1011,29 @@ const MyUnits = () => {
         )}
 
         {hasMoreWithdraws && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex justify-center mt-6"
-          >
+          <div className="flex justify-center px-5 py-4 border-t border-[#C9A227]/10">
             <button
               onClick={async () => {
                 const newLimit = withdrawHistoryLimit + 3;
                 setWithdrawHistoryLimit(newLimit);
                 await loadWithdrawHistory(newLimit);
               }}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl"
+              className="px-4 py-2 bg-[#C9A227]/10 hover:bg-[#C9A227]/20 text-[#C9A227] text-xs font-medium rounded-lg transition-colors duration-200 flex items-center gap-1.5"
             >
-              <ArrowDownRight className="w-5 h-5" />
+              <ArrowDownRight className="w-3.5 h-3.5" />
               Ver más retiros
             </button>
-          </motion.div>
+          </div>
         )}
 
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Mostrando <span className="font-bold text-gray-900 dark:text-white">{withdrawHistory.length}</span>
+        <div className="px-5 py-3 text-center border-t border-[#C9A227]/10">
+          <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF]">
+            Mostrando <span className="font-medium text-[#1A1D2B] dark:text-white">{withdrawHistory.length}</span>
             {withdrawHistory.length === 1 ? ' retiro' : ' retiros'}
-            {!hasMoreWithdraws && withdrawHistory.length > 0 && <span className="ml-1">(Todos los retiros mostrados)</span>}
+            {!hasMoreWithdraws && withdrawHistory.length > 0 && <span className="ml-1 text-[#6E6E6E]/60">(todos)</span>}
           </p>
         </div>
-      </motion.div>
+      </div>
 
       {/* ============================================ */}
       {/* MODAL: CAMBIO CLP → USD */}
