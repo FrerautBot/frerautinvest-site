@@ -40,6 +40,8 @@ const Index = ({ onNavigate }) => {
   const [marketMetrics, setMarketMetrics] = useState(null);
   const [recentReports, setRecentReports] = useState([]);
   const [navHistory, setNavHistory] = useState([]);
+  const [patrimonioCLP, setPatrimonioCLP] = useState(0);
+  const [patrimonioUSD, setPatrimonioUSD] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -88,7 +90,32 @@ const Index = ({ onNavigate }) => {
           history = valid;
         }
 
-        if (userPatrimonio) setUserData(userPatrimonio);
+        if (userPatrimonio) {
+          // Fetch saldo_usd y fxRate para calcular patrimonio real
+          const { data: usuario } = await supabase
+            .from('usuarios')
+            .select('saldo_usd')
+            .eq('id', user.id)
+            .maybeSingle();
+          const { data: fx } = await supabase
+            .from('fx_config')
+            .select('manual_rate')
+            .eq('is_active', true)
+            .maybeSingle();
+          const fxRate = fx?.manual_rate ? parseFloat(fx.manual_rate) : 950;
+
+          const saldoUSD = Number(usuario?.saldo_usd || 0);
+          const saldoCLP = Number(userPatrimonio.saldo_clp || 0);
+          // userPatrimonio.valor_total_ues está en CLP en la vista, pero representa USD
+          const ueValorUSD = Number(userPatrimonio.valor_total_ues || 0);
+
+          const totalCLP = saldoCLP + (ueValorUSD * fxRate) + (saldoUSD * fxRate);
+          const totalUSD = (saldoCLP / fxRate) + ueValorUSD + saldoUSD;
+
+          setPatrimonioCLP(totalCLP);
+          setPatrimonioUSD(totalUSD);
+          setUserData(userPatrimonio);
+        }
         if (metrics) setMarketMetrics(metrics);
         if (reports) setRecentReports(reports);
         if (history.length > 0) setNavHistory(history);
@@ -242,7 +269,7 @@ const Index = ({ onNavigate }) => {
             ) : (
               <div className="space-y-2">
                 <div className="text-3xl font-light text-slate-900 dark:text-white tracking-tight">
-                  {formatCurrency(userData?.patrimonio_total || 0)}
+                  {formatCurrency(patrimonioCLP)}
                 </div>
                 <div className="flex items-center gap-2 text-xs">
                   <div className="px-2 py-0.5 bg-emerald-500/10 rounded-md">

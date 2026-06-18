@@ -15,7 +15,7 @@ const formatCLP = (val, fx) => {
   return '≈ $' + Math.round(clp).toLocaleString('es-CL') + ' CLP';
 };
 
-function PatrimonioChart({ historial, fxRate }) {
+function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
   const [hoveredPoint, setHoveredPoint] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
@@ -102,6 +102,10 @@ function PatrimonioChart({ historial, fxRate }) {
   const cambioPorcentaje = valorInicial > 0 ? ((cambioAbsoluto / valorInicial) * 100).toFixed(2) : '0.00';
   const esPositivo = cambioAbsoluto >= 0;
 
+  // Calcular patrimonio total real: USD + UEs + CLP convertido
+  const totalPatrimonioUSD = (saldoUSD || 0) + (lucro?.valor_actual || 0) + ((saldoCLP || 0) / fxRate);
+  const totalPatrimonioCLP = (saldoCLP || 0) + ((lucro?.valor_actual || 0) * fxRate) + ((saldoUSD || 0) * fxRate);
+
   const handleMouseMove = (e) => {
     const svg = e.currentTarget;
     const rect = svg.getBoundingClientRect();
@@ -138,7 +142,7 @@ function PatrimonioChart({ historial, fxRate }) {
                 Evolución de tu Patrimonio
               </h3>
               <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">
-                {formatUSD(valorPatrimonioFinal)}
+                {formatUSD(totalPatrimonioUSD)}
               </p>
             </div>
           </div>
@@ -154,9 +158,9 @@ function PatrimonioChart({ historial, fxRate }) {
           >
             <p className="text-xs uppercase tracking-wider text-gray-700 dark:text-gray-400 mb-2 font-semibold">💰 Patrimonio Actual</p>
             <p className="text-3xl font-extrabold tracking-wide text-gray-900 dark:text-white">
-              {formatUSD(valorPatrimonioFinal)}
+              {formatUSD(totalPatrimonioUSD)}
             </p>
-            <p className="text-xs text-gray-500 mt-1">{formatCLP(valorPatrimonioFinal, fxRate)}</p>
+            <p className="text-xs text-gray-500 mt-1">{formatCLP(totalPatrimonioUSD, fxRate)}</p>
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
             className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/60 dark:to-gray-900/60 rounded-xl p-5 border border-gray-300 dark:border-gray-700/50 backdrop-blur-sm hover:border-emerald-500/50 dark:hover:border-emerald-500/30 transition-all duration-300"
@@ -171,7 +175,7 @@ function PatrimonioChart({ historial, fxRate }) {
           >
             <p className="text-xs uppercase tracking-wider text-gray-700 dark:text-gray-400 mb-2 font-semibold">🪙 Patrimonio en CLP</p>
             <p className="text-3xl font-extrabold tracking-wide text-gray-900 dark:text-white">
-              {formatCLP(valorPatrimonioFinal, fxRate)}
+              {formatCLP(totalPatrimonioUSD, fxRate)}
             </p>
           </motion.div>
         </div>
@@ -862,7 +866,7 @@ const MyUnits = () => {
         </div>
       )}
 
-      <PatrimonioChart historial={historial} fxRate={fxRate} />
+      <PatrimonioChart historial={historial} fxRate={fxRate} lucro={lucro} saldoCLP={saldoDisponible} saldoUSD={saldoUSD} />
 
       {/* BOTONES DE ACCIÓN: Cambiar Divisas + Retirar Fondos */}
       <motion.div
