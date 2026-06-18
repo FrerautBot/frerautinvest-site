@@ -41,7 +41,22 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
 
-  const valoresPatrimonio = historial.map(h => h?.patrimonio_total_real ? Number(h.patrimonio_total_real) : 0);
+  // Convertir patrimonio_total_real (bug: CLP + USD mezclados) a USD correcto
+  // patrimonio_total_real (bug) = saldo_clp (CLP) + valor_ue (USD)
+  // USD correcto = saldo_clp/fxRate + valor_ue
+  // Usamos el ratio actual CLP/UE para corregir todo el historial
+  const f = fxRate > 0 ? fxRate : 930;
+  const saldoCLPRaw = saldoCLP || 0;
+  const ueValorUSDRaw = lucro?.valor_actual || 0;
+  const rawTotal = saldoCLPRaw + ueValorUSDRaw;
+  // factor = clpRatio/fxRate + ueRatio  → transforma raw buggy a USD correcto
+  const factor = rawTotal > 0 ? (saldoCLPRaw / rawTotal / f) + (ueValorUSDRaw / rawTotal) : (1 / f);
+  const historialCorregido = historial.map(h => {
+    const raw = Number(h?.patrimonio_total_real || 0);
+    return { ...h, valor_corregido: raw * factor };
+  });
+
+  const valoresPatrimonio = historialCorregido.map(h => h.valor_corregido);
   const todosLosValores = valoresPatrimonio.filter(v => v > 0);
 
   if (todosLosValores.length === 0) {
@@ -66,10 +81,10 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
   const maxValor = Math.max(...todosLosValores) * 1.05;
   const rangoValor = maxValor - minValor || 1;
 
-  const allPoints = historial.map((item, index) => {
-    const valor = Number(item.patrimonio_total_real || 0);
+  const allPoints = historialCorregido.map((item, index) => {
+    const valor = item.valor_corregido;
     return {
-      x: padding.left + (index / (historial.length - 1)) * chartWidth,
+      x: padding.left + (index / (historialCorregido.length - 1)) * chartWidth,
       y: padding.top + chartHeight - ((valor - minValor) / rangoValor) * chartHeight,
       fecha: item.fecha,
       valor,
