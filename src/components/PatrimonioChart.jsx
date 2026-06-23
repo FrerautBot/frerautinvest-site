@@ -12,11 +12,11 @@ const PatrimonioChart = ({ data }) => {
     );
   }
 
-  // Formatter for currency
+  // Formatter for currency (USD - data is in USD)
   const formatCurrency = (value) => {
-    return new Intl.NumberFormat('es-CL', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'CLP',
+      currency: 'USD',
       maximumFractionDigits: 0,
     }).format(value);
   };
@@ -73,8 +73,8 @@ const PatrimonioChart = ({ data }) => {
             tickLine={false}
             minTickGap={30}
           />
-          <YAxis 
-            tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+          <YAxis
+            tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
             stroke="#6b7280"
             tick={{ fill: '#9ca3af', fontSize: 12 }}
             axisLine={false}

@@ -12,7 +12,7 @@ const formatUSD = (val) => {
 const formatCLP = (val, fx) => {
   if (val == null || isNaN(val) || !fx) return '';
   const clp = Number(val) * fx;
-  return 'â‰ˆ $' + Math.round(clp).toLocaleString('es-CL') + ' CLP';
+  return '~ $' + Math.round(clp).toLocaleString('es-CL') + ' CLP';
 };
 
 function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
@@ -864,13 +864,29 @@ const MyUnits = () => {
             </p>
           </div>
 
-          {/* Saldo en Pesos */}
+          {/* Total Patrimonio en USD (resumen) */}
+          <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl p-4">
+            <div className="flex justify-between items-start mb-2">
+              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Patrimonio Total</p>
+              <div className="p-1.5 bg-emerald-500/10 rounded-lg">
+                <Wallet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+            </div>
+            <p className="text-xl font-semibold text-emerald-600 dark:text-emerald-400">
+              ${totalPatrimonioUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+            </p>
+            <p className="text-[11px] text-[#6E6E6E]/70 dark:text-[#9CA3AF]/70 mt-0.5">
+              ~ ${Math.round(totalPatrimonioCLP).toLocaleString('es-CL')} CLP
+            </p>
+          </div>
+
+          {/* Saldo en Efectivo CLP */}
           <div
             className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl p-4 cursor-pointer hover:border-[#C9A227]/30 transition-all duration-300 group"
             onClick={() => setShowExchangeModal(true)}
           >
             <div className="flex justify-between items-start mb-2">
-              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Saldo en Pesos</p>
+              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Efectivo CLP</p>
               <div className="p-1.5 bg-[#C9A227]/10 rounded-lg">
                 <DollarSign className="w-3.5 h-3.5 text-[#C9A227]" />
               </div>
