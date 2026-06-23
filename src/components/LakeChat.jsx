@@ -103,7 +103,7 @@ export default function LakeChat({ onClose }) {
 
     const { state, positions, recentOrders } = brainContext;
     
-    return `Eres Lake Executor, la IA central del fondo de inversión Freraut. Tu objetivo es asistir con el análisis financiero, estado del portafolio y toma de decisiones.
+    return `Eres Lake Executor, la IA central del fondo de inversion Freraut. Tu objetivo es asistir con el analisis financiero, estado del portafolio y toma de decisiones.
     
 ESTADO ACTUAL DEL PORTAFOLIO:
 - Equity Total: $${Number(state.account_equity).toFixed(2)} USD
@@ -115,11 +115,11 @@ ESTADO ACTUAL DEL PORTAFOLIO:
 POSICIONES ACTIVAS:
 ${positions.map(p => `- ${p.symbol} (${p.bucket}): ${p.qty} acciones @ $${Number(p.current_price).toFixed(2)} | PnL: $${Number(p.unrealized_pnl).toFixed(2)}`).join('\n') || 'Sin posiciones activas'}
 
-ÓRDENES RECIENTES:
-${recentOrders.map(o => `- ${o.side.toUpperCase()} ${o.qty} ${o.symbol} [${o.status}] @ $${Number(o.filled_avg_price || 0).toFixed(2)}`).join('\n') || 'Sin órdenes recientes'}
+ORDENES RECIENTES:
+${recentOrders.map(o => `- ${o.side.toUpperCase()} ${o.qty} ${o.symbol} [${o.status}] @ $${Number(o.filled_avg_price || 0).toFixed(2)}`).join('\n') || 'Sin ordenes recientes'}
 
-Usa esta información para responder preguntas sobre el rendimiento del bot, decisiones de trading y estado del mercado.
-Mantén un tono profesional, analítico y conciso.`;
+Usa esta informacion para responder preguntas sobre el rendimiento del bot, decisiones de trading y estado del mercado.
+Manten un tono profesional, analitico y conciso.`;
   };
 
   // Send message to Lake AI
@@ -156,13 +156,13 @@ Mantén un tono profesional, analítico y conciso.`;
       ]);
 
       // 5. Build a system prompt with real trading data
-      let promptData = `Eres Lake Executor, la IA central del fondo de inversión Freraut. Tu objetivo es asistir con el análisis financiero, estado del portafolio y toma de decisiones. Responde SIEMPRE de forma concisa, profesional y analítica.
+      let promptData = `Eres Lake Executor, la IA central del fondo de inversion Freraut. Tu objetivo es asistir con el analisis financiero, estado del portafolio y toma de decisiones. Responde SIEMPRE de forma concisa, profesional y analitica.
 
 ESTADO ACTUAL DEL PORTAFOLIO:
 - Equity Total: $${Number(botState?.account_equity || 0).toFixed(2)} USD
 - Efectivo Disponible: $${Number(botState?.account_cash || 0).toFixed(2)} USD
 - Buying Power: $${Number(botState?.account_buying_power || 0).toFixed(2)} USD
-- Posición Actual: ${botState?.current_symbol || 'Ninguna'}
+- Posicion Actual: ${botState?.current_symbol || 'Ninguna'}
 - PnL Diario: $${Number(botState?.daily_pnl || 0).toFixed(2)} USD
 - Estado Macro: ${botState?.macro_state || 'Desconocido'}`;
 
@@ -222,7 +222,7 @@ ESTADO ACTUAL DEL PORTAFOLIO:
       const errorMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: '❌ Error de comunicación con Lake Executor. Verifica la conexión.',
+        content: '❌ Error de comunicacion con Lake Executor. Verifica la conexion.',
         timestamp: new Date().toISOString(),
       };
 
@@ -321,7 +321,7 @@ ESTADO ACTUAL DEL PORTAFOLIO:
             <div>
               <h4 className="text-amber-400 font-bold mb-1 text-lg">Lake Executor AI</h4>
               <p className="text-gray-400 text-sm max-w-xs">
-                Módulo cognitivo y análisis de portafolio
+                Modulo cognitivo y analisis de portafolio
               </p>
             </div>
 
@@ -438,7 +438,7 @@ ESTADO ACTUAL DEL PORTAFOLIO:
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Comandos, consultas o análisis..."
+            placeholder="Comandos, consultas o analisis..."
             disabled={loading}
             className="flex-1 bg-gray-900/50 border border-amber-500/30 rounded-xl px-4 py-3 text-gray-200 text-sm font-mono resize-none focus:outline-none focus:ring-1 focus:ring-amber-500/50 focus:bg-gray-900 placeholder-gray-600 disabled:opacity-50 max-h-32 transition-colors"
             rows={1}
@@ -465,7 +465,7 @@ ESTADO ACTUAL DEL PORTAFOLIO:
           </button>
         </div>
         <p className="text-[10px] font-mono text-gray-500 mt-2 text-center uppercase tracking-wider">
-          Shift + Enter para nueva línea • Conectado a Lake Core
+          Shift + Enter para nueva linea * Conectado a Lake Core
         </p>
       </div>
     </div>

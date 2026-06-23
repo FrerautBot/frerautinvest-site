@@ -20,7 +20,7 @@ const ASSET_TYPES = {
   'EPR': 'REIT', 'PLD': 'REIT', 'AMT': 'REIT', 'GOOD': 'REIT', 'NLY': 'REIT',
   'EPD': 'MLP', 'ET': 'MLP', 'MPLX': 'MLP', 'WMB': 'MLP', 'OKE': 'MLP'
 };
-const getAssetType = sym => ASSET_TYPES[sym] || 'Acción';
+const getAssetType = sym => ASSET_TYPES[sym] || 'Accion';
 
 const CustomPieTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
@@ -65,7 +65,7 @@ const ZBitacora = ({ analyses }) => {
   const sideToVeredicto = (side) => side === 'buy' ? 'COMPRAR' : side === 'hold' ? 'MANTENER' : 'VENDER';
   const BUCKET_LABEL = { swing: 'Swing', largo_plazo: 'Largo plazo', dividendos: 'Dividendos', intraday: 'Intraday' };
 
-  // Resumen: un chip por símbolo único (el más reciente), derivado de summary o de los campos
+  // Resumen: un chip por simbolo unico (el mas reciente), derivado de summary o de los campos
   const resumenChips = Object.values(
     analyses.reduce((acc, r) => {
       if (!acc[r.symbol]) acc[r.symbol] = r;
@@ -78,7 +78,7 @@ const ZBitacora = ({ analyses }) => {
     const action = r.side === 'buy' ? 'COMPRAR' : 'VENDER';
     const bucket = BUCKET_LABEL[r.bucket] || r.bucket || '';
     const price = r.estimated_price ? ` $${parseFloat(r.estimated_price).toFixed(0)}` : '';
-    return `${r.symbol} · ${action}${price} — ${bucket}`;
+    return `${r.symbol} · ${action}${price} - ${bucket}`;
   };
 
   const chipColor = (side) =>
@@ -90,7 +90,7 @@ const ZBitacora = ({ analyses }) => {
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
       className="bg-[#1a1d2b]/60 backdrop-blur-xl rounded-[1.75rem] p-4 sm:p-6 border border-white/10">
       <h3 className="text-sm sm:text-base font-bold text-gray-200 mb-3">
-        Bitácora IULER <span className="text-[10px] text-gray-500 font-normal">(últimas 15 decisiones)</span>
+        Bitacora IULER <span className="text-[10px] text-gray-500 font-normal">(ultimas 15 decisiones)</span>
       </h3>
 
       {resumenChips.length > 0 && (
@@ -111,7 +111,7 @@ const ZBitacora = ({ analyses }) => {
             <thead>
               <tr className="border-b border-yellow-500/20">
                 <th className="text-left py-2 px-2 text-yellow-500/80 font-bold uppercase">Ticker</th>
-                <th className="text-left py-2 px-2 text-yellow-500/80 font-bold uppercase">Acción</th>
+                <th className="text-left py-2 px-2 text-yellow-500/80 font-bold uppercase">Accion</th>
                 <th className="text-left py-2 px-2 text-yellow-500/80 font-bold uppercase hidden sm:table-cell">Estrategia</th>
                 <th className="text-right py-2 px-2 text-yellow-500/80 font-bold uppercase hidden md:table-cell">Precio est.</th>
                 <th className="text-right py-2 px-2 text-yellow-500/80 font-bold uppercase hidden lg:table-cell">Confianza</th>
@@ -138,12 +138,12 @@ const ZBitacora = ({ analyses }) => {
                     </td>
                     <td className="py-2 px-2 hidden sm:table-cell">
                       <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-slate-500/20 text-slate-300">
-                        {BUCKET_LABEL[r.bucket] || r.bucket || '—'}
+                        {BUCKET_LABEL[r.bucket] || r.bucket || '-'}
                       </span>
                     </td>
                     <td className="py-2 px-2 text-right hidden md:table-cell">
                       <span className="text-gray-400 text-[10px]">
-                        {r.estimated_price ? `$${parseFloat(r.estimated_price).toFixed(2)}` : '—'}
+                        {r.estimated_price ? `$${parseFloat(r.estimated_price).toFixed(2)}` : '-'}
                       </span>
                     </td>
                     <td className="py-2 px-2 text-right hidden lg:table-cell">
@@ -275,10 +275,10 @@ const Portfolio = () => {
         </div>
         <div className="bg-[#1a1d2b]/60 backdrop-blur-xl border border-white/10 rounded-[1.25rem] p-3 sm:p-4">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-500">Decisión Lake</span>
+            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-500">Decision Lake</span>
             <TrendingUp className="w-3.5 h-3.5 text-green-400" />
           </div>
-          <p className="text-base sm:text-xl font-bold text-gray-300">{account?.last_decision || '—'}</p>
+          <p className="text-base sm:text-xl font-bold text-gray-300">{account?.last_decision || '-'}</p>
           <p className="text-[9px] text-gray-500">{account?.lake_status || ''}</p>
         </div>
         <div className="bg-[#1a1d2b]/60 backdrop-blur-xl border border-white/10 rounded-[1.25rem] p-3 sm:p-4">
@@ -294,7 +294,7 @@ const Portfolio = () => {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
           className="lg:col-span-2 bg-[#1a1d2b]/60 backdrop-blur-xl rounded-[1.75rem] p-4 sm:p-6 border border-white/10">
-          <h3 className="text-sm sm:text-base font-bold mb-4 text-gray-200">Distribución por Tipo</h3>
+          <h3 className="text-sm sm:text-base font-bold mb-4 text-gray-200">Distribucion por Tipo</h3>
           {pieData.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
               <PieChart>
@@ -363,7 +363,7 @@ const Portfolio = () => {
                       </div>
                     </td>
                     <td className="py-2 px-2 hidden sm:table-cell"><span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400">Efectivo</span></td>
-                    <td className="py-2 px-2 text-right text-gray-500">—</td>
+                    <td className="py-2 px-2 text-right text-gray-500">-</td>
                     <td className="py-2 px-2 text-right text-gray-500 hidden sm:table-cell">$1.00</td>
                     <td className="py-2 px-2 text-right text-emerald-400 font-semibold">${cashAvailable.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
                     <td className="py-2 px-2 text-right text-emerald-400 font-bold">{equity > 0 ? (cashAvailable / equity * 100).toFixed(1) : 0}%</td>
@@ -376,7 +376,7 @@ const Portfolio = () => {
             <div className="text-center py-12 text-gray-600">
               <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-20" />
               <p className="font-bold">Sin posiciones</p>
-              <p className="text-xs mt-1">Lake abrirá posiciones cuando el mercado esté abierto</p>
+              <p className="text-xs mt-1">Lake abrira posiciones cuando el mercado este abierto</p>
             </div>
           )}
         </motion.div>

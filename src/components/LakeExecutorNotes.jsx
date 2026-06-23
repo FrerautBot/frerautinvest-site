@@ -115,7 +115,7 @@ export default function LakeExecutorNotes({ user, supabase }) {
       <div className="flex items-center gap-2 p-3 border-b border-white/5 bg-white/[0.02]">
         <MessageSquare className="w-4 h-4 text-emerald-500" />
         <h3 className="text-gray-300 uppercase text-xs font-semibold tracking-wider">
-          Notas — Lake Executor
+          Notas - Lake Executor
         </h3>
         <span className="ml-auto text-xs text-gray-500 bg-white/5 px-2 py-0.5 rounded-full">
           {messages.length}
@@ -167,7 +167,7 @@ export default function LakeExecutorNotes({ user, supabase }) {
                     <div className={`flex items-center gap-1.5 mb-1 ${isLake ? '' : 'justify-end'}`}>
                       {isHighPriority && <AlertTriangle className="w-3 h-3 text-yellow-500" />}
                       <span className="text-gray-400 text-[10px] font-medium capitalize">
-                        {isLake ? 'Lake Executor' : 'Tú'}
+                        {isLake ? 'Lake Executor' : 'Tu'}
                       </span>
                     </div>
                     <p className="text-xs text-gray-300 whitespace-pre-wrap leading-relaxed">

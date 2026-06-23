@@ -47,6 +47,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
@@ -97,7 +98,8 @@ const Pool = ({ onBack }) => {
     comision_compra: 0,
     comision_venta: 0,
     precio_compra_ajuste: 0,
-    precio_venta_ajuste: 0
+    precio_venta_ajuste: 0,
+    auto_emit_ues: true
   });
 
   // Capital Management
@@ -110,7 +112,7 @@ const Pool = ({ onBack }) => {
     try {
       setLoading(true);
 
-      // 1. Métricas en tiempo real
+      // 1. Metricas en tiempo real
       const { data: metricsData, error: metricsError } = await supabase
         .rpc('get_pool_metrics_realtime');
 
@@ -119,7 +121,7 @@ const Pool = ({ onBack }) => {
         setPoolMetrics(metricsData[0]);
       }
 
-      // 2. Configuración activa
+      // 2. Configuracion activa
       const { data: configData, error: configError } = await supabase
         .from('freraut_pool_config')
         .select('*')
@@ -133,7 +135,8 @@ const Pool = ({ onBack }) => {
           comision_compra: configData.comision_compra || 0,
           comision_venta: configData.comision_venta || 0,
           precio_compra_ajuste: configData.precio_compra_ajuste || 0,
-          precio_venta_ajuste: configData.precio_venta_ajuste || 0
+          precio_venta_ajuste: configData.precio_venta_ajuste || 0,
+          auto_emit_ues: configData.auto_emit_ues !== false
         });
       }
 
@@ -144,7 +147,7 @@ const Pool = ({ onBack }) => {
       if (txError) throw txError;
       setTransactions(txData || []);
 
-      // 4. Datos para el gráfico
+      // 4. Datos para el grafico
       const { data: chartDataRaw, error: chartError } = await supabase
         .rpc('get_pool_chart_data', { p_dias: 30 });
 
@@ -158,7 +161,7 @@ const Pool = ({ onBack }) => {
       }));
       setChartData(formatted);
 
-      // 5. Estadísticas de spread
+      // 5. Estadisticas de spread
       const { data: statsData, error: statsError } = await supabase
         .from('vista_pool_spread_stats')
         .select('*')
@@ -206,10 +209,11 @@ const Pool = ({ onBack }) => {
 
   const handleUpdateConfig = async (field, value) => {
     try {
+      const p_valor = typeof value === 'boolean' ? value : parseFloat(value);
       const { error } = await supabase
         .rpc('actualizar_config_pool', {
           p_campo: field,
-          p_valor_nuevo: parseFloat(value),
+          p_valor_nuevo: p_valor,
           p_modificado_por: session.user.id,
           p_motivo: `Ajuste manual de ${field}`
         });
@@ -217,7 +221,7 @@ const Pool = ({ onBack }) => {
       if (error) throw error;
 
       toast({
-        title: "✅ Configuración actualizada",
+        title: "✅ Configuracion actualizada",
         description: `El campo ${field} ha sido actualizado correctamente.`,
       });
 
@@ -232,11 +236,16 @@ const Pool = ({ onBack }) => {
     }
   };
 
+  const handleToggleAutoEmit = async (checked) => {
+    setConfigForm(prev => ({ ...prev, auto_emit_ues: checked }));
+    await handleUpdateConfig('auto_emit_ues', checked);
+  };
+
   const handleCapitalMovement = async () => {
     if (!capitalAmount || parseFloat(capitalAmount) <= 0) {
       toast({
         title: "Error",
-        description: "Ingresa un monto válido mayor a 0",
+        description: "Ingresa un monto valido mayor a 0",
         variant: "destructive"
       });
       return;
@@ -248,13 +257,13 @@ const Pool = ({ onBack }) => {
           p_tipo: capitalType,
           p_monto_clp: parseFloat(capitalAmount),
           p_ejecutado_por: session.user.id,
-          p_motivo: capitalReason || `${capitalType === 'deposito' ? 'Inyección' : 'Retiro'} de liquidez`
+          p_motivo: capitalReason || `${capitalType === 'deposito' ? 'Inyeccion' : 'Retiro'} de liquidez`
         });
 
       if (error) throw error;
 
       toast({
-        title: "✅ Operación exitosa",
+        title: "✅ Operacion exitosa",
         description: data.mensaje || "Movimiento registrado correctamente",
       });
 
@@ -306,7 +315,7 @@ const Pool = ({ onBack }) => {
         </div>
         <h2 className="text-3xl font-bold text-white mb-3">Acceso Institucional Restringido</h2>
         <p className="text-gray-400 max-w-md text-lg mb-8">
-          Esta terminal de gestión de liquidez solo está disponible para cuentas administrativas autorizadas.
+          Esta terminal de gestion de liquidez solo esta disponible para cuentas administrativas autorizadas.
         </p>
         {onBack && (
           <Button onClick={onBack} size="lg" className="px-8">
@@ -326,7 +335,7 @@ const Pool = ({ onBack }) => {
         </div>
         <div className="text-center">
           <p className="text-xl font-bold text-white mb-1">Iniciando Terminal Pool</p>
-          <p className="text-gray-500 text-sm animate-pulse">Sincronizando métricas de liquidez...</p>
+          <p className="text-gray-500 text-sm animate-pulse">Sincronizando metricas de liquidez...</p>
         </div>
       </div>
     );
@@ -355,7 +364,7 @@ const Pool = ({ onBack }) => {
             </div>
             <p className="text-gray-400 font-medium mt-1 flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-emerald-500" />
-              Gestión centralizada de liquidez institucional y spread transaccional
+              Gestion centralizada de liquidez institucional y spread transaccional
             </p>
           </div>
         </div>
@@ -435,7 +444,7 @@ const Pool = ({ onBack }) => {
               </Badge>
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">Rendimiento Histórico</p>
+              <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">Rendimiento Historico</p>
               <h3 className="text-3xl font-black text-blue-400 tracking-tight">{formatPercent(poolMetrics.rendimiento_porcentaje)}</h3>
               <p className="text-xs text-gray-500 font-semibold">Basado en balance inicial vs actual</p>
             </div>
@@ -472,10 +481,10 @@ const Pool = ({ onBack }) => {
             <Activity className="h-4 w-4 mr-2" /> Dashboard
           </TabsTrigger>
           <TabsTrigger value="config" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-black px-6 font-bold py-2.5 rounded-lg transition-all">
-            <Settings className="h-4 w-4 mr-2" /> Configuración Spread
+            <Settings className="h-4 w-4 mr-2" /> Configuracion Spread
           </TabsTrigger>
           <TabsTrigger value="capital" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-black px-6 font-bold py-2.5 rounded-lg transition-all">
-            <Wallet className="h-4 w-4 mr-2" /> Gestión Capital
+            <Wallet className="h-4 w-4 mr-2" /> Gestion Capital
           </TabsTrigger>
           <TabsTrigger value="history" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-black px-6 font-bold py-2.5 rounded-lg transition-all">
             <History className="h-4 w-4 mr-2" /> Historial de Operaciones
@@ -489,8 +498,8 @@ const Pool = ({ onBack }) => {
               <Card className="lg:col-span-2 bg-zinc-900/40 border-white/5 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
                   <div>
-                    <CardTitle className="text-2xl font-bold text-white">Análisis de Comisiones</CardTitle>
-                    <CardDescription>Flujo de ingresos por spread en los últimos 30 días</CardDescription>
+                    <CardTitle className="text-2xl font-bold text-white">Analisis de Comisiones</CardTitle>
+                    <CardDescription>Flujo de ingresos por spread en los ultimos 30 dias</CardDescription>
                   </div>
                   <div className="flex gap-2">
                     <Badge className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
@@ -531,7 +540,7 @@ const Pool = ({ onBack }) => {
                             boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)'
                           }}
                           itemStyle={{ fontWeight: 'bold' }}
-                          formatter={(value) => [formatCurrency(value), "Comisión"]}
+                          formatter={(value) => [formatCurrency(value), "Comision"]}
                         />
                         <Area
                           type="monotone"
@@ -558,7 +567,7 @@ const Pool = ({ onBack }) => {
                 <Card className="bg-zinc-900/40 border-white/5">
                   <CardHeader className="pb-4">
                     <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
-                      <Target className="h-5 w-5 text-yellow-500" /> Estado de Ejecución
+                      <Target className="h-5 w-5 text-yellow-500" /> Estado de Ejecucion
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-5">
@@ -703,7 +712,7 @@ const Pool = ({ onBack }) => {
                 <CardContent className="p-8 space-y-8">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <Label className="text-sm font-bold text-gray-400 uppercase tracking-widest">Comisión Compra (%)</Label>
+                      <Label className="text-sm font-bold text-gray-400 uppercase tracking-widest">Comision Compra (%)</Label>
                       <Badge className="bg-yellow-500/10 text-yellow-500 border-none font-bold px-3">ACTUAL: {formatPercent(poolConfig?.comision_compra)}</Badge>
                     </div>
                     <div className="flex gap-3">
@@ -734,7 +743,7 @@ const Pool = ({ onBack }) => {
 
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <Label className="text-sm font-bold text-gray-400 uppercase tracking-widest">Comisión Venta (%)</Label>
+                      <Label className="text-sm font-bold text-gray-400 uppercase tracking-widest">Comision Venta (%)</Label>
                       <Badge className="bg-yellow-500/10 text-yellow-500 border-none font-bold px-3">ACTUAL: {formatPercent(poolConfig?.comision_venta)}</Badge>
                     </div>
                     <div className="flex gap-3">
@@ -772,7 +781,7 @@ const Pool = ({ onBack }) => {
                       <RefreshCw className="h-6 w-6 text-blue-500" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl font-bold text-white">Spread Dinámico sobre NAV</CardTitle>
+                      <CardTitle className="text-xl font-bold text-white">Spread Dinamico sobre NAV</CardTitle>
                       <CardDescription>Ajuste de precio para compras y ventas directas del pool</CardDescription>
                     </div>
                   </div>
@@ -841,6 +850,64 @@ const Pool = ({ onBack }) => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Auto-emit UEs Toggle */}
+              <Card className="bg-zinc-900/40 border-white/5 backdrop-blur-sm shadow-xl">
+                <CardHeader className="bg-white/5 p-6 border-b border-white/5">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 bg-emerald-500/10 rounded-xl flex items-center justify-center">
+                      <TrendingUp className="h-6 w-6 text-emerald-500" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl font-bold text-white">Emision de UEs</CardTitle>
+                      <CardDescription>Controla si las compras crean nuevas UEs o requieren matching con el libro de ordenes</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-8">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <Label className="text-sm font-bold text-gray-400 uppercase tracking-widest">Auto-emitir UEs</Label>
+                        <p className="text-xs text-gray-500 font-medium">
+                          {configForm.auto_emit_ues
+                            ? 'Mercado Primario: las compras crean nuevas UEs automaticamente'
+                            : 'Mercado Secundario: las compras requieren ordenes de venta disponibles'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Badge className={configForm.auto_emit_ues
+                          ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-bold px-3"
+                          : "bg-amber-500/10 text-amber-500 border-amber-500/20 font-bold px-3"
+                        }>
+                          {configForm.auto_emit_ues ? 'PRIMARIO' : 'SECUNDARIO'}
+                        </Badge>
+                        <Switch
+                          checked={configForm.auto_emit_ues}
+                          onCheckedChange={handleToggleAutoEmit}
+                        />
+                      </div>
+                    </div>
+
+                    <div className={`p-4 rounded-xl border ${configForm.auto_emit_ues
+                      ? 'bg-emerald-500/5 border-emerald-500/20'
+                      : 'bg-amber-500/5 border-amber-500/20'}`}>
+                      <div className="flex items-start gap-2">
+                        <Info className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                        <p className="text-[11px] text-gray-500 leading-relaxed font-medium">
+                          <strong className={configForm.auto_emit_ues ? 'text-emerald-400' : 'text-amber-400'}>
+                            {configForm.auto_emit_ues ? 'MODO ACTUAL: MERCADO PRIMARIO' : 'MODO ACTUAL: MERCADO SECUNDARIO'}
+                          </strong>
+                          <br />
+                          {configForm.auto_emit_ues
+                            ? 'Al comprar UEs, se crean nuevas unidades directamente. El pool expande el capital. Al vender, el pool las destruye y paga al usuario.'
+                            : 'Al comprar UEs, se busca matching con ordenes de venta existentes. No se crean nuevas UEs. Freraut Invest retiene el pago y paga al vendedor. Si no hay vendedores, la orden queda pendiente.'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
@@ -882,9 +949,9 @@ const Pool = ({ onBack }) => {
                       </DialogTrigger>
                       <DialogContent className="bg-zinc-950 border-white/10 text-white max-w-lg rounded-3xl">
                         <DialogHeader className="p-2">
-                          <DialogTitle className="text-2xl font-black">Inyección de Liquidez</DialogTitle>
+                          <DialogTitle className="text-2xl font-black">Inyeccion de Liquidez</DialogTitle>
                           <DialogDescription className="text-gray-400">
-                            Agregará fondos de la cuenta institucional al capital operativo del pool.
+                            Agregara fondos de la cuenta institucional al capital operativo del pool.
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-6 py-6 p-2">
@@ -899,7 +966,7 @@ const Pool = ({ onBack }) => {
                             />
                           </div>
                           <div className="space-y-3">
-                            <Label className="text-gray-400 font-bold uppercase tracking-widest text-xs">Glosa / Justificación</Label>
+                            <Label className="text-gray-400 font-bold uppercase tracking-widest text-xs">Glosa / Justificacion</Label>
                             <Textarea
                               value={capitalReason}
                               onChange={(e) => setCapitalReason(e.target.value)}
@@ -911,7 +978,7 @@ const Pool = ({ onBack }) => {
                         <DialogFooter className="flex gap-3 sm:gap-0 mt-4">
                           <Button variant="ghost" onClick={() => setShowCapitalModal(false)} className="h-14 font-bold text-gray-400">CANCELAR</Button>
                           <Button onClick={handleCapitalMovement} className="h-14 bg-emerald-600 hover:bg-emerald-700 font-black px-8 rounded-2xl">
-                            CONFIRMAR INYECCIÓN
+                            CONFIRMAR INYECCION
                           </Button>
                         </DialogFooter>
                       </DialogContent>
@@ -934,7 +1001,7 @@ const Pool = ({ onBack }) => {
                         <DialogHeader className="p-2">
                           <DialogTitle className="text-2xl font-black text-red-500">Retiro de Liquidez</DialogTitle>
                           <DialogDescription className="text-gray-400">
-                            Retirará fondos del pool hacia la cuenta institucional principal.
+                            Retirara fondos del pool hacia la cuenta institucional principal.
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-6 py-6 p-2">
@@ -949,7 +1016,7 @@ const Pool = ({ onBack }) => {
                             />
                           </div>
                           <div className="space-y-3">
-                            <Label className="text-gray-400 font-bold uppercase tracking-widest text-xs">Glosa / Justificación</Label>
+                            <Label className="text-gray-400 font-bold uppercase tracking-widest text-xs">Glosa / Justificacion</Label>
                             <Textarea
                               value={capitalReason}
                               onChange={(e) => setCapitalReason(e.target.value)}
@@ -1016,7 +1083,7 @@ const Pool = ({ onBack }) => {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
                     <CardTitle className="text-2xl font-bold text-white">Transacciones del Pool</CardTitle>
-                    <CardDescription>Mostrando las últimas 100 transacciones ejecutadas por el pool de liquidez</CardDescription>
+                    <CardDescription>Mostrando las ultimas 100 transacciones ejecutadas por el pool de liquidez</CardDescription>
                   </div>
                   <div className="flex items-center gap-3">
                     <Badge variant="outline" className="h-10 px-4 border-white/10 text-gray-400 font-bold bg-white/5">
@@ -1038,7 +1105,7 @@ const Pool = ({ onBack }) => {
                         <th className="px-6 py-4 text-left text-[10px] font-black text-gray-500 uppercase tracking-widest">Tipo de Op</th>
                         <th className="px-6 py-4 text-right text-[10px] font-black text-gray-500 uppercase tracking-widest">Cantidad (UE)</th>
                         <th className="px-6 py-4 text-right text-[10px] font-black text-gray-500 uppercase tracking-widest">Precio Ejecutado</th>
-                        <th className="px-6 py-4 text-right text-[10px] font-black text-gray-500 uppercase tracking-widest">Comisión Pool</th>
+                        <th className="px-6 py-4 text-right text-[10px] font-black text-gray-500 uppercase tracking-widest">Comision Pool</th>
                         <th className="px-6 py-4 text-right text-[10px] font-black text-gray-500 uppercase tracking-widest">Monto Final</th>
                       </tr>
                     </thead>
@@ -1058,7 +1125,7 @@ const Pool = ({ onBack }) => {
                           <td className="px-6 py-4">
                             <div className="flex flex-col">
                               <span className="text-xs font-bold text-gray-300 group-hover:text-yellow-500 transition-colors">
-                                {tx.usuario_nombre || tx.usuario_email?.split('@')[0] || 'Inversor Anónimo'}
+                                {tx.usuario_nombre || tx.usuario_email?.split('@')[0] || 'Inversor Anonimo'}
                               </span>
                               <span className="text-[9px] font-mono text-gray-600 truncate w-24">
                                 {tx.usuario_id.split('-')[0]}
@@ -1109,7 +1176,7 @@ const Pool = ({ onBack }) => {
       {/* Footer Info */}
       <div className="bg-zinc-900/30 p-6 rounded-2xl border border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-widest">
-          <ShieldCheck className="h-4 w-4" /> Encriptación Institucional Activa
+          <ShieldCheck className="h-4 w-4" /> Encriptacion Institucional Activa
         </div>
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
@@ -1117,7 +1184,7 @@ const Pool = ({ onBack }) => {
             <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Motor de Liquidez: ONLINE</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Última Sync: {new Date().toLocaleTimeString()}</span>
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Ultima Sync: {new Date().toLocaleTimeString()}</span>
           </div>
         </div>
       </div>

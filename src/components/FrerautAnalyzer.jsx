@@ -192,13 +192,13 @@ const fetchFrerautAnalysis = async (ticker, strategy, technicals) => {
 };
         
 
-const fmtUSD = v => v != null ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v) : '—';
-const fmtPct = v => v != null ? `${parseFloat(v) >= 0 ? '+' : ''}${parseFloat(v).toFixed(2)}%` : '—';
+const fmtUSD = v => v != null ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v) : '-';
+const fmtPct = v => v != null ? `${parseFloat(v) >= 0 ? '+' : ''}${parseFloat(v).toFixed(2)}%` : '-';
 
 // --- SECTOR ROTATION CONSTANTS ---
 
 const SECTOR_ETF_MAP = { sp500:'SPY', nasdaq:'QQQ', semis:'SOXX', finanzas:'XLF', energia:'XLE', biotech:'XBI', smallcap:'IWM', china:'FXI' };
-const SECTOR_DISPLAY = { sp500:'S&P 500', nasdaq:'NASDAQ', semis:'SEMIS', finanzas:'FINANZAS', energia:'ENERGÍA', biotech:'BIOTECH', smallcap:'SMALL CAP', china:'CHINA' };
+const SECTOR_DISPLAY = { sp500:'S&P 500', nasdaq:'NASDAQ', semis:'SEMIS', finanzas:'FINANZAS', energia:'ENERGIA', biotech:'BIOTECH', smallcap:'SMALL CAP', china:'CHINA' };
 
 const timeAgo = (date) => {
   if (!date) return '';
@@ -230,7 +230,7 @@ function SectorCard({ card }) {
 
       <div className="space-y-1">
         <div className="flex justify-between text-xs">
-          <span className="text-slate-500">Convicción</span>
+          <span className="text-slate-500">Conviccion</span>
           <span className={`font-bold ${sc.text}`}>{card.conviction}%</span>
         </div>
         <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
@@ -244,7 +244,7 @@ function SectorCard({ card }) {
 
       <button onClick={() => setExpanded(e => !e)} className="text-xs text-slate-600 hover:text-slate-400 text-left flex items-center gap-1 mt-auto">
         {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-        {expanded ? 'Ocultar' : 'Ver análisis'}
+        {expanded ? 'Ocultar' : 'Ver analisis'}
       </button>
 
       {expanded && (
@@ -288,14 +288,14 @@ function FrerautCriteriaPanel({ analysis, accentColor = 'cyan', showMarketCall =
 
   return (
     <div className={`rounded-2xl border ${a.border} bg-gradient-to-br ${a.verdict_bg} p-5 space-y-5`}>
-      {/* Header: veredicto + convicción */}
+      {/* Header: veredicto + conviccion */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-wrap">
           <span className={`px-4 py-1.5 rounded-full border text-lg font-black tracking-wide ${vs}`}>
             {analysis.verdict}
           </span>
           {analysis.conviction_pct != null && (
-            <span className="text-slate-400 text-sm">Convicción: <span className="text-white font-bold">{analysis.conviction_pct}%</span></span>
+            <span className="text-slate-400 text-sm">Conviccion: <span className="text-white font-bold">{analysis.conviction_pct}%</span></span>
           )}
           {analysis.upside_pct != null && (
             <span className="text-slate-400 text-sm">Upside: <span className="text-emerald-400 font-bold">+{analysis.upside_pct}%</span></span>
@@ -483,7 +483,7 @@ export default function FrerautAnalyzer() {
           <>
             <div className="text-sm text-slate-300">Zona de Entrada Recomendada:</div>
             <div className="font-mono font-bold text-white">{fmtUSD(buyZoneLow)} - {fmtUSD(buyZoneHigh)}</div>
-            <div className="text-xs text-slate-400 mt-2 italic">Nota: Sin SL - Hold si no rebota - Asumiendo compañía sólida</div>
+            <div className="text-xs text-slate-400 mt-2 italic">Nota: Sin SL - Hold si no rebota - Asumiendo compania solida</div>
           </>
         )}
       </div>
@@ -686,7 +686,7 @@ export default function FrerautAnalyzer() {
               <Activity className="w-8 h-8 text-cyan-400" />
               Freraut Analyzer
             </h1>
-            <p className="text-sm text-slate-400 mt-1 font-mono">v11.0 — MULTI-STRATEGY TERMINAL</p>
+            <p className="text-sm text-slate-400 mt-1 font-mono">v11.0 - MULTI-STRATEGY TERMINAL</p>
           </div>
           
           <div className="flex flex-wrap gap-2 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
@@ -853,8 +853,8 @@ export default function FrerautAnalyzer() {
                 <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-800/50">
                   <Zap className="w-8 h-8 text-yellow-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <h2 className="text-2xl font-black text-white">Rotación Sectorial 3x</h2>
-                    <p className="text-sm text-slate-400">8 sectores · Opus + Sonar · análisis guiatorio</p>
+                    <h2 className="text-2xl font-black text-white">Rotacion Sectorial 3x</h2>
+                    <p className="text-sm text-slate-400">8 sectores · Opus + Sonar · analisis guiatorio</p>
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">
                     {frCacheTime && (
@@ -875,7 +875,7 @@ export default function FrerautAnalyzer() {
                 {frInit && (
                   <div className="flex flex-wrap items-center gap-4 mb-6 p-4 bg-slate-900/50 rounded-xl border border-slate-800">
                     <div className="flex items-center gap-3">
-                      <div className="text-xs text-slate-500 uppercase tracking-widest">Régimen</div>
+                      <div className="text-xs text-slate-500 uppercase tracking-widest">Regimen</div>
                       <div className={`px-3 py-1 rounded-lg text-sm font-black border ${
                         frInit.regime === 'BULL'   ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' :
                         frInit.regime === 'BEAR'   ? 'bg-red-500/20 border-red-500/40 text-red-400' :
@@ -903,8 +903,8 @@ export default function FrerautAnalyzer() {
                   <div className="mb-5 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl flex items-center gap-3">
                     <RefreshCw className="w-4 h-4 text-yellow-400 animate-spin flex-shrink-0" />
                     <span className="text-sm text-yellow-400">
-                      {frPhase === 'init'    ? 'Analizando régimen macro con Sonar + Opus...' :
-                       frPhase === 'ranking' ? 'Compilando top picks del día...' :
+                      {frPhase === 'init'    ? 'Analizando regimen macro con Sonar + Opus...' :
+                       frPhase === 'ranking' ? 'Compilando top picks del dia...' :
                        frPhase.startsWith('sector_')
                          ? `Analizando ${SECTOR_DISPLAY[frPhase.replace('sector_', '')] ?? frPhase}...`
                          : 'Iniciando...'}
@@ -941,11 +941,11 @@ export default function FrerautAnalyzer() {
                 {/* Lake market summary */}
                 {frRanking?.market_summary && frPhase === 'done' && (
                   <div className="mt-5 p-4 bg-slate-900/50 rounded-xl border border-yellow-500/20">
-                    <div className="text-xs text-slate-500 mb-1 uppercase tracking-widest">Visión Lake</div>
+                    <div className="text-xs text-slate-500 mb-1 uppercase tracking-widest">Vision Lake</div>
                     <p className="text-sm text-slate-300 italic">{frRanking.market_summary}</p>
                     {frRanking.avoid?.length > 0 && (
                       <p className="text-xs text-red-400/60 mt-2">
-                        Evitar: {frRanking.avoid.join(', ')} — {frRanking.avoid_reason}
+                        Evitar: {frRanking.avoid.join(', ')} - {frRanking.avoid_reason}
                       </p>
                     )}
                   </div>
@@ -956,7 +956,7 @@ export default function FrerautAnalyzer() {
                   <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-3">
                     <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm text-red-400 font-semibold">Error en análisis</p>
+                      <p className="text-sm text-red-400 font-semibold">Error en analisis</p>
                       <p className="text-xs text-red-400/70 mt-1 font-mono">{frError}</p>
                       <button onClick={runFrAnalysis} className="mt-2 text-xs text-red-400 underline hover:text-red-300">Reintentar</button>
                     </div>
@@ -967,7 +967,7 @@ export default function FrerautAnalyzer() {
                 {!frLoading && !frError && frPhase === 'idle' && Object.keys(frCards).length === 0 && (
                   <div className="py-16 text-center text-slate-500">
                     <Zap className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                    <p className="mb-3">Iniciando análisis sectorial...</p>
+                    <p className="mb-3">Iniciando analisis sectorial...</p>
                     <button onClick={runFrAnalysis} className="px-4 py-2 bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-sm font-bold rounded-xl hover:bg-yellow-500/30 transition-colors">
                       Analizar ahora
                     </button>
@@ -984,7 +984,7 @@ export default function FrerautAnalyzer() {
               <div className="bg-[rgba(8,15,28,0.85)] rounded-2xl border border-[rgba(255,255,255,0.07)] p-6">
                 
                 <div className="flex flex-wrap gap-2 mb-6 pb-6 border-b border-slate-800/50">
-                  <div className="text-sm font-bold text-slate-400 w-full mb-2">Sectores Rápidos:</div>
+                  <div className="text-sm font-bold text-slate-400 w-full mb-2">Sectores Rapidos:</div>
                   <button onClick={() => {setValueTicker('JPM'); handleValueSearch('JPM');}} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors border border-slate-700">Bancos</button>
                   <button onClick={() => {setValueTicker('AAPL'); handleValueSearch('AAPL');}} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors border border-slate-700">Tech</button>
                   <button onClick={() => {setValueTicker('JNJ'); handleValueSearch('JNJ');}} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors border border-slate-700">Salud</button>
@@ -1027,7 +1027,7 @@ export default function FrerautAnalyzer() {
                     {valueAnalysisLoading && (
                       <div className="p-5 bg-slate-900/80 rounded-xl border border-emerald-500/20 animate-pulse flex items-center gap-3">
                         <RefreshCw className="w-5 h-5 text-emerald-400 animate-spin flex-shrink-0" />
-                        <p className="text-emerald-400 text-sm">Investigando con Sonar + evaluando fundamentales, máximos y previsiones...</p>
+                        <p className="text-emerald-400 text-sm">Investigando con Sonar + evaluando fundamentales, maximos y previsiones...</p>
                       </div>
                     )}
                     {valueAnalysis && !valueAnalysisLoading && (
@@ -1051,7 +1051,7 @@ export default function FrerautAnalyzer() {
                       <DollarSign className="w-6 h-6 text-amber-400" />
                       Rastreador de Dividendos
                     </h2>
-                    <p className="text-sm text-slate-400">Acciones de alta calidad ordenadas por métricas de entrada.</p>
+                    <p className="text-sm text-slate-400">Acciones de alta calidad ordenadas por metricas de entrada.</p>
                   </div>
                   
                   <div className="flex items-center gap-2 bg-slate-900 p-1 rounded-lg border border-slate-800">

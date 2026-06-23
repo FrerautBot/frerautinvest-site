@@ -7,7 +7,7 @@ const PatrimonioChart = ({ data }) => {
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-[300px] text-gray-500 bg-black/20 rounded-xl border border-white/5">
-        No hay datos históricos disponibles
+        No hay datos historicos disponibles
       </div>
     );
   }

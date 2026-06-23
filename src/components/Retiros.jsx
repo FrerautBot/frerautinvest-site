@@ -54,7 +54,7 @@ const Retiros = ({ onBack }) => {
 
       if (transError) throw transError;
 
-      // Paso 2: Obtener usuarios únicos
+      // Paso 2: Obtener usuarios unicos
       if (transacciones && transacciones.length > 0) {
         const usuarioIds = [...new Set(transacciones.map(t => t.usuario_id))];
 
@@ -160,7 +160,7 @@ const Retiros = ({ onBack }) => {
         </div>
         <h1 className="text-3xl font-bold mb-2">Acceso Restringido</h1>
         <p className="text-slate-400 max-w-md">
-          Esta página está reservada exclusivamente para administradores institucionales.
+          Esta pagina esta reservada exclusivamente para administradores institucionales.
         </p>
         <button
           onClick={onBack}
@@ -189,9 +189,9 @@ const Retiros = ({ onBack }) => {
           </button>
           <div>
             <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-600">
-              Gestión de Retiros
+              Gestion de Retiros
             </h1>
-            <p className="text-slate-400">Administración de solicitudes de retiro de fondos</p>
+            <p className="text-slate-400">Administracion de solicitudes de retiro de fondos</p>
           </div>
         </div>
 
@@ -258,7 +258,7 @@ const Retiros = ({ onBack }) => {
                         <span className="font-mono">{req.usuarios?.email || 'N/A'}</span>
                         {req.usuarios?.rut && (
                           <>
-                            <span>•</span>
+                            <span>*</span>
                             <span>{req.usuarios.rut}</span>
                           </>
                         )}
@@ -288,7 +288,7 @@ const Retiros = ({ onBack }) => {
                       {metadata.banco || 'N/A'}
                     </div>
                     <div className="text-xs text-slate-500">
-                      {metadata.tipo_cuenta} ••• {metadata.numero_cuenta?.slice(-4)}
+                      {metadata.tipo_cuenta} *** {metadata.numero_cuenta?.slice(-4)}
                     </div>
                   </div>
 
@@ -349,7 +349,7 @@ const Retiros = ({ onBack }) => {
                 {/* User Info */}
                 <div>
                   <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <User className="w-4 h-4" /> Información del Usuario
+                    <User className="w-4 h-4" /> Informacion del Usuario
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-slate-800/30 p-4 rounded-lg border border-slate-800">
@@ -383,7 +383,7 @@ const Retiros = ({ onBack }) => {
                         <p className="font-medium text-white capitalize">{selectedRequest.metadata?.tipo_cuenta}</p>
                       </div>
                       <div className="p-4 border-t border-slate-800">
-                        <p className="text-xs text-slate-500 mb-1">Número de Cuenta</p>
+                        <p className="text-xs text-slate-500 mb-1">Numero de Cuenta</p>
                         <p className="font-medium text-white font-mono">{selectedRequest.metadata?.numero_cuenta}</p>
                       </div>
                       <div className="p-4 border-t border-slate-800">
@@ -396,7 +396,7 @@ const Retiros = ({ onBack }) => {
                       <p className="font-medium text-white">{selectedRequest.metadata?.nombre_titular}</p>
                     </div>
                     <div className="p-4 border-t border-slate-800 bg-slate-800/50">
-                      <p className="text-xs text-slate-500 mb-1">Email Confirmación</p>
+                      <p className="text-xs text-slate-500 mb-1">Email Confirmacion</p>
                       <p className="font-medium text-white">{selectedRequest.metadata?.email}</p>
                     </div>
                   </div>
@@ -410,7 +410,7 @@ const Retiros = ({ onBack }) => {
                     </h3>
 
                     <textarea
-                      placeholder="Añadir nota o código de transferencia (opcional)..."
+                      placeholder="Anadir nota o codigo de transferencia (opcional)..."
                       value={actionNote}
                       onChange={(e) => setActionNote(e.target.value)}
                       className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all mb-4 outline-none"

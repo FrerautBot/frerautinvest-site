@@ -23,11 +23,11 @@ const GlassCard = ({ children, className = '', glow = false, purpleGlow = false 
 
 const SignalBadge = ({ strength }) => {
   const map = {
-    strong_bull: { t: 'SEÑAL FUERTE BULL', c: 'bg-green-500/20 text-green-400 border-green-500/50' },
-    strong_bear: { t: 'SEÑAL FUERTE BEAR', c: 'bg-red-500/20 text-red-400 border-red-500/50' },
+    strong_bull: { t: 'SENAL FUERTE BULL', c: 'bg-green-500/20 text-green-400 border-green-500/50' },
+    strong_bear: { t: 'SENAL FUERTE BEAR', c: 'bg-red-500/20 text-red-400 border-red-500/50' },
     warming_bull: { t: 'CALENTANDO BULL', c: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' },
     warming_bear: { t: 'CALENTANDO BEAR', c: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' },
-    in_position: { t: 'EN POSICIÓN', c: 'bg-purple-500/20 text-purple-400 border-purple-500/50' }
+    in_position: { t: 'EN POSICION', c: 'bg-purple-500/20 text-purple-400 border-purple-500/50' }
   };
   const b = map[strength] || { t: 'ESCANEANDO', c: 'bg-gray-500/20 text-gray-400 border-gray-500/50' };
   return <span className={`px-2.5 py-1 rounded-md border font-bold tracking-wide text-xs ${b.c}`}>{b.t}</span>;
@@ -67,7 +67,7 @@ const FuelBar = ({ type, fuel, threshold, trend }) => {
 };
 
 const ETFRow = ({ symbol, price, fuel, trend, low, high, status, isBull }) => {
-  const getTrendIcon = (f) => f > 60 ? '↑↑' : f > 40 ? '↑' : f < 30 ? '↓' : '→';
+  const getTrendIcon = (f) => f > 60 ? '↑↑' : f > 40 ? '↑' : f < 30 ? '↓' : '->';
   const getTrendText = (f) => f >= 65 ? 'ready' : f >= 50 ? 'approaching' : f >= 30 ? 'building' : 'weak';
   const tc = isBull ? 'text-green-400' : 'text-red-400';
   
@@ -88,7 +88,7 @@ const AnalysisSection = ({ details, analyzing, onAnalyze }) => (
     {details?.analysis ? (
       <div className="bg-black/30 rounded-xl p-4 border-l-4 border-purple-500 border-y border-r border-white/5">
         <div className="flex justify-between items-center mb-3">
-          <h3 className="text-sm font-bold text-purple-400 flex items-center gap-2"><Sparkles className="w-4 h-4" /> 🧠 ANÁLISIS DE LAKE</h3>
+          <h3 className="text-sm font-bold text-purple-400 flex items-center gap-2"><Sparkles className="w-4 h-4" /> 🧠 ANALISIS DE LAKE</h3>
           <button onClick={onAnalyze} disabled={analyzing} className="flex items-center gap-1 px-2 py-1 text-[10px] text-white bg-purple-600 rounded hover:bg-purple-500 disabled:opacity-50">
             {analyzing ? <Loader2 className="w-3 h-3 animate-spin"/> : <Sparkles className="w-3 h-3"/>} Re-analizar
           </button>
@@ -116,7 +116,7 @@ const AnalysisSection = ({ details, analyzing, onAnalyze }) => (
       </div>
     ) : (
       <button onClick={onAnalyze} disabled={analyzing} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-purple-500 rounded-lg hover:from-purple-500 transition-all disabled:opacity-50">
-        {analyzing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} {analyzing ? 'Analizando...' : 'Análisis Profundo'}
+        {analyzing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} {analyzing ? 'Analizando...' : 'Analisis Profundo'}
       </button>
     )}
   </div>
@@ -128,7 +128,7 @@ const CandidatesSection = ({ parsedData }) => (
       <h3 className="text-sm font-bold text-yellow-400 uppercase tracking-wider mb-4 flex items-center gap-2"><Target className="w-4 h-4" /> Radar de Candidatos</h3>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm whitespace-nowrap">
-          <thead><tr className="text-gray-500 border-b border-white/5"><th className="pb-2 font-medium">Símbolo</th><th className="pb-2 font-medium">Score</th><th className="pb-2 font-medium">Señal</th><th className="pb-2 font-medium">Tiempo</th></tr></thead>
+          <thead><tr className="text-gray-500 border-b border-white/5"><th className="pb-2 font-medium">Simbolo</th><th className="pb-2 font-medium">Score</th><th className="pb-2 font-medium">Senal</th><th className="pb-2 font-medium">Tiempo</th></tr></thead>
           <tbody>
             <AnimatePresence>
               {parsedData.candidates.length > 0 ? parsedData.candidates.map((c, i) => (
@@ -163,7 +163,7 @@ const CandidatesSection = ({ parsedData }) => (
         <h3 className="text-sm font-bold text-green-400 uppercase tracking-wider mb-3 flex items-center gap-2"><TrendingUp className="w-4 h-4" /> Compras Recientes</h3>
         <div className="space-y-2">{parsedData.buys.length > 0 ? parsedData.buys.map((b, i) => (
           <div key={`${b.symbol}-${i}`} className="flex justify-between items-center bg-green-500/10 p-2 rounded-lg border border-green-500/20">
-            <span className="font-bold text-green-400">{b.symbol}</span><span className="text-xs text-green-400/70">{b.qty} sh • {formatTime(b.time)}</span>
+            <span className="font-bold text-green-400">{b.symbol}</span><span className="text-xs text-green-400/70">{b.qty} sh * {formatTime(b.time)}</span>
           </div>
         )) : <p className="text-center text-gray-600 text-xs py-2">Sin compras</p>}</div>
       </GlassCard>
@@ -172,7 +172,7 @@ const CandidatesSection = ({ parsedData }) => (
         <div className="space-y-2">{parsedData.sells.length > 0 ? parsedData.sells.map((s, i) => (
           <div key={`${s.symbol}-${i}`} className="flex justify-between items-center bg-red-500/10 p-2 rounded-lg border border-red-500/20">
             <div className="flex flex-col"><span className="font-bold text-red-400">{s.symbol}</span><span className="text-[10px] text-red-400/50">{s.reason}</span></div>
-            <span className="text-xs text-red-400/70">{s.qty} sh • {formatTime(s.time)}</span>
+            <span className="text-xs text-red-400/70">{s.qty} sh * {formatTime(s.time)}</span>
           </div>
         )) : <p className="text-center text-gray-600 text-xs py-2">Sin ventas</p>}</div>
       </GlassCard>
@@ -258,7 +258,7 @@ export default function LakeCandidates() {
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mb-6 bg-purple-500/20 border border-purple-500/50 rounded-xl p-3 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center border border-purple-400/50"><Activity className="w-4 h-4 text-purple-300" /></div>
-                <div><span className="text-xs text-purple-300 uppercase tracking-wider font-bold block">En Posición</span><span className="text-base font-bold text-white">{lakeSignal.current_symbol}</span></div>
+                <div><span className="text-xs text-purple-300 uppercase tracking-wider font-bold block">En Posicion</span><span className="text-base font-bold text-white">{lakeSignal.current_symbol}</span></div>
               </div>
               <div className="text-right">
                 <span className={`text-lg font-bold ${lakeSignal.current_pnl_pct >= 0 ? 'text-green-400' : 'text-red-400'}`}>{lakeSignal.current_pnl_pct >= 0 ? '+' : ''}{lakeSignal.current_pnl_pct}% PnL</span>
@@ -275,7 +275,7 @@ export default function LakeCandidates() {
 
         <div className="overflow-x-auto bg-black/20 rounded-xl border border-white/5 mb-4">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead><tr className="text-gray-400 border-b border-white/5 bg-white/5"><th className="px-4 py-3 font-medium">Símbolo</th><th className="px-4 py-3 font-medium">Precio</th><th className="px-4 py-3 font-medium">Fuel</th><th className="px-4 py-3 font-medium">Trend</th><th className="px-4 py-3 font-medium">Rango Atractivo</th><th className="px-4 py-3 font-medium">Estado</th></tr></thead>
+            <thead><tr className="text-gray-400 border-b border-white/5 bg-white/5"><th className="px-4 py-3 font-medium">Simbolo</th><th className="px-4 py-3 font-medium">Precio</th><th className="px-4 py-3 font-medium">Fuel</th><th className="px-4 py-3 font-medium">Trend</th><th className="px-4 py-3 font-medium">Rango Atractivo</th><th className="px-4 py-3 font-medium">Estado</th></tr></thead>
             <tbody>
               <ETFRow isBull symbol="UPRO" price={lakeSignal?.upro_price} fuel={lakeSignal?.bull_fuel || 0} trend={lakeSignal?.bull_trend} low={lakeSignal?.upro_attractive_low} high={lakeSignal?.upro_attractive_high} status={lakeSignal?.status === 'watching_bull'} />
               <ETFRow isBull={false} symbol="SPXU" price={lakeSignal?.spxu_price} fuel={lakeSignal?.bear_fuel || 0} trend={lakeSignal?.bear_trend} low={lakeSignal?.spxu_attractive_low} high={lakeSignal?.spxu_attractive_high} status={lakeSignal?.status === 'watching_bear'} />
@@ -286,7 +286,7 @@ export default function LakeCandidates() {
         <div className="bg-[#0b0c10] rounded-xl p-3 border border-white/5 flex items-start gap-3">
           <Target className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
-            <span className="text-xs text-gray-500 uppercase tracking-wider font-bold block mb-1">Próxima Acción del Bot</span>
+            <span className="text-xs text-gray-500 uppercase tracking-wider font-bold block mb-1">Proxima Accion del Bot</span>
             <span className="font-mono text-sm text-purple-200 break-all">{lakeSignal?.next_action || 'Esperando oportunidades...'}</span>
           </div>
         </div>
@@ -302,7 +302,7 @@ export default function LakeCandidates() {
                 lakeSignal.gap_conviction === 'MEDIUM' ? 'bg-yellow-500/20 text-yellow-400' :
                 'bg-gray-500/20 text-gray-400'
               }`}>
-                CONVICCIÓN {lakeSignal.gap_conviction || 'LOW'}
+                CONVICCION {lakeSignal.gap_conviction || 'LOW'}
               </span>
             </div>
             
@@ -314,7 +314,7 @@ export default function LakeCandidates() {
                 </span>
               </div>
               <div className="bg-black/40 p-2 rounded-lg border border-white/5">
-                <span className="text-[10px] text-gray-500 uppercase block mb-1">Dirección</span>
+                <span className="text-[10px] text-gray-500 uppercase block mb-1">Direccion</span>
                 <span className="font-mono text-sm text-white">{lakeSignal.gap_direction || '-'}</span>
               </div>
               <div className="bg-black/40 p-2 rounded-lg border border-white/5">

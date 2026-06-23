@@ -136,16 +136,16 @@ const Treasury = ({ onBack }) => {
       if (error) throw error;
       setHasAcceptedTerms(true);
       setShowPoliciesModal(false);
-      toast({ title: "Términos aceptados", description: "Ahora puedes participar en eventos" });
+      toast({ title: "Terminos aceptados", description: "Ahora puedes participar en eventos" });
     } catch (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     }
   };
 
   const handleCreateEventGlobal = async (nuevoEvento) => {
-    // Esta función puede ser pasada a los hijos si queremos centralizar la creación
-    // Por ahora, dejaremos que los hijos manejen su creación para ser más modulares,
-    // pero actualizaremos la lista global aquí via loadEventos (pasado como prop refresh)
+    // Esta funcion puede ser pasada a los hijos si queremos centralizar la creacion
+    // Por ahora, dejaremos que los hijos manejen su creacion para ser mas modulares,
+    // pero actualizaremos la lista global aqui via loadEventos (pasado como prop refresh)
     await loadEventos();
   };
 
@@ -168,7 +168,7 @@ const Treasury = ({ onBack }) => {
     {
       id: 'pactos',
       title: 'Pactos de Desarrollo',
-      description: 'Acuerdos de suscripción mensual con beneficios Lake AI',
+      description: 'Acuerdos de suscripcion mensual con beneficios Lake AI',
       icon: Sparkles,
       count: stats.pactos,
       color: 'emerald'
@@ -176,7 +176,7 @@ const Treasury = ({ onBack }) => {
     {
       id: 'ofertas',
       title: 'Ofertas de UEs',
-      description: 'Adquisición de UEs con descuento y lock-up',
+      description: 'Adquisicion de UEs con descuento y lock-up',
       icon: ShoppingCart,
       count: stats.ofertas,
       color: 'purple'
@@ -214,9 +214,9 @@ const Treasury = ({ onBack }) => {
                 </button>
                 <div>
                   <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-600">
-                    Tesorería
+                    Tesoreria
                   </h1>
-                  <p className="text-slate-400">Selecciona una categoría de inversión</p>
+                  <p className="text-slate-400">Selecciona una categoria de inversion</p>
                 </div>
               </div>
 
@@ -234,12 +234,12 @@ const Treasury = ({ onBack }) => {
                   className="hidden md:flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/30 rounded-full text-amber-400 hover:bg-amber-500/20 transition-all"
                 >
                   <Scroll className="w-5 h-5" />
-                  <span className="text-sm font-medium">Políticas</span>
+                  <span className="text-sm font-medium">Politicas</span>
                 </button>
               </div>
             </div>
 
-            {/* Categorías */}
+            {/* Categorias */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {categories.map((cat) => {
                 const Icon = cat.icon;
@@ -308,7 +308,7 @@ const Treasury = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-8">
       <Helmet>
-        <title>Tesorería - Freraut Invest</title>
+        <title>Tesoreria - Freraut Invest</title>
       </Helmet>
 
       <AnimatePresence mode="wait">

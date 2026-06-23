@@ -85,14 +85,14 @@ const PactosDesarrollo = ({
     if (!hasAcceptedTerms) {
       onShowPolicies();
       toast({
-        title: "Términos requeridos",
-        description: "Debes aceptar los términos antes de participar",
+        title: "Terminos requeridos",
+        description: "Debes aceptar los terminos antes de participar",
         variant: "destructive"
       });
       return;
     }
 
-    // 🔥 VALIDACIÓN: Verificar si ya está suscrito
+    // 🔥 VALIDACION: Verificar si ya esta suscrito
     try {
       const { data: yaSuscrito, error: errorCheck } = await supabase.rpc('usuario_tiene_suscripcion_activa', {
         p_usuario_id: userId,
@@ -100,22 +100,22 @@ const PactosDesarrollo = ({
       });
 
       if (errorCheck) {
-        console.error('Error verificando suscripción:', errorCheck);
+        console.error('Error verificando suscripcion:', errorCheck);
       }
 
       if (yaSuscrito === true) {
         toast({
-          title: "Ya estás suscrito",
-          description: "Ya tienes una suscripción activa a este pacto. Revisa 'Mis Suscripciones'.",
+          title: "Ya estas suscrito",
+          description: "Ya tienes una suscripcion activa a este pacto. Revisa 'Mis Suscripciones'.",
           variant: "destructive"
         });
         return;
       }
     } catch (error) {
-      console.error('Error al verificar suscripción:', error);
+      console.error('Error al verificar suscripcion:', error);
       toast({
-        title: "Error de validación",
-        description: "No se pudo verificar tu suscripción. Intenta nuevamente.",
+        title: "Error de validacion",
+        description: "No se pudo verificar tu suscripcion. Intenta nuevamente.",
         variant: "destructive"
       });
       return;
@@ -127,7 +127,7 @@ const PactosDesarrollo = ({
     if (!monto || monto <= 0) {
       toast({
         title: "Error",
-        description: "El monto del pacto no está definido",
+        description: "El monto del pacto no esta definido",
         variant: "destructive"
       });
       return;
@@ -147,7 +147,7 @@ const PactosDesarrollo = ({
 
     setParticipating(true);
     try {
-      // USAR RPC para transacción atómica
+      // USAR RPC para transaccion atomica
       const { data, error } = await supabase.rpc('suscribir_evento_tesoreria', {
         p_evento_id: selectedEvent.id,
         p_usuario_id: userId,
@@ -158,12 +158,12 @@ const PactosDesarrollo = ({
       if (error) throw error;
 
       if (!data.success) {
-        throw new Error(data.mensaje || 'Error al procesar la suscripción');
+        throw new Error(data.mensaje || 'Error al procesar la suscripcion');
       }
 
       toast({
         title: "✅ Suscrito al Pacto",
-        description: `Suscripción mensual de $${monto.toLocaleString('es-CL')} iniciada`
+        description: `Suscripcion mensual de $${monto.toLocaleString('es-CL')} iniciada`
       });
 
       setShowParticipate(false);
@@ -213,7 +213,7 @@ const PactosDesarrollo = ({
           </button>
           <div>
             <h1 className="text-3xl font-bold text-emerald-400">Pactos de Desarrollo</h1>
-            <p className="text-slate-400">Suscripciones estratégicas Lake AI</p>
+            <p className="text-slate-400">Suscripciones estrategicas Lake AI</p>
           </div>
         </div>
         {isAdmin && (
@@ -270,7 +270,7 @@ const PactosDesarrollo = ({
                 <h3 className="text-xl font-bold mb-2 group-hover:text-emerald-400 transition-colors">{evento.titulo}</h3>
                 <div className="flex flex-wrap gap-4 text-sm mt-3">
                   <div className="flex items-center gap-2"><DollarSign size={16} className="text-emerald-400" /><span className="text-emerald-400">${parseFloat(evento.monthly_amount).toLocaleString()}/mes</span></div>
-                  <div className="flex items-center gap-2"><Target size={16} className="text-slate-500" /><span className="text-slate-300">{evento.ue_conversion_percentage}% → UEs</span></div>
+                  <div className="flex items-center gap-2"><Target size={16} className="text-slate-500" /><span className="text-slate-300">{evento.ue_conversion_percentage}% -> UEs</span></div>
                   {evento.subscription_discount > 0 && <div className="flex items-center gap-2"><TrendingUp size={16} className="text-emerald-400" /><span className="text-emerald-400">{evento.subscription_discount}% off</span></div>}
                 </div>
               </div>

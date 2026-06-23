@@ -45,7 +45,7 @@ export default function NavHistoricoChart() {
     };
   }, []);
 
-  // 4️⃣ Formato de datos para el gráfico
+  // 4️⃣ Formato de datos para el grafico
   const reversedData = [...data].reverse(); // Ensure data is reversed for chronological order in chart
   const chartData = reversedData.map((item) => ({
     fecha: new Date(item.fecha).toLocaleDateString("es-CL", {
@@ -57,7 +57,7 @@ export default function NavHistoricoChart() {
   return (
     <div className="bg-neutral-900 rounded-2xl p-6 shadow-md">
       <h2 className="text-xl font-bold text-yellow-500 mb-4">
-        Mercado - NAV Histórico
+        Mercado - NAV Historico
       </h2>
 
       <ResponsiveContainer width="100%" height={300}>

@@ -182,7 +182,7 @@ export default function LakeExecutor({ onBack }) {
                 <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 bg-clip-text text-transparent truncate">Lake Executor</h1>
                 <p className="text-[10px] sm:text-xs text-gray-500 truncate">
                   {botState?.lake_status === 'sleeping' ? 'Durmiendo' : botState?.lake_status === 'analyzing' ? 'Analizando...' : botState?.lake_status === 'awake' ? 'Despierto' : 'Esperando'}
-                  {strategy ? ` • ${strategy.name}` : ''}
+                  {strategy ? ` * ${strategy.name}` : ''}
                 </p>
               </div>
             </div>
@@ -227,7 +227,7 @@ export default function LakeExecutor({ onBack }) {
         {activePanel === 'dashboard' && (<>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
             <StatBox label="Modo" value={botConfig?.mode?.toUpperCase() || 'PAPER'} icon={Shield} color={botConfig?.mode === 'paper' ? 'text-amber-400' : 'text-red-400'} subtext={botConfig?.enabled ? 'Bot habilitado' : 'Bot deshabilitado'} />
-            <StatBox label="Equity" value={botState?.account_equity ? `$${parseFloat(botState.account_equity).toLocaleString('es-CL')}` : '—'} icon={Wallet} color="text-green-400" />
+            <StatBox label="Equity" value={botState?.account_equity ? `$${parseFloat(botState.account_equity).toLocaleString('es-CL')}` : '-'} icon={Wallet} color="text-green-400" />
             <StatBox label="Posicion" value={botState?.current_symbol || 'Ninguna'} icon={botState?.current_side === 'long' ? TrendingUp : Activity} color={botState?.current_symbol ? 'text-blue-400' : 'text-gray-500'} subtext={botState?.current_qty > 0 ? `${botState.current_qty} shares` : null} />
             <StatBox label="PnL Diario" value={`$${parseFloat(botState?.daily_pnl || 0).toLocaleString('es-CL')}`} icon={DollarSign} color={parseFloat(botState?.daily_pnl || 0) >= 0 ? 'text-green-400' : 'text-red-400'} subtext={`${botState?.daily_trades_count || 0} trades hoy`} />
           </div>
@@ -345,7 +345,7 @@ export default function LakeExecutor({ onBack }) {
                       <div className="flex items-center gap-3"><span className="text-xs text-rose-400 w-20">Largo Plazo</span><input type="range" min="0" max="100" value={editStrategy.pct_largo_plazo || 0} onChange={e => handleDistributionChange('pct_largo_plazo', e.target.value)} className="flex-1 h-2 rounded-full appearance-none cursor-pointer bg-gray-800 accent-rose-500" /><span className="text-xs text-white w-10 text-right">{editStrategy.pct_largo_plazo || 0}%</span></div>
                       <div className="flex items-center gap-3"><span className="text-xs text-purple-400 w-20">Frerautiano</span><input type="range" min="0" max="100" value={editStrategy.frerautiano_budget_pct || 0} onChange={e => handleDistributionChange('frerautiano_budget_pct', e.target.value)} className="flex-1 h-2 rounded-full appearance-none cursor-pointer bg-gray-800 accent-purple-500" /><span className="text-xs text-white w-10 text-right">{editStrategy.frerautiano_budget_pct || 0}%</span></div>
                     </div>
-                    <p className="text-[10px] text-gray-600 mt-3 text-center">Total: 100% — Distribución de capital estratégico</p>
+                    <p className="text-[10px] text-gray-600 mt-3 text-center">Total: 100% - Distribucion de capital estrategico</p>
                   </div>
                 </div>
 
@@ -412,7 +412,7 @@ export default function LakeExecutor({ onBack }) {
                       <input type="number" min="0" max="100" value={editStrategy.frerautiano_budget_pct || 0} onChange={e => handleDistributionChange('frerautiano_budget_pct', e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/5 text-white text-sm" />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">SÍMBOLO (BULL ONLY)</label>
+                      <label className="block text-xs text-gray-500 mb-1">SIMBOLO (BULL ONLY)</label>
                       <input type="text" value={(editStrategy.frerautiano_symbols || ['UPRO']).join(', ')} onChange={F => setEditStrategy({...editStrategy, frerautiano_symbols: F.target.value.split(',').map(s => s.trim())})} className="w-full px-4 py-2.5 rounded-xl bg-black/40 border border-white/5 text-white text-sm" />
                     </div>
                   </div>
@@ -442,7 +442,7 @@ export default function LakeExecutor({ onBack }) {
                     {(strategy.pct_largo_plazo || 0) > 0 && <div className="bg-gradient-to-r from-rose-600 to-rose-500 flex items-center justify-center text-xs font-bold text-white" style={{ width: `${strategy.pct_largo_plazo}%` }}>{strategy.pct_largo_plazo > 8 ? `${strategy.pct_largo_plazo}% LP` : ''}</div>}
                     {(strategy.frerautiano_budget_pct || 0) > 0 && <div className="bg-gradient-to-r from-purple-600 to-purple-500 flex items-center justify-center text-xs font-bold text-white" style={{ width: `${strategy.frerautiano_budget_pct}%` }}>{strategy.frerautiano_budget_pct > 8 ? `${strategy.frerautiano_budget_pct}% Freraut` : ''}</div>}
                   </div>
-                  <p className="text-[10px] text-gray-600 mt-2 text-center">Distribución de capital estratégico</p>
+                  <p className="text-[10px] text-gray-600 mt-2 text-center">Distribucion de capital estrategico</p>
                 </div>
                 {/* Assets in each bucket */}
                 <div className="grid md:grid-cols-3 gap-4">
@@ -530,7 +530,7 @@ export default function LakeExecutor({ onBack }) {
                       {payersThisMonth.length > 0 ? (
                         <p className="text-[8px] text-emerald-400/70">${estIncome.toFixed(0)}</p>
                       ) : (
-                        <p className="text-[8px] text-gray-700">—</p>
+                        <p className="text-[8px] text-gray-700">-</p>
                       )}
                     </div>
                   );
@@ -550,11 +550,11 @@ export default function LakeExecutor({ onBack }) {
                         <span className="text-sm font-bold text-white">{d.symbol}</span>
                         <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded ml-2">MENSUAL</span>
                       </div>
-                      <span className="text-xs font-bold text-emerald-400">{d.yield_pct ? `${d.yield_pct}%` : '—'}</span>
+                      <span className="text-xs font-bold text-emerald-400">{d.yield_pct ? `${d.yield_pct}%` : '-'}</span>
                     </div>
                     <p className="text-[10px] text-gray-500 mb-2">{d.name || d.sector}</p>
                     <div className="flex justify-between text-[10px]">
-                      <span className="text-gray-500">Div/yr: ${d.annual_dividend_usd || '—'}</span>
+                      <span className="text-gray-500">Div/yr: ${d.annual_dividend_usd || '-'}</span>
                       <span className="text-emerald-400 font-bold">{d.shares_held} shares</span>
                     </div>
                     <div className="mt-2 pt-2 border-t border-white/5">
@@ -589,8 +589,8 @@ export default function LakeExecutor({ onBack }) {
                         <td className="py-2 font-bold text-white">{d.symbol}</td>
                         <td className="py-2 text-gray-400">{d.sector}</td>
                         <td className="py-2"><span className={`px-1.5 py-0.5 rounded text-[9px] ${d.asset_type === 'reit' || d.asset_type === 'REIT' ? 'bg-purple-500/20 text-purple-400' : d.asset_type === 'etf' || d.asset_type === 'ETF' ? 'bg-blue-500/20 text-blue-400' : 'bg-gray-500/20 text-gray-400'}`}>{d.asset_type?.toUpperCase()}</span></td>
-                        <td className="py-2 text-right text-emerald-400 font-bold">{d.yield_pct ? `${d.yield_pct}%` : '—'}</td>
-                        <td className="py-2 text-right text-gray-300">${d.annual_dividend_usd || '—'}</td>
+                        <td className="py-2 text-right text-emerald-400 font-bold">{d.yield_pct ? `${d.yield_pct}%` : '-'}</td>
+                        <td className="py-2 text-right text-gray-300">${d.annual_dividend_usd || '-'}</td>
                         <td className="py-2 text-center">
                           <div className="flex gap-0.5 justify-center">
                             {(d.payment_months || []).map((m, i) => (
@@ -689,7 +689,7 @@ export default function LakeExecutor({ onBack }) {
               </div>
               <div className="bg-[#0f1118] rounded-xl p-4 border border-white/5">
                 <p className="text-[10px] text-gray-500 uppercase mb-1">Ultima actualizacion</p>
-                <p className="text-gray-400 text-xs">{botConfig.updated_at ? new Date(botConfig.updated_at).toLocaleString('es-CL') : '—'}</p>
+                <p className="text-gray-400 text-xs">{botConfig.updated_at ? new Date(botConfig.updated_at).toLocaleString('es-CL') : '-'}</p>
               </div>
             </div>
           </GlassCard>

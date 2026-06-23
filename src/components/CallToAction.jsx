@@ -8,8 +8,8 @@ const CallToAction = () => {
 
   const handleCtaClick = () => {
     toast({
-      title: "🚧 Esta característica aún no está implementada",
-      description: "¡Pero no te preocupes! Puedes solicitarla en tu próximo prompt. 🚀",
+      title: "🚧 Esta caracteristica aun no esta implementada",
+      description: "!Pero no te preocupes! Puedes solicitarla en tu proximo prompt. 🚀",
     });
   };
 
@@ -20,7 +20,7 @@ const CallToAction = () => {
       transition={{ duration: 0.5, delay: 0.4 }}
       className="bg-gradient-to-r from-gold-primary to-gold-accent text-black rounded-xl p-8 text-center shadow-lg mt-12"
     >
-      <h2 className="text-3xl font-bold mb-4">¿Listo para invertir?</h2>
+      <h2 className="text-3xl font-bold mb-4">?Listo para invertir?</h2>
       <p className="text-lg mb-6">Let's turn your ideas into reality.</p>
       <Button
         onClick={handleCtaClick}

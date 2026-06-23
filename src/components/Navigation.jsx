@@ -98,7 +98,7 @@ const Navigation = ({ activeTab, onTabChange }) => {
     { id: 'units', label: 'Mis UEs', icon: Wallet },
     { id: 'market', label: 'Mercado', icon: BarChart3 },
     { id: 'lake', label: 'Lake AI', icon: Brain },
-    { id: 'treasury', label: 'Tesorería', icon: Landmark },
+    { id: 'treasury', label: 'Tesoreria', icon: Landmark },
     { id: 'reports', label: 'Reportes', icon: FileText },
   ];
 
@@ -109,17 +109,17 @@ const Navigation = ({ activeTab, onTabChange }) => {
     competenciasTabs.push({ id: 'gobierno', label: 'Gobierno Corporativo', icon: Gavel, desc: 'Asamblea, votos y estructura' });
   }
   if (canAccessAnalyzer) {
-    competenciasTabs.push({ id: 'analyzer', label: 'Análisis', icon: Star, desc: 'Analista Freraut' });
+    competenciasTabs.push({ id: 'analyzer', label: 'Analisis', icon: Star, desc: 'Analista Freraut' });
   }
   // Admin login button - only for the authorized admin from gobierno_corporativo
   if (isAuthorizedAdmin && !isAdmin) {
     competenciasTabs.push({ id: '_admin_login', label: 'Administracion', icon: KeyRound, desc: 'Acceder a cuenta institucional', isAdminLogin: true });
   }
   if (isAdmin) {
-    competenciasTabs.push({ id: 'executor', label: 'Executor', icon: Zap, desc: 'Trading automático' });
-    competenciasTabs.push({ id: 'pool', label: 'Pool', icon: Activity, desc: 'Gestión de liquidez' });
+    competenciasTabs.push({ id: 'executor', label: 'Executor', icon: Zap, desc: 'Trading automatico' });
+    competenciasTabs.push({ id: 'pool', label: 'Pool', icon: Activity, desc: 'Gestion de liquidez' });
     competenciasTabs.push({ id: 'retiros', label: 'Retiros', icon: ClipboardList, desc: 'Solicitudes de retiro' });
-    competenciasTabs.push({ id: 'roles', label: 'Roles', icon: Shield, desc: 'Gestión de permisos' });
+    competenciasTabs.push({ id: 'roles', label: 'Roles', icon: Shield, desc: 'Gestion de permisos' });
     competenciasTabs.push({ id: 'taxes', label: 'Impuestos', icon: Receipt, desc: 'Centro tributario' });
   }
 

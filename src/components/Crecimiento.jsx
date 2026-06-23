@@ -13,7 +13,7 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [smoothPoint, setSmoothPoint] = useState(null);
 
-  // 🔥 NUEVO: Sistema de actualización en vivo
+  // 🔥 NUEVO: Sistema de actualizacion en vivo
   const [liveData, setLiveData] = useState([]);
   const prevCapitalRef = useRef(null);
 
@@ -119,11 +119,11 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
             <TrendingUp className="w-6 h-6 text-gold" />
           </div>
           <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-400 to-gold">
-            Crecimiento Capitalización de Mercado
+            Crecimiento Capitalizacion de Mercado
           </h3>
         </div>
         <p className="text-gray-600 dark:text-gray-400 text-center py-12 text-lg">
-          No hay suficiente historial para mostrar el gráfico.
+          No hay suficiente historial para mostrar el grafico.
         </p>
       </motion.div>
     );
@@ -135,8 +135,8 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
 
   const getPeriodoTexto = () => {
     if (diasReales <= 1) return 'Hoy';
-    if (diasReales <= 7) return `Últimos ${diasReales} días`;
-    if (diasReales <= 30) return 'Último mes';
+    if (diasReales <= 7) return `Ultimos ${diasReales} dias`;
+    if (diasReales <= 30) return 'Ultimo mes';
     return `Desde ${fechaInicial.toLocaleDateString('es-CL')}`;
   };
 
@@ -191,7 +191,7 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
 
   const allPoints = [...points, puntoActual];
 
-  // Curva suave (Catmull-Rom → cubic Bezier) para linea profesional
+  // Curva suave (Catmull-Rom -> cubic Bezier) para linea profesional
   function smoothPath(pts) {
     if (pts.length < 2) return pts.map(p => `${p.x},${p.y}`).join(' ');
     const d = pts.map((p, i, a) => {
@@ -304,10 +304,10 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
             </motion.div>
             <div>
               <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-400 to-gold" style={{ fontFamily: "'Playfair Display', Georgia, serif", letterSpacing: '0.02em' }}>
-                Capitalización de Mercado
+                Capitalizacion de Mercado
               </h3>
               <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 tracking-wide" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-                ${valorActualNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} · Rango ${(minValor / 1000000).toFixed(2)}M – ${(maxValor / 1000000).toFixed(2)}M
+                ${valorActualNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} · Rango ${(minValor / 1000000).toFixed(2)}M - ${(maxValor / 1000000).toFixed(2)}M
               </p>
             </div>
           </div>
@@ -361,7 +361,7 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
             className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/60 dark:to-gray-900/60 rounded-xl p-5 border border-gray-300 dark:border-gray-700/50 backdrop-blur-sm hover:border-gold/50 dark:hover:border-gold/30 transition-all duration-300"
           >
             <p className="text-xs uppercase tracking-wider text-gray-700 dark:text-gray-400 mb-2 font-semibold">
-              🪙 UEs Circulación
+              🪙 UEs Circulacion
             </p>
             <p className="text-3xl font-extrabold tracking-wide text-gray-900 dark:text-white">
               {parseInt(uesCirculacion || 0, 10).toLocaleString('en-US')}
@@ -451,7 +451,7 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
 
             <path d={areaPathD} fill="url(#gradientGoldEnhanced)" opacity="0.5" />
 
-            {/* Glow detrás de la línea */}
+            {/* Glow detras de la linea */}
             <path
               d={pathD}
               fill="none"
@@ -462,7 +462,7 @@ function CapitalGrowthChart({ historial, uesCirculacion, capitalActual }) {
               opacity="0.12"
             />
 
-            {/* Línea principal */}
+            {/* Linea principal */}
             <path
               d={pathD}
               fill="none"
@@ -605,7 +605,7 @@ const Crecimiento = () => {
   const fetchCapitalHistorico = useCallback(async () => {
     const { data, error: historyError } = await supabase.rpc('obtener_capital_total_historico', { p_dias: 90 });
     if (historyError) {
-      console.error('❌ Error al obtener capital histórico:', historyError.message);
+      console.error('❌ Error al obtener capital historico:', historyError.message);
     } else if (data) {
       setCapitalHistorico(data);
     }
@@ -687,14 +687,14 @@ const Crecimiento = () => {
   const handleUpdateCapitalTotal = async () => {
     const nuevoBaseClp = parseFloat(capitalInput);
     if (isNaN(nuevoBaseClp) || nuevoBaseClp < 0) {
-      toast({ variant: "destructive", title: "Error", description: "Ingrese un valor válido en CLP" });
+      toast({ variant: "destructive", title: "Error", description: "Ingrese un valor valido en CLP" });
       return;
     }
     try {
       const { data, error } = await supabase.rpc('actualizar_valor_base', { p_valor_base_clp: nuevoBaseClp });
       if (error) throw error;
       if (data.success) {
-        toast({ title: "✅ Valor base actualizado", description: `Nuevo valor base: $${nuevoBaseClp.toLocaleString()} CLP (≈ $${(nuevoBaseClp/fxRate).toLocaleString('en-US', {minimumFractionDigits:2})} USD)` });
+        toast({ title: "✅ Valor base actualizado", description: `Nuevo valor base: $${nuevoBaseClp.toLocaleString()} CLP (~ $${(nuevoBaseClp/fxRate).toLocaleString('en-US', {minimumFractionDigits:2})} USD)` });
         setEditingCapital(false);
         setCapitalBase(nuevoBaseClp);
         fetchCapitalHistorico();
@@ -731,7 +731,7 @@ const Crecimiento = () => {
   return (
     <div className="space-y-10 p-2">
       <div className="flex justify-between items-center">
-        <h2 className="text-4xl font-bold text-gold tracking-wide drop-shadow-lg">Crecimiento capitalización de mercado</h2>
+        <h2 className="text-4xl font-bold text-gold tracking-wide drop-shadow-lg">Crecimiento capitalizacion de mercado</h2>
         {isAdmin && (
           <Button
             onClick={handleToggleEdit} // 🔥 CAMBIADO
@@ -755,7 +755,7 @@ const Crecimiento = () => {
             </h3>
             <p className="text-sm text-blue-200/60 mb-4">
               Valor base actual: <strong className="text-blue-200">${capitalBase.toLocaleString('es-CL')} CLP</strong>
-              <span className="text-blue-200/40 ml-2">(≈ ${(capitalBase/fxRate).toLocaleString('en-US', {minimumFractionDigits:2})} USD · TC: ${fxRate})</span>
+              <span className="text-blue-200/40 ml-2">(~ ${(capitalBase/fxRate).toLocaleString('en-US', {minimumFractionDigits:2})} USD · TC: ${fxRate})</span>
               {marketMetrics.capital_total > 0 && (
                 <span className="text-blue-200/40 ml-2">· Capital total: ${parseFloat(marketMetrics.capital_total).toLocaleString('en-US', { minimumFractionDigits: 2 })} USD</span>
               )}
@@ -774,7 +774,7 @@ const Crecimiento = () => {
             <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
               <p className="text-sm text-yellow-300 flex items-start gap-2">
                 <span>⚠️</span>
-                <span>El valor base (en CLP) se suma al equity de IULER convertido a USD. Fórmula: <strong>capital_total = (alpaca_equity + valor_base / tc) × multiplicador</strong>. La tabla <strong>parametros_fondo</strong> almacena este valor.</span>
+                <span>El valor base (en CLP) se suma al equity de IULER convertido a USD. Formula: <strong>capital_total = (alpaca_equity + valor_base / tc) × multiplicador</strong>. La tabla <strong>parametros_fondo</strong> almacena este valor.</span>
               </p>
             </div>
           </motion.div>

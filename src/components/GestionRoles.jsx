@@ -20,27 +20,27 @@ const ROLES = [
     color: '#38bdf8',
     bg: 'rgba(56,189,248,0.08)',
     border: 'rgba(56,189,248,0.2)',
-    accesos: ['Análisis ★', 'Portafolio', 'Mercado', 'Lake AI'],
+    accesos: ['Analisis ★', 'Portafolio', 'Mercado', 'Lake AI'],
   },
   {
     id: 'contador',
     label: 'Contador',
-    desc: 'Acceso a reportes financieros y tesorería.',
+    desc: 'Acceso a reportes financieros y tesoreria.',
     icon: Calculator,
     color: '#a78bfa',
     bg: 'rgba(167,139,250,0.08)',
     border: 'rgba(167,139,250,0.2)',
-    accesos: ['Reportes', 'Tesorería', 'Historial'],
+    accesos: ['Reportes', 'Tesoreria', 'Historial'],
   },
   {
     id: 'co_administrador',
     label: 'Co-Administrador',
-    desc: 'Acceso completo excepto gestión de roles.',
+    desc: 'Acceso completo excepto gestion de roles.',
     icon: Crown,
     color: '#fbbf24',
     bg: 'rgba(251,191,36,0.08)',
     border: 'rgba(251,191,36,0.2)',
-    accesos: ['Análisis ★', 'Pool', 'Retiros', 'Tesorería', 'Todo excepto Roles'],
+    accesos: ['Analisis ★', 'Pool', 'Retiros', 'Tesoreria', 'Todo excepto Roles'],
   },
 ];
 
@@ -132,7 +132,7 @@ export default function GestionRoles({ onBack }) {
         .from('user_roles')
         .insert({ usuario_id: usuario.id, role: rolId });
       if (error) throw error;
-      showToast(`✓ Rol asignado: ${ROLES.find(r=>r.id===rolId)?.label || rolId} → ${usuario.email}`);
+      showToast(`✓ Rol asignado: ${ROLES.find(r=>r.id===rolId)?.label || rolId} -> ${usuario.email}`);
       await load();
     } catch (e) {
       showToast('Error al asignar rol: ' + e.message, 'error');
@@ -176,11 +176,11 @@ export default function GestionRoles({ onBack }) {
         </div>
         <div style={{fontSize:22,fontWeight:800,color:'#f87171'}}>Acceso Restringido</div>
         <div style={{fontSize:13,color:'#64748b',maxWidth:360,lineHeight:1.6}}>
-          Esta sección es exclusiva para la cuenta institucional de Freraut Invest.
+          Esta seccion es exclusiva para la cuenta institucional de Freraut Invest.
         </div>
         {onBack && (
           <button onClick={onBack} style={{marginTop:8,padding:'10px 24px',borderRadius:12,background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',color:'#94a3b8',cursor:'pointer',fontSize:13,fontWeight:600}}>
-            ← Volver al dashboard
+            &lt;- Volver al dashboard
           </button>
         )}
       </div>
@@ -207,7 +207,7 @@ export default function GestionRoles({ onBack }) {
         )}
       </AnimatePresence>
 
-      {/* Modal confirmación revocación */}
+      {/* Modal confirmacion revocacion */}
       <AnimatePresence>
         {confirmDelete && (
           <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
@@ -219,7 +219,7 @@ export default function GestionRoles({ onBack }) {
                 <span style={{fontSize:16,fontWeight:800,color:'white'}}>Revocar rol</span>
               </div>
               <div style={{fontSize:13,color:'#94a3b8',lineHeight:1.6,marginBottom:20}}>
-                ¿Revocar <RolBadge rolId={confirmDelete.role} small/> a este usuario? El acceso se elimina inmediatamente.
+                ?Revocar <RolBadge rolId={confirmDelete.role} small/> a este usuario? El acceso se elimina inmediatamente.
               </div>
               <div style={{display:'flex',gap:10}}>
                 <button onClick={()=>setConfirmDelete(null)} style={{flex:1,padding:'10px',borderRadius:10,background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',color:'#94a3b8',cursor:'pointer',fontSize:13,fontWeight:600}}>Cancelar</button>
@@ -239,7 +239,7 @@ export default function GestionRoles({ onBack }) {
             <Shield style={{width:24,height:24,color:'#38bdf8'}}/>
           </div>
           <div>
-            <div style={{fontSize:22,fontWeight:900,color:'white',letterSpacing:'-0.02em'}}>Gestión de Roles</div>
+            <div style={{fontSize:22,fontWeight:900,color:'white',letterSpacing:'-0.02em'}}>Gestion de Roles</div>
             <div style={{fontSize:12,color:'#64748b',marginTop:2}}>Accesos institucionales · Freraut Invest</div>
           </div>
         </div>
@@ -332,7 +332,7 @@ export default function GestionRoles({ onBack }) {
                   {/* Roles + acciones */}
                   <div style={{display:'flex',flexDirection:'column',gap:8,alignItems:'flex-end'}}>
 
-                    {/* Roles actuales con botón de revocar */}
+                    {/* Roles actuales con boton de revocar */}
                     {misRoles.length > 0 && (
                       <div style={{display:'flex',gap:6,flexWrap:'wrap',justifyContent:'flex-end'}}>
                         {misRoles.map(r => (

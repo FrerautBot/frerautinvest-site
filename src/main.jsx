@@ -6,7 +6,7 @@ import { AuthProvider } from '@/contexts/SupabaseAuthContext';
 import { Toaster } from '@/components/ui/toaster';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  // Eliminado <React.StrictMode> para evitar doble renderizado que podría causar problemas con efectos de terceros.
+  // Eliminado <React.StrictMode> para evitar doble renderizado que podria causar problemas con efectos de terceros.
   <AuthProvider>
     <App />
 

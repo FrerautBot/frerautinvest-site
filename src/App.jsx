@@ -246,7 +246,7 @@ function App() {
 
   const renderContent = () => {
     if (loading) return <div className="text-center p-10">Cargando...</div>;
-    if (!session) return <div className="text-center p-10">Inicia sesión para ver el dashboard.</div>;
+    if (!session) return <div className="text-center p-10">Inicia sesion para ver el dashboard.</div>;
     if (showSettings) return <Settings onBack={() => setShowSettings(false)} />;
     switch (activeTab) {
       case 'dashboard':   return <Index onNavigate={setActiveTab} />;
@@ -275,7 +275,7 @@ function App() {
 
   return (
     <>
-      <Helmet><title>Freraut Invest - Investment Dashboard</title><meta name="description" content="Plataforma profesional de inversión privada" /></Helmet>
+      <Helmet><title>Freraut Invest - Investment Dashboard</title><meta name="description" content="Plataforma profesional de inversion privada" /></Helmet>
       <AnimatePresence mode="wait">
         {showSplash ? <SplashScreen key="splash" /> : (
           <motion.div key="main" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className={`min-h-screen relative ${theme}`}>

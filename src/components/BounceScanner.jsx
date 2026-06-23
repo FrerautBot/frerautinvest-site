@@ -20,8 +20,8 @@ import { supabase } from '@/lib/customSupabaseClient';
  * Detects stocks hitting support levels or oversold conditions for potential bounces.
  */
 
-const fmtPct = (v) => v != null ? `${v >= 0 ? '+' : ''}${parseFloat(v).toFixed(2)}%` : '—';
-const fmtUSD = (v) => v != null ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v) : '—';
+const fmtPct = (v) => v != null ? `${v >= 0 ? '+' : ''}${parseFloat(v).toFixed(2)}%` : '-';
+const fmtUSD = (v) => v != null ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v) : '-';
 
 export const analyzeTicker = async (ticker) => {
   try {
@@ -199,7 +199,7 @@ export default function BounceScanner({ onSelectTicker }) {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xs font-mono font-bold text-white">{ticker.price ? fmtUSD(ticker.price) : '—'}</div>
+                  <div className="text-xs font-mono font-bold text-white">{ticker.price ? fmtUSD(ticker.price) : '-'}</div>
                   <div className={`text-[10px] font-mono font-bold ${ticker.score > 70 ? 'text-emerald-400' : 'text-slate-400'}`}>
                     Score: {ticker.score}
                   </div>

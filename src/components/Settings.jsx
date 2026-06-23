@@ -139,7 +139,7 @@ const Settings = ({ onBack }) => {
 
       toast({
         title: '✅ Cambios guardados',
-        description: 'Tu información se actualizó correctamente'
+        description: 'Tu informacion se actualizo correctamente'
       });
     } catch (error) {
       toast({
@@ -156,7 +156,7 @@ const Settings = ({ onBack }) => {
     if (!session?.user?.id) {
       toast({
         title: 'Error',
-        description: 'Debes iniciar sesión',
+        description: 'Debes iniciar sesion',
         variant: 'destructive'
       });
       return;
@@ -183,14 +183,14 @@ const Settings = ({ onBack }) => {
 
       if (error) throw error;
 
-      console.log('✅ Notificación guardada:', nuevasNotificaciones);
+      console.log('✅ Notificacion guardada:', nuevasNotificaciones);
 
       toast({
-        title: newValue ? '🔔 Notificación activada' : '🔕 Notificación desactivada',
+        title: newValue ? '🔔 Notificacion activada' : '🔕 Notificacion desactivada',
         description: `Las notificaciones de "${notificationItems.find(item => item.key === key)?.label}" han sido ${newValue ? 'activadas' : 'desactivadas'}`
       });
     } catch (error) {
-      console.error('❌ Error actualizando notificación:', error);
+      console.error('❌ Error actualizando notificacion:', error);
 
       // Revertir cambio si hay error
       setNotifications(notifications);
@@ -224,14 +224,14 @@ const Settings = ({ onBack }) => {
     { key: 'alertasMercado', label: 'Alertas de mercado' },
     { key: 'reportesSemanales', label: 'Reportes semanales' },
     { key: 'actualizacionesSistema', label: 'Actualizaciones del sistema' },
-    { key: 'actualizacionBonos', label: 'Actualización de bonos' }
+    { key: 'actualizacionBonos', label: 'Actualizacion de bonos' }
   ];
 
 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 transition-colors duration-300">
-      {/* Header con botón de regreso */}
+      {/* Header con boton de regreso */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -250,7 +250,7 @@ const Settings = ({ onBack }) => {
 
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-semibold text-foreground md:text-2xl">
-              Configuración
+              Configuracion
             </h1>
           </div>
 
@@ -270,7 +270,7 @@ const Settings = ({ onBack }) => {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Información Personal */}
+            {/* Informacion Personal */}
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -284,7 +284,7 @@ const Settings = ({ onBack }) => {
                   </div>
                   <div>
                     <h2 className="text-lg font-semibold text-foreground">
-                      Información Personal
+                      Informacion Personal
                     </h2>
                     <p className="text-sm text-muted-foreground">
                       Administra tus datos personales
@@ -313,7 +313,7 @@ const Settings = ({ onBack }) => {
 
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-sm font-medium text-foreground">
-                      Correo electrónico
+                      Correo electronico
                     </Label>
                     <Input
                       id="email"
@@ -341,7 +341,7 @@ const Settings = ({ onBack }) => {
 
                   <div className="space-y-2">
                     <Label htmlFor="country" className="text-sm font-medium text-foreground">
-                      País
+                      Pais
                     </Label>
                     <Input
                       id="country"
@@ -398,7 +398,7 @@ const Settings = ({ onBack }) => {
                       Gestiona tus preferencias de notificaciones
                     </p>
                     <p className="text-xs text-muted-foreground mt-1 font-medium">
-                      Cada notificación se gestionará mediante el correo electrónico vinculado
+                      Cada notificacion se gestionara mediante el correo electronico vinculado
                     </p>
                   </div>
                 </div>
@@ -502,7 +502,7 @@ const Settings = ({ onBack }) => {
 
 
 
-            {/* Políticas y Términos - NUEVO */}
+            {/* Politicas y Terminos - NUEVO */}
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -516,7 +516,7 @@ const Settings = ({ onBack }) => {
                   </div>
                   <div>
                     <h2 className="text-lg font-semibold text-foreground">
-                      Políticas y Términos
+                      Politicas y Terminos
                     </h2>
                   </div>
                 </div>
@@ -530,9 +530,9 @@ const Settings = ({ onBack }) => {
                 >
                   <FileText className="h-5 w-5 text-primary" />
                   <div className="text-left">
-                    <div className="font-medium">Ver Políticas de Privacidad</div>
+                    <div className="font-medium">Ver Politicas de Privacidad</div>
                     <div className="text-xs text-muted-foreground">
-                      Consulta nuestras políticas de privacidad
+                      Consulta nuestras politicas de privacidad
                     </div>
                   </div>
                 </Button>
@@ -541,7 +541,7 @@ const Settings = ({ onBack }) => {
 
 
 
-            {/* Cerrar sesión */}
+            {/* Cerrar sesion */}
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -555,7 +555,7 @@ const Settings = ({ onBack }) => {
                   className="w-full gap-2 transition-colors"
                 >
                   <LogOut className="h-4 w-4" />
-                  Cerrar sesión
+                  Cerrar sesion
                 </Button>
               </div>
             </motion.div>
@@ -563,7 +563,7 @@ const Settings = ({ onBack }) => {
         )}
       </div>
 
-      {/* Modal de Políticas */}
+      {/* Modal de Politicas */}
       <AnimatePresence>
         {showPoliticas && (
           <motion.div
@@ -585,9 +585,9 @@ const Settings = ({ onBack }) => {
                 <div className="flex items-center gap-3">
                   <FileText className="h-6 w-6 text-primary" />
                   <div>
-                    <h2 className="text-xl font-bold">POLÍTICAS DE PRIVACIDAD - FRERAUT INVEST</h2>
+                    <h2 className="text-xl font-bold">POLITICAS DE PRIVACIDAD - FRERAUT INVEST</h2>
                     <p className="text-sm text-muted-foreground">
-                      Última actualización: 3 de enero de 2026 | Versión: 1.0
+                      Ultima actualizacion: 3 de enero de 2026 | Version: 1.0
                     </p>
                   </div>
                 </div>
@@ -603,77 +603,77 @@ const Settings = ({ onBack }) => {
 
               {/* Content */}
               <div className="p-6 overflow-y-auto max-h-[calc(90vh-100px)] space-y-6 text-sm">
-                {/* 1. INFORMACIÓN GENERAL */}
+                {/* 1. INFORMACION GENERAL */}
                 <div className="space-y-3">
-                  <h3 className="text-lg font-bold text-primary">1. INFORMACIÓN GENERAL</h3>
+                  <h3 className="text-lg font-bold text-primary">1. INFORMACION GENERAL</h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    Freraut Invest ("nosotros", "nuestro" o "la Plataforma") es una plataforma de inversión en Unidades de Emprendimiento (UE) operada por Freraut Invest. Esta Política de Privacidad describe cómo recopilamos, usamos, almacenamos y protegemos su información personal.
+                    Freraut Invest ("nosotros", "nuestro" o "la Plataforma") es una plataforma de inversion en Unidades de Emprendimiento (UE) operada por Freraut Invest. Esta Politica de Privacidad describe como recopilamos, usamos, almacenamos y protegemos su informacion personal.
                   </p>
                   <p className="text-muted-foreground leading-relaxed">
-                    Al utilizar nuestros servicios, usted acepta las prácticas descritas en esta política.
+                    Al utilizar nuestros servicios, usted acepta las practicas descritas en esta politica.
                   </p>
                 </div>
 
-                {/* 2. INFORMACIÓN QUE RECOPILAMOS */}
+                {/* 2. INFORMACION QUE RECOPILAMOS */}
                 <div className="space-y-3">
-                  <h3 className="text-lg font-bold text-primary">2. INFORMACIÓN QUE RECOPILAMOS</h3>
+                  <h3 className="text-lg font-bold text-primary">2. INFORMACION QUE RECOPILAMOS</h3>
                   
                   <div className="ml-4 space-y-3">
                     <div>
-                      <h4 className="font-semibold text-foreground mb-2">2.1 Información Personal</h4>
+                      <h4 className="font-semibold text-foreground mb-2">2.1 Informacion Personal</h4>
                       <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
-                        <li><strong>Datos de identificación:</strong> Nombre completo, RUT, correo electrónico, país de residencia</li>
+                        <li><strong>Datos de identificacion:</strong> Nombre completo, RUT, correo electronico, pais de residencia</li>
                         <li><strong>Datos financieros:</strong> Historial de inversiones, transacciones, saldo en cuenta</li>
-                        <li><strong>Datos de autenticación:</strong> Contraseña encriptada, sesiones de acceso</li>
+                        <li><strong>Datos de autenticacion:</strong> Contrasena encriptada, sesiones de acceso</li>
                       </ul>
                     </div>
 
                     <div>
-                      <h4 className="font-semibold text-foreground mb-2">2.2 Información Técnica</h4>
+                      <h4 className="font-semibold text-foreground mb-2">2.2 Informacion Tecnica</h4>
                       <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
-                        <li>Dirección IP desde donde accede</li>
+                        <li>Direccion IP desde donde accede</li>
                         <li>Navegador y dispositivo utilizado</li>
-                        <li>Cookies y tecnologías similares para mejorar la experiencia</li>
+                        <li>Cookies y tecnologias similares para mejorar la experiencia</li>
                         <li>Registros de actividad en la plataforma</li>
                       </ul>
                     </div>
 
                     <div>
-                      <h4 className="font-semibold text-foreground mb-2">2.3 Información Financiera</h4>
+                      <h4 className="font-semibold text-foreground mb-2">2.3 Informacion Financiera</h4>
                       <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
-                        <li><strong>Datos bancarios:</strong> Banco, tipo de cuenta, número de cuenta, RUT titular (solo para retiros)</li>
-                        <li><strong>Historial de transacciones:</strong> Depósitos, retiros, compras y ventas de UEs</li>
+                        <li><strong>Datos bancarios:</strong> Banco, tipo de cuenta, numero de cuenta, RUT titular (solo para retiros)</li>
+                        <li><strong>Historial de transacciones:</strong> Depositos, retiros, compras y ventas de UEs</li>
                       </ul>
                     </div>
                   </div>
                 </div>
 
-                {/* 3. USO DE LA INFORMACIÓN */}
+                {/* 3. USO DE LA INFORMACION */}
                 <div className="space-y-3">
-                  <h3 className="text-lg font-bold text-primary">3. USO DE LA INFORMACIÓN</h3>
-                  <p className="text-muted-foreground">Utilizamos su información para:</p>
+                  <h3 className="text-lg font-bold text-primary">3. USO DE LA INFORMACION</h3>
+                  <p className="text-muted-foreground">Utilizamos su informacion para:</p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
                     <li>Gestionar su cuenta y verificar su identidad</li>
                     <li>Procesar transacciones de compra, venta y retiro de fondos</li>
                     <li>Enviar notificaciones sobre el estado de sus inversiones</li>
                     <li>Cumplir con obligaciones legales y regulatorias</li>
-                    <li>Prevenir fraudes y actividades ilícitas</li>
-                    <li>Mejorar nuestros servicios mediante análisis de uso</li>
-                    <li>Proporcionar soporte técnico cuando sea necesario</li>
+                    <li>Prevenir fraudes y actividades ilicitas</li>
+                    <li>Mejorar nuestros servicios mediante analisis de uso</li>
+                    <li>Proporcionar soporte tecnico cuando sea necesario</li>
                   </ul>
                 </div>
 
-                {/* 4. COMPARTIR INFORMACIÓN */}
+                {/* 4. COMPARTIR INFORMACION */}
                 <div className="space-y-3">
-                  <h3 className="text-lg font-bold text-primary">4. COMPARTIR INFORMACIÓN</h3>
+                  <h3 className="text-lg font-bold text-primary">4. COMPARTIR INFORMACION</h3>
                   <p className="text-muted-foreground">
-                    NO vendemos, alquilamos ni compartimos su información personal con terceros, excepto en los siguientes casos:
+                    NO vendemos, alquilamos ni compartimos su informacion personal con terceros, excepto en los siguientes casos:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
-                    <li><strong>Proveedores de servicios:</strong> Supabase (base de datos), servicios de pago, verificación de identidad</li>
+                    <li><strong>Proveedores de servicios:</strong> Supabase (base de datos), servicios de pago, verificacion de identidad</li>
                     <li><strong>Obligaciones legales:</strong> Cuando sea requerido por ley, orden judicial o autoridad competente</li>
-                    <li><strong>Protección de derechos:</strong> Para prevenir fraudes o proteger la seguridad de la plataforma</li>
-                    <li><strong>Transferencias empresariales:</strong> En caso de fusión, adquisición o venta de activos</li>
+                    <li><strong>Proteccion de derechos:</strong> Para prevenir fraudes o proteger la seguridad de la plataforma</li>
+                    <li><strong>Transferencias empresariales:</strong> En caso de fusion, adquisicion o venta de activos</li>
                   </ul>
                 </div>
 
@@ -681,31 +681,31 @@ const Settings = ({ onBack }) => {
                 <div className="space-y-3">
                   <h3 className="text-lg font-bold text-primary">5. SEGURIDAD DE DATOS</h3>
                   <p className="text-muted-foreground">
-                    Implementamos medidas de seguridad técnicas y organizativas para proteger su información:
+                    Implementamos medidas de seguridad tecnicas y organizativas para proteger su informacion:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
-                    <li>Encriptación SSL/TLS en todas las comunicaciones</li>
-                    <li>Contraseñas hasheadas con algoritmos seguros</li>
-                    <li>Autenticación de dos factores (cuando esté disponible)</li>
+                    <li>Encriptacion SSL/TLS en todas las comunicaciones</li>
+                    <li>Contrasenas hasheadas con algoritmos seguros</li>
+                    <li>Autenticacion de dos factores (cuando este disponible)</li>
                     <li>Acceso restringido solo a personal autorizado</li>
-                    <li>Auditorías de seguridad periódicas</li>
-                    <li>Respaldos regulares de la información</li>
+                    <li>Auditorias de seguridad periodicas</li>
+                    <li>Respaldos regulares de la informacion</li>
                   </ul>
                 </div>
 
-                {/* 6. RETENCIÓN DE DATOS */}
+                {/* 6. RETENCION DE DATOS */}
                 <div className="space-y-3">
-                  <h3 className="text-lg font-bold text-primary">6. RETENCIÓN DE DATOS</h3>
+                  <h3 className="text-lg font-bold text-primary">6. RETENCION DE DATOS</h3>
                   <p className="text-muted-foreground">
-                    Conservamos su información mientras su cuenta esté activa y durante el tiempo necesario para:
+                    Conservamos su informacion mientras su cuenta este activa y durante el tiempo necesario para:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
-                    <li>Cumplir con obligaciones legales (mínimo 5 años según normativa financiera)</li>
+                    <li>Cumplir con obligaciones legales (minimo 5 anos segun normativa financiera)</li>
                     <li>Resolver disputas y hacer cumplir nuestros acuerdos</li>
                     <li>Prevenir fraudes y abusos</li>
                   </ul>
                   <p className="text-muted-foreground mt-2">
-                    Puede solicitar la eliminación de su cuenta en cualquier momento, sujeto a requisitos legales de retención.
+                    Puede solicitar la eliminacion de su cuenta en cualquier momento, sujeto a requisitos legales de retencion.
                   </p>
                 </div>
 
@@ -714,7 +714,7 @@ const Settings = ({ onBack }) => {
                   <h3 className="text-lg font-bold text-primary">7. SUS DERECHOS</h3>
                   <p className="text-muted-foreground">Usted tiene derecho a:</p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
-                    <li>Acceder a su información personal almacenada</li>
+                    <li>Acceder a su informacion personal almacenada</li>
                     <li>Rectificar datos incorrectos o desactualizados</li>
                     <li>Eliminar su cuenta y datos personales</li>
                     <li>Oponerse al procesamiento de ciertos datos</li>
@@ -731,7 +731,7 @@ const Settings = ({ onBack }) => {
                   <h3 className="text-lg font-bold text-primary">8. COOKIES</h3>
                   <p className="text-muted-foreground">Utilizamos cookies para:</p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
-                    <li>Mantener su sesión activa</li>
+                    <li>Mantener su sesion activa</li>
                     <li>Recordar sus preferencias</li>
                     <li>Analizar el uso de la plataforma</li>
                     <li>Mejorar la seguridad</li>
@@ -745,15 +745,15 @@ const Settings = ({ onBack }) => {
                 <div className="space-y-3">
                   <h3 className="text-lg font-bold text-primary">9. MENORES DE EDAD</h3>
                   <p className="text-muted-foreground">
-                    Nuestros servicios están dirigidos a personas mayores de 18 años. No recopilamos intencionalmente información de menores.
+                    Nuestros servicios estan dirigidos a personas mayores de 18 anos. No recopilamos intencionalmente informacion de menores.
                   </p>
                 </div>
 
-                {/* 10. CAMBIOS EN LA POLÍTICA */}
+                {/* 10. CAMBIOS EN LA POLITICA */}
                 <div className="space-y-3">
-                  <h3 className="text-lg font-bold text-primary">10. CAMBIOS EN LA POLÍTICA</h3>
+                  <h3 className="text-lg font-bold text-primary">10. CAMBIOS EN LA POLITICA</h3>
                   <p className="text-muted-foreground">
-                    Nos reservamos el derecho de actualizar esta política. Los cambios significativos serán notificados por correo electrónico o mediante aviso en la plataforma.
+                    Nos reservamos el derecho de actualizar esta politica. Los cambios significativos seran notificados por correo electronico o mediante aviso en la plataforma.
                   </p>
                 </div>
 
@@ -761,12 +761,12 @@ const Settings = ({ onBack }) => {
                 <div className="space-y-3">
                   <h3 className="text-lg font-bold text-primary">11. CONTACTO</h3>
                   <p className="text-muted-foreground">
-                    Para preguntas sobre esta política o el manejo de sus datos:
+                    Para preguntas sobre esta politica o el manejo de sus datos:
                   </p>
                   <ul className="list-none text-muted-foreground space-y-1 ml-4">
                     <li><strong>Email:</strong> <a href="mailto:frerautgroups.a@gmail.com" className="text-primary hover:underline">frerautgroups.a@gmail.com</a></li>
                     <li><strong>Sitio web:</strong> <a href="https://frerautinvest.com" className="text-primary hover:underline">https://frerautinvest.com</a></li>
-                    <li><strong>País:</strong> Chile</li>
+                    <li><strong>Pais:</strong> Chile</li>
                   </ul>
                 </div>
 

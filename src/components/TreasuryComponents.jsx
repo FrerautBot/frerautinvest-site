@@ -99,7 +99,7 @@ export const CreateEventModal = ({ show, nuevoEvento, setNuevoEvento, creating, 
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Título</label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Titulo</label>
               <input
                 type="text"
                 value={nuevoEvento.titulo}
@@ -110,13 +110,13 @@ export const CreateEventModal = ({ show, nuevoEvento, setNuevoEvento, creating, 
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Descripción</label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Descripcion</label>
               <textarea
                 value={nuevoEvento.descripcion}
                 onChange={(e) => setNuevoEvento({ ...nuevoEvento, descripcion: e.target.value })}
                 rows="3"
                 className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                placeholder="Descripción del evento..."
+                placeholder="Descripcion del evento..."
               />
             </div>
 
@@ -134,7 +134,7 @@ export const CreateEventModal = ({ show, nuevoEvento, setNuevoEvento, creating, 
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Tasa Interés (%)</label>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Tasa Interes (%)</label>
                     <input
                       type="number"
                       step="0.01"
@@ -146,7 +146,7 @@ export const CreateEventModal = ({ show, nuevoEvento, setNuevoEvento, creating, 
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Plazo (días)</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Plazo (dias)</label>
                   <input
                     type="number"
                     value={nuevoEvento.plazo_dias}
@@ -171,7 +171,7 @@ export const CreateEventModal = ({ show, nuevoEvento, setNuevoEvento, creating, 
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Lock-up (días)</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Lock-up (dias)</label>
                   <input
                     type="number"
                     value={nuevoEvento.plazo_lockup_dias}
@@ -196,7 +196,7 @@ export const CreateEventModal = ({ show, nuevoEvento, setNuevoEvento, creating, 
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Conversión a UEs (%)</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Conversion a UEs (%)</label>
                   <input
                     type="number"
                     value={nuevoEvento.ue_conversion_percentage}
@@ -331,7 +331,7 @@ export const EventoDetailModal = ({
               <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-xl p-5">
                 <h3 className="text-lg font-bold text-emerald-400 mb-4 flex items-center gap-2">
                   <CheckCircle size={20} />
-                  Tu Participación
+                  Tu Participacion
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
@@ -341,9 +341,9 @@ export const EventoDetailModal = ({
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-400 mb-1">Días Transcurridos</p>
+                    <p className="text-xs text-slate-400 mb-1">Dias Transcurridos</p>
                     <p className="text-lg font-bold text-emerald-400">
-                      {datosUsuario.diasTranscurridos} días
+                      {datosUsuario.diasTranscurridos} dias
                     </p>
                   </div>
                   <div>
@@ -354,7 +354,7 @@ export const EventoDetailModal = ({
                   </div>
                   {datosUsuario.interesGenerado > 0 && (
                     <div>
-                      <p className="text-xs text-slate-400 mb-1">Interés Generado</p>
+                      <p className="text-xs text-slate-400 mb-1">Interes Generado</p>
                       <p className="text-lg font-bold text-emerald-400">
                         ${Number(datosUsuario.interesGenerado || 0).toLocaleString('es-CL', { maximumFractionDigits: 0 })}
                       </p>
@@ -376,7 +376,7 @@ export const EventoDetailModal = ({
 
             {evento.descripcion && (
               <div>
-                <h3 className="text-sm font-semibold text-slate-400 mb-2">Descripción</h3>
+                <h3 className="text-sm font-semibold text-slate-400 mb-2">Descripcion</h3>
                 <p className="text-slate-300">{evento.descripcion}</p>
               </div>
             )}
@@ -396,7 +396,7 @@ export const EventoDetailModal = ({
                   <div className="bg-slate-800/50 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <TrendingUp size={18} className="text-cyan-400" />
-                      <span className="text-sm text-slate-400">Tasa de Interés</span>
+                      <span className="text-sm text-slate-400">Tasa de Interes</span>
                     </div>
                     <p className="text-2xl font-bold text-cyan-400">{evento.tasa_interes}%</p>
                     <p className="text-xs text-slate-500">mensual</p>
@@ -406,7 +406,7 @@ export const EventoDetailModal = ({
                       <Calendar size={18} className="text-slate-500" />
                       <span className="text-sm text-slate-400">Plazo</span>
                     </div>
-                    <p className="text-2xl font-bold text-white">{diasRestantes} días</p>
+                    <p className="text-2xl font-bold text-white">{diasRestantes} dias</p>
                   </div>
                   <div className="bg-slate-800/50 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
@@ -434,7 +434,7 @@ export const EventoDetailModal = ({
                       <Lock size={18} className="text-slate-500" />
                       <span className="text-sm text-slate-400">Lock-up</span>
                     </div>
-                    <p className="text-2xl font-bold text-white">{evento.plazo_lockup_dias} días</p>
+                    <p className="text-2xl font-bold text-white">{evento.plazo_lockup_dias} dias</p>
                   </div>
                   {navActual > 0 && (
                     <div className="bg-slate-800/50 rounded-lg p-4 col-span-2">
@@ -474,7 +474,7 @@ export const EventoDetailModal = ({
                   <div className="bg-slate-800/50 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Target size={18} className="text-slate-500" />
-                      <span className="text-sm text-slate-400">Conversión a UEs</span>
+                      <span className="text-sm text-slate-400">Conversion a UEs</span>
                     </div>
                     <p className="text-2xl font-bold text-white">{evento.ue_conversion_percentage}%</p>
                   </div>
@@ -492,7 +492,7 @@ export const EventoDetailModal = ({
             {evento.tipo === 'bono_corporativo' && evento.monto_total && (
               <div className="bg-slate-800/50 rounded-lg p-4">
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-slate-400 font-medium">Progreso de captación</span>
+                  <span className="text-slate-400 font-medium">Progreso de captacion</span>
                   <span className="text-cyan-400 font-semibold">{progreso.toFixed(1)}%</span>
                 </div>
                 <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
@@ -513,13 +513,13 @@ export const EventoDetailModal = ({
                 {evento.participaciones ? evento.participaciones.length : 0}
               </p>
               <p className="text-xs text-slate-500 mt-1">
-                {tieneParticipaciones ? 'usuarios suscritos' : 'sin suscripciones aún'}
+                {tieneParticipaciones ? 'usuarios suscritos' : 'sin suscripciones aun'}
               </p>
             </div>
 
             <div className="text-xs text-slate-500 border-t border-slate-700 pt-4">
               <p>Creado por: {evento.creado_por}</p>
-              <p>Fecha de creación: {new Date(evento.fecha_creacion).toLocaleString('es-CL')}</p>
+              <p>Fecha de creacion: {new Date(evento.fecha_creacion).toLocaleString('es-CL')}</p>
             </div>
           </div>
 
@@ -651,7 +651,7 @@ export const ParticipateModal = ({ show, evento, monto, setMonto, participating,
                     ${parseFloat(evento.monthly_amount).toLocaleString('es-CL')}
                   </p>
                   <p className="text-xs text-slate-500 mt-2">
-                    Monto fijo de suscripción mensual
+                    Monto fijo de suscripcion mensual
                   </p>
                 </div>
               ) : (
@@ -670,7 +670,7 @@ export const ParticipateModal = ({ show, evento, monto, setMonto, participating,
                   />
                   {evento.tipo === 'bono_corporativo' && evento.tasa_interes && monto && (
                     <p className="text-xs text-slate-400 mt-2">
-                      Interés estimado mensual: ${(parseFloat(monto) * (evento.tasa_interes / 100)).toLocaleString('es-CL')}
+                      Interes estimado mensual: ${(parseFloat(monto) * (evento.tasa_interes / 100)).toLocaleString('es-CL')}
                     </p>
                   )}
                 </>
@@ -683,7 +683,7 @@ export const ParticipateModal = ({ show, evento, monto, setMonto, participating,
                 <div>
                   <p className="text-amber-300 font-semibold text-sm mb-1">Advertencia</p>
                   <p className="text-slate-400 text-xs">
-                    Al participar aceptas todos los términos y condiciones. Toda inversión conlleva riesgo.
+                    Al participar aceptas todos los terminos y condiciones. Toda inversion conlleva riesgo.
                   </p>
                 </div>
               </div>
@@ -714,7 +714,7 @@ export const ParticipateModal = ({ show, evento, monto, setMonto, participating,
               ) : (
                 <>
                   <CheckCircle size={18} />
-                  Confirmar Participación
+                  Confirmar Participacion
                 </>
               )}
             </button>
@@ -730,11 +730,11 @@ export const PoliciesModal = ({ show, hasAcceptedTerms, acceptedAllPolicies, set
   if (!show) return null;
 
   const declarations = [
-    "He leído y comprendido completamente estas políticas",
+    "He leido y comprendido completamente estas politicas",
     "Reconozco expresamente todos los riesgos descritos",
-    "Acepto el carácter de oferta privada de los instrumentos",
-    "Renuncio a fiscalización regulatoria de CMF sobre estos instrumentos",
-    "Realizo la inversión con recursos propios y capacidad económica adecuada"
+    "Acepto el caracter de oferta privada de los instrumentos",
+    "Renuncio a fiscalizacion regulatoria de CMF sobre estos instrumentos",
+    "Realizo la inversion con recursos propios y capacidad economica adecuada"
   ];
 
   return (
@@ -759,8 +759,8 @@ export const PoliciesModal = ({ show, hasAcceptedTerms, acceptedAllPolicies, set
                 <Scroll className="w-6 h-6 text-amber-400" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white">Políticas y Términos de Uso - Treasury</h2>
-                <p className="text-sm text-slate-400">Freraut Invest SpA | Última actualización: 3 de enero de 2026</p>
+                <h2 className="text-2xl font-bold text-white">Politicas y Terminos de Uso - Treasury</h2>
+                <p className="text-sm text-slate-400">Freraut Invest SpA | Ultima actualizacion: 3 de enero de 2026</p>
               </div>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-lg transition-colors">
@@ -772,12 +772,12 @@ export const PoliciesModal = ({ show, hasAcceptedTerms, acceptedAllPolicies, set
             <section>
               <h3 className="text-lg font-bold text-cyan-400 mb-2">1. NATURALEZA DEL SERVICIO</h3>
               <p className="text-slate-300 text-sm leading-relaxed mb-3">
-                Treasury es una plataforma de eventos financieros privados operada por Freraut Invest SpA, que permite a titulares de cuentas verificadas participar en instrumentos financieros y compromisos de inversión dentro del ecosistema de Freraut Invest. Los servicios ofrecidos no constituyen oferta pública de valores y no están sujetos a fiscalización de la Comisión para el Mercado Financiero (CMF).
+                Treasury es una plataforma de eventos financieros privados operada por Freraut Invest SpA, que permite a titulares de cuentas verificadas participar en instrumentos financieros y compromisos de inversion dentro del ecosistema de Freraut Invest. Los servicios ofrecidos no constituyen oferta publica de valores y no estan sujetos a fiscalizacion de la Comision para el Mercado Financiero (CMF).
               </p>
               <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
                 <p className="text-amber-300 text-sm font-medium">⚠️ Oferta Privada</p>
                 <p className="text-slate-400 text-xs mt-1">
-                  Todos los eventos publicados en Treasury constituyen ofertas privadas según la Norma de Carácter General N° 336. Las ofertas se dirigen exclusivamente a titulares de cuentas verificadas de Freraut Invest.
+                  Todos los eventos publicados en Treasury constituyen ofertas privadas segun la Norma de Caracter General N° 336. Las ofertas se dirigen exclusivamente a titulares de cuentas verificadas de Freraut Invest.
                 </p>
               </div>
             </section>
@@ -788,39 +788,39 @@ export const PoliciesModal = ({ show, hasAcceptedTerms, acceptedAllPolicies, set
                 <div className="flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-red-300 font-semibold text-sm">Riesgo de Pérdida de Capital</p>
-                    <p className="text-slate-400 text-xs">Toda inversión conlleva riesgo de pérdida parcial o total del capital invertido.</p>
+                    <p className="text-red-300 font-semibold text-sm">Riesgo de Perdida de Capital</p>
+                    <p className="text-slate-400 text-xs">Toda inversion conlleva riesgo de perdida parcial o total del capital invertido.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-red-300 font-semibold text-sm">Sin Fiscalización Regulatoria</p>
-                    <p className="text-slate-400 text-xs">Los instrumentos no están registrados ni supervisados por la CMF.</p>
+                    <p className="text-red-300 font-semibold text-sm">Sin Fiscalizacion Regulatoria</p>
+                    <p className="text-slate-400 text-xs">Los instrumentos no estan registrados ni supervisados por la CMF.</p>
                   </div>
                 </div>
               </div>
             </section>
 
             <section>
-                          <h3 className="text-lg font-bold text-cyan-400 mb-2">4. TIPO DE CAMBIO Y CONVERSIÓN DE DIVISAS</h3>
+                          <h3 className="text-lg font-bold text-cyan-400 mb-2">4. TIPO DE CAMBIO Y CONVERSION DE DIVISAS</h3>
                                         <p className="text-slate-300 text-sm leading-relaxed mb-3">
-                                                        Todas las operaciones en la plataforma se denominan en dólares estadounidenses (USD). Los depósitos realizados en pesos chilenos (CLP) serán convertidos a USD al tipo de cambio determinado por Freraut Invest SpA al momento de la operación.
+                                                        Todas las operaciones en la plataforma se denominan en dolares estadounidenses (USD). Los depositos realizados en pesos chilenos (CLP) seran convertidos a USD al tipo de cambio determinado por Freraut Invest SpA al momento de la operacion.
                                                                       </p>
                                                                                     <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 space-y-2">
-                                                                                                    <p className="text-blue-300 text-sm font-medium">💱 Política de Tipo de Cambio</p>
+                                                                                                    <p className="text-blue-300 text-sm font-medium">💱 Politica de Tipo de Cambio</p>
                                                                                                                     <ul className="text-slate-400 text-xs space-y-1 list-disc list-inside">
-                                                                                                                                      <li>El tipo de cambio aplicado es determinado por Freraut Invest SpA y puede diferir del dólar observado publicado por el Banco Central de Chile.</li>
-                                                                                                                                                        <li>El tipo de cambio incluye los costos operacionales asociados a la conversión de divisas.</li>
-                                                                                                                                                                          <li>El usuario acepta el tipo de cambio mostrado al momento de confirmar cada operación.</li>
-                                                                                                                                                                                            <li>Los retiros en CLP se convertirán al tipo de cambio vigente al momento de la solicitud.</li>
+                                                                                                                                      <li>El tipo de cambio aplicado es determinado por Freraut Invest SpA y puede diferir del dolar observado publicado por el Banco Central de Chile.</li>
+                                                                                                                                                        <li>El tipo de cambio incluye los costos operacionales asociados a la conversion de divisas.</li>
+                                                                                                                                                                          <li>El usuario acepta el tipo de cambio mostrado al momento de confirmar cada operacion.</li>
+                                                                                                                                                                                            <li>Los retiros en CLP se convertiran al tipo de cambio vigente al momento de la solicitud.</li>
                                                                                                                                                                                                             </ul>
                                                                                                                                                                                                                           </div>
                                                                                                                                                                                                                                       </section>
 
             {!hasAcceptedTerms && (
               <section className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
-                <h3 className="text-lg font-bold text-amber-400 mb-4">DECLARACIÓN DE ACEPTACIÓN</h3>
+                <h3 className="text-lg font-bold text-amber-400 mb-4">DECLARACION DE ACEPTACION</h3>
                 <p className="text-slate-300 text-sm mb-4">
                   Al participar en cualquier evento de Treasury, usted declara que:
                 </p>
@@ -853,7 +853,7 @@ export const PoliciesModal = ({ show, hasAcceptedTerms, acceptedAllPolicies, set
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-emerald-400">
                   <CheckCircle size={20} />
-                  <span className="font-medium">Ya has aceptado los términos</span>
+                  <span className="font-medium">Ya has aceptado los terminos</span>
                 </div>
                 <button onClick={onClose} className="px-6 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white font-medium transition-colors">
                   Cerrar
@@ -994,7 +994,7 @@ export const MisSuscripcionesModal = ({ show, onClose, userId }) => {
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-slate-400 mb-1">Fecha Participación</p>
+                        <p className="text-xs text-slate-400 mb-1">Fecha Participacion</p>
                         <p className="text-lg font-bold text-white">
                           {new Date(sub.fecha_participacion).toLocaleDateString('es-CL')}
                         </p>
@@ -1012,7 +1012,7 @@ export const MisSuscripcionesModal = ({ show, onClose, userId }) => {
                     {sub.interes_acumulado > 0 && (
                       <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-emerald-300">Interés Acumulado</span>
+                          <span className="text-sm text-emerald-300">Interes Acumulado</span>
                           <span className="text-lg font-bold text-emerald-400">
                             ${sub.interes_acumulado?.toLocaleString('es-CL')}
                           </span>
@@ -1023,7 +1023,7 @@ export const MisSuscripcionesModal = ({ show, onClose, userId }) => {
                     {sub.esta_bloqueado && sub.dias_restantes_bloqueo > 0 && (
                       <div className="mt-3 flex items-center gap-2 text-sm text-amber-400">
                         <Lock size={16} />
-                        <span>Bloqueado por {sub.dias_restantes_bloqueo} días más</span>
+                        <span>Bloqueado por {sub.dias_restantes_bloqueo} dias mas</span>
                       </div>
                     )}
                   </motion.div>

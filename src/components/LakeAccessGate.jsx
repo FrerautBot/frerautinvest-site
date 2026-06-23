@@ -36,7 +36,7 @@ const LakeAccessGate = ({ children, onSubscribeClick }) => {
           }
         }
 
-        // Si no se cumple ninguna condición
+        // Si no se cumple ninguna condicion
         setHasAccess(false);
       } catch (err) {
         console.error('Error in access check:', err);
@@ -85,7 +85,7 @@ const LakeAccessGate = ({ children, onSubscribeClick }) => {
                 <Lock className="w-6 h-6 text-emerald-400" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Zona Restringida</h3>
-              <p className="text-sm text-slate-400">Acceso exclusivo para inversores con suscripción activa.</p>
+              <p className="text-sm text-slate-400">Acceso exclusivo para inversores con suscripcion activa.</p>
             </div>
 
             <div className="relative z-10 mt-12 space-y-4">
@@ -95,11 +95,11 @@ const LakeAccessGate = ({ children, onSubscribeClick }) => {
               </div>
               <div className="flex items-center gap-3 text-sm text-slate-300">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
-                Señales de Mercado
+                Senales de Mercado
               </div>
               <div className="flex items-center gap-3 text-sm text-slate-300">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
-                Auditoría en Tiempo Real
+                Auditoria en Tiempo Real
               </div>
             </div>
           </div>
@@ -116,7 +116,7 @@ const LakeAccessGate = ({ children, onSubscribeClick }) => {
             </h2>
 
             <p className="text-slate-400 mb-8 leading-relaxed">
-              Lake AI analiza millones de puntos de datos para detectar oportunidades de inversión en tiempo real. Para acceder a esta tecnología, necesitas un 
+              Lake AI analiza millones de puntos de datos para detectar oportunidades de inversion en tiempo real. Para acceder a esta tecnologia, necesitas un 
               <span className="text-white font-medium"> Pacto de Desarrollo</span> activo.
             </p>
 
@@ -132,7 +132,7 @@ const LakeAccessGate = ({ children, onSubscribeClick }) => {
             
             <p className="text-xs text-slate-500 mt-6 flex items-center justify-center md:justify-start gap-2">
               <ShieldAlert className="w-3 h-3" />
-              Acceso inmediato tras la confirmación de suscripción
+              Acceso inmediato tras la confirmacion de suscripcion
             </p>
           </div>
         </div>

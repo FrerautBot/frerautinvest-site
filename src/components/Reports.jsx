@@ -142,7 +142,7 @@ const AnalyticsSection = ({ reports, isDarkMode }) => {
       />
       <MetricCard
         icon={History}
-        label="Último"
+        label="Ultimo"
         value={formatRelativeTime(stats.lastPublished)}
         trend="Publicado"
         color="purple"
@@ -220,10 +220,10 @@ const FilterBar = ({ reports, onFilter, isDarkMode }) => {
             <SelectValue placeholder="Ordenar" />
           </SelectTrigger>
           <SelectContent className={isDarkMode ? 'bg-slate-900 border-slate-800 text-white' : ''}>
-            <SelectItem value="date_desc">Más recientes</SelectItem>
-            <SelectItem value="date_asc">Más antiguos</SelectItem>
+            <SelectItem value="date_desc">Mas recientes</SelectItem>
+            <SelectItem value="date_asc">Mas antiguos</SelectItem>
             <SelectItem value="nav_desc">Mayor NAV</SelectItem>
-            <SelectItem value="title_asc">Título A-Z</SelectItem>
+            <SelectItem value="title_asc">Titulo A-Z</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -421,17 +421,17 @@ const PublishDialog = ({
           </div>
 
           <div className="space-y-1.5">
-            <label className={`text-xs font-bold uppercase tracking-widest ml-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Título del Informe</label>
+            <label className={`text-xs font-bold uppercase tracking-widest ml-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Titulo del Informe</label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ej: Análisis Mensual - Q1 2026"
+              placeholder="Ej: Analisis Mensual - Q1 2026"
               className={`h-11 rounded-xl ${isDarkMode ? 'bg-slate-950/50 border-slate-800 text-white' : 'bg-slate-50 border-slate-200'}`}
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className={`text-xs font-bold uppercase tracking-widest ml-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Descripción Ejecutiva</label>
+            <label className={`text-xs font-bold uppercase tracking-widest ml-1 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Descripcion Ejecutiva</label>
             <Textarea
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
@@ -445,7 +445,7 @@ const PublishDialog = ({
           }`}>
             <ShieldCheck size={18} className="text-blue-500 shrink-0" />
             <p className={`text-[10px] leading-relaxed ${isDarkMode ? 'text-blue-400' : 'text-blue-700'}`}>
-              Al publicar, se generará automáticamente un PDF auditado con los datos en tiempo real de NAV, AUM y Holdings. Este documento será visible para todos los inversores registrados.
+              Al publicar, se generara automaticamente un PDF auditado con los datos en tiempo real de NAV, AUM y Holdings. Este documento sera visible para todos los inversores registrados.
             </p>
           </div>
 
@@ -484,7 +484,7 @@ const Reports = () => {
   const [isLoading, setIsLoading] = useState(true);
   
   const [title, setTitle] = useState(`Informe Mensual ${new Date().toLocaleDateString('es-CL')}`);
-  const [desc, setDesc] = useState('Recopilación automatizada de métricas de mercado, rendimiento del NAV y composición del portfolio.');
+  const [desc, setDesc] = useState('Recopilacion automatizada de metricas de mercado, rendimiento del NAV y composicion del portfolio.');
   const [author, setAuthor] = useState('');
 
   const isDarkMode = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
@@ -525,7 +525,7 @@ const Reports = () => {
     setIsProcessing(true);
 
     try {
-      // Cargamos jspdf dinámicamente si no existe
+      // Cargamos jspdf dinamicamente si no existe
       if (!window.jspdf) {
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
@@ -552,7 +552,7 @@ const Reports = () => {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
       
-      // Diseño Minimalista Premium (Freraut Style)
+      // Diseno Minimalista Premium (Freraut Style)
       doc.setFillColor(11, 12, 16); // Deep Black
       doc.rect(0, 0, 210, 40, 'F');
       
@@ -563,7 +563,7 @@ const Reports = () => {
       
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(10);
-      doc.text('REPORTES DE AUDITORÍA FINANCIERA', 20, 32);
+      doc.text('REPORTES DE AUDITORIA FINANCIERA', 20, 32);
       doc.text(new Date().toLocaleDateString('es-CL'), 190, 25, { align: 'right' });
 
       // Body
@@ -577,7 +577,7 @@ const Reports = () => {
       const splitDesc = doc.splitTextToSize(desc, 170);
       doc.text(splitDesc, 20, 70);
 
-      // Métricas Principales
+      // Metricas Principales
       doc.setFillColor(245, 241, 232); // Beige Panel
       doc.roundedRect(20, 90, 170, 40, 3, 3, 'F');
       
@@ -595,7 +595,7 @@ const Reports = () => {
 
       // Tabla Holdings
       doc.setFontSize(12);
-      doc.text('COMPOSICIÓN ESTRATÉGICA DEL PORTFOLIO', 20, 150);
+      doc.text('COMPOSICION ESTRATEGICA DEL PORTFOLIO', 20, 150);
       
       let y = 165;
       doc.setFillColor(230, 230, 230);
@@ -618,7 +618,7 @@ const Reports = () => {
       // Disclaimer
       doc.setFontSize(7);
       doc.setTextColor(150, 150, 150);
-      doc.text('Este documento es propiedad de FRERAUT INVEST SpA. La información contenida es auditada y validada por el motor Lake Intelligence.', 105, 285, { align: 'center' });
+      doc.text('Este documento es propiedad de FRERAUT INVEST SpA. La informacion contenida es auditada y validada por el motor Lake Intelligence.', 105, 285, { align: 'center' });
 
       // 2. Upload
       const blob = doc.output('blob');
@@ -743,7 +743,7 @@ const Reports = () => {
               <h3 className={`text-xl font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
                 Sin resultados
               </h3>
-              <p className="text-slate-500 text-sm">Prueba con otros filtros o términos de búsqueda.</p>
+              <p className="text-slate-500 text-sm">Prueba con otros filtros o terminos de busqueda.</p>
             </div>
           )}
         </motion.div>
@@ -777,7 +777,7 @@ const Reports = () => {
             }`}>Privacidad</button>
             <button className={`text-[10px] font-bold uppercase tracking-widest hover:text-yellow-500 transition-colors ${
               isDarkMode ? 'text-slate-600' : 'text-slate-400'
-            }`}>Términos</button>
+            }`}>Terminos</button>
             <button className={`text-[10px] font-bold uppercase tracking-widest hover:text-yellow-500 transition-colors ${
               isDarkMode ? 'text-slate-600' : 'text-slate-400'
             }`}>Contacto</button>

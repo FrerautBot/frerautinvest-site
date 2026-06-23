@@ -38,7 +38,7 @@ const VolumeChart = () => {
   if (!volumeData) {
     return (
       <div className="w-full h-80 bg-gradient-to-br from-slate-900/50 to-slate-800/50 rounded-2xl border border-slate-700/50 flex items-center justify-center">
-        <span className="text-slate-500">Sin datos de órdenes en los últimos 30 días</span>
+        <span className="text-slate-500">Sin datos de ordenes en los ultimos 30 dias</span>
       </div>
     );
   }
@@ -52,10 +52,10 @@ const VolumeChart = () => {
 
   const isPositive = volumen_neto >= 0;
   const mensaje = isPositive
-    ? 'El volumen de compra presenta un breve aumento, hay más gente comprando'
-    : 'El volumen de venta presenta una tendencia, hay más gente vendiendo';
+    ? 'El volumen de compra presenta un breve aumento, hay mas gente comprando'
+    : 'El volumen de venta presenta una tendencia, hay mas gente vendiendo';
 
-  // Datos para gráfico
+  // Datos para grafico
   const chartHeight = 150;
   const maxValue = Math.max(volumen_compras_ejecutadas, volumen_ventas_vigentes) || 1;
   const compraHeight = (volumen_compras_ejecutadas / maxValue) * chartHeight;
@@ -65,7 +65,7 @@ const VolumeChart = () => {
     <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/60 rounded-2xl border border-slate-700/50 p-8 shadow-2xl">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h3 className="text-lg font-semibold text-slate-100">Análisis de Volumen</h3>
+          <h3 className="text-lg font-semibold text-slate-100">Analisis de Volumen</h3>
           <p className={`text-sm mt-1 ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
             {mensaje}
           </p>
@@ -77,7 +77,7 @@ const VolumeChart = () => {
         )}
       </div>
 
-      {/* Gráfico de barras */}
+      {/* Grafico de barras */}
       <div className="flex justify-center items-end gap-8 mb-8 h-40">
         <div className="flex flex-col items-center">
           <div className="relative h-32 w-16 bg-slate-800/50 rounded-lg overflow-hidden border border-slate-700">
@@ -102,7 +102,7 @@ const VolumeChart = () => {
         </div>
       </div>
 
-      {/* Estadísticas */}
+      {/* Estadisticas */}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
           <p className="text-xs text-slate-400 mb-2">Volumen Neto</p>
