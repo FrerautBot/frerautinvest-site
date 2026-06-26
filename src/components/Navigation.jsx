@@ -156,13 +156,14 @@ const Navigation = ({ activeTab, onTabChange }) => {
                   }
                 `}
               >
-                <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-blue-600 dark:text-yellow-500' : ''}`} />
+                <Icon className="w-4 h-4 flex-shrink-0" style={isActive ? { color: '#C9A227' } : {}} />
                 <span className="hidden sm:inline">{tab.label}</span>
                 <span className="sm:hidden">{tab.label.length > 6 ? tab.label.substring(0,5) + '.' : tab.label}</span>
                 {isActive && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-yellow-500 mx-4 rounded-full"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 mx-4 rounded-full"
+                    style={{ backgroundColor: '#C9A227' }}
                     initial={false}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
@@ -182,8 +183,8 @@ const Navigation = ({ activeTab, onTabChange }) => {
                 className={`
                   flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap outline-none border
                   ${isCompetenciaActive
-                    ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/10 text-yellow-500 border-yellow-500/40 shadow-sm shadow-yellow-900/10'
-                    : 'text-yellow-600 dark:text-yellow-500/70 border-yellow-500/20 hover:bg-yellow-500/10 hover:border-yellow-500/40'
+                    ? 'bg-[#C9A227]/15 text-[#C9A227] border-[#C9A227]/40 shadow-sm shadow-[#C9A227]/10'
+                    : 'text-[#C9A227] border-[#C9A227]/20 hover:bg-[#C9A227]/10 hover:border-[#C9A227]/40'
                   }
                 `}
               >
@@ -200,11 +201,11 @@ const Navigation = ({ activeTab, onTabChange }) => {
                     exit={{ opacity: 0, y: -8, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
                     role="menu"
-                    className="absolute top-full right-0 mt-2 w-64 bg-[#1a1d2b]/95 backdrop-blur-xl border border-yellow-500/20 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-50"
+                    className="absolute top-full right-0 mt-2 w-64 bg-[#1a1d2b]/95 backdrop-blur-xl border border-[#C9A227]/20 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden z-50"
                   >
                     <div className="p-2">
                       <div className="px-3 py-2 mb-1">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-yellow-500/60">Herramientas especiales</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A227]/60">Herramientas especiales</p>
                       </div>
                       {competenciasTabs.map((tab) => {
                         const Icon = tab.icon;
@@ -217,13 +218,13 @@ const Navigation = ({ activeTab, onTabChange }) => {
                             className={`
                               w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-200
                               ${isActive
-                                ? 'bg-yellow-500/15 text-yellow-400'
+                                ? 'bg-[#C9A227]/15 text-[#C9A227]'
                                 : 'text-gray-300 hover:bg-white/5 hover:text-white'
                               }
                             `}
                           >
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isActive ? 'bg-yellow-500/20' : 'bg-white/5'}`}>
-                              <Icon className={`w-4 h-4 ${isActive ? 'text-yellow-400' : 'text-gray-500'}`} />
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isActive ? 'bg-[#C9A227]/20' : 'bg-white/5'}`}>
+                              <Icon className={`w-4 h-4 ${isActive ? 'text-[#C9A227]' : 'text-gray-500'}`} />
                             </div>
                             <div>
                               <p className="text-sm font-semibold flex items-center gap-2">{tab.label}{tab.isAdminLogin && adminLoading && <Loader2 className="w-3 h-3 animate-spin" />}</p>

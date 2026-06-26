@@ -101,7 +101,7 @@ input, select, textarea {
 }
 
 h1, h2, h3, h4, th {
-  color: var(--header-color) !important;
+  color: var(--header-color);
 }
 
 /* === ELEMENTOS GLOBALES === */

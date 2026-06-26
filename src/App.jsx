@@ -27,6 +27,7 @@ import FrerautAnalyzer from '@/components/FrerautAnalyzer';
 import GestionRoles from '@/components/GestionRoles';
 import LakeExecutor from '@/components/LakeExecutor';
 import TaxCenter from '@/components/TaxCenter';
+import HomePage from '@/pages/HomePage';
 import { SkyBackground, useSkyMode } from '@/components/SkyBackground';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -212,7 +213,7 @@ function App() {
   const { skyEnabled, toggleSky, isActive: skyIsActive } = useSkyMode(theme);
 
   useEffect(() => { const t = setTimeout(() => setShowSplash(false), 3000); return () => clearTimeout(t); }, []);
-  useEffect(() => { if (!loading && !session) setShowAuthModal(true); if (session) setShowAuthModal(false); }, [session, loading]);
+  useEffect(() => { if (session) setShowAuthModal(false); }, [session]);
   useEffect(() => { const r = window.document.documentElement; r.classList.remove('light','dark'); r.classList.add(theme); r.setAttribute('data-theme', theme); }, [theme]);
 
   const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -244,9 +245,29 @@ function App() {
 
   useEffect(() => { if (session && (activeTab === 'pactos' || activeTab === 'bonos')) fetchFinanceEvents(); }, [session, activeTab]);
 
+  // Landing page pública para visitantes no autenticados
+  if (!loading && !session) {
+    return (
+      <>
+        <AnimatePresence mode="wait">
+          {showSplash ? <SplashScreen key="splash" /> : (
+            <motion.div key="main" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+              <HomePage onOpenAuth={() => setShowAuthModal(true)} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+        <Toaster />
+      </>
+    );
+  }
+
   const renderContent = () => {
     if (loading) return <div className="text-center p-10">Cargando...</div>;
+<<<<<<< Updated upstream
     if (!session) return <div className="text-center p-10">Inicia sesion para ver el dashboard.</div>;
+=======
+>>>>>>> Stashed changes
     if (showSettings) return <Settings onBack={() => setShowSettings(false)} />;
     switch (activeTab) {
       case 'dashboard':   return <Index onNavigate={setActiveTab} />;

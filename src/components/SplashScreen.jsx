@@ -28,8 +28,9 @@ const SplashScreen = () => {
           }}
         />
         <div style={{ display: 'none' }} className="fallback-logo">
-          <motion.h1 
-            className="text-5xl font-bold text-gold mb-2"
+          <motion.h1
+            className="text-5xl font-bold mb-2"
+            style={{ color: '#C9A227' }}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
@@ -50,7 +51,8 @@ const SplashScreen = () => {
           initial={{ width: 0 }}
           animate={{ width: "200px" }}
           transition={{ duration: 2, ease: "easeInOut" }}
-          className="h-1 bg-gold mx-auto mt-8 rounded-full"
+          className="h-1 mx-auto mt-8 rounded-full"
+          style={{ backgroundColor: '#C9A227' }}
         />
       </motion.div>
     </motion.div>

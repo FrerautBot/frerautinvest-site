@@ -31,8 +31,8 @@ export default function AuthModal({ isOpen, onClose }) {
         if (error) throw error;
 
         toast({
-          title: "Welcome back!",
-          description: "You have successfully logged in.",
+          title: "¡Bienvenido de nuevo!",
+          description: "Has iniciado sesión correctamente.",
         });
         
         // Clear form and close on success
@@ -61,7 +61,7 @@ export default function AuthModal({ isOpen, onClose }) {
     } catch (error) {
       toast({
         variant: "destructive",
-        title: mode === 'login' ? "Login failed" : "Registration failed",
+        title: mode === 'login' ? "Inicio de sesión fallido" : "Registro fallido",
         description: error.message,
       });
     } finally {
@@ -85,7 +85,7 @@ export default function AuthModal({ isOpen, onClose }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", duration: 0.5 }}
-            className="relative w-full max-w-md bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl overflow-hidden z-10"
+            className="relative w-full max-w-md bg-[#0B0C10] border border-accent/20 rounded-2xl shadow-2xl shadow-accent/5 overflow-hidden z-10"
           >
             <button
               onClick={onClose}
@@ -96,16 +96,16 @@ export default function AuthModal({ isOpen, onClose }) {
 
             <div className="p-8">
               <div className="flex flex-col items-center justify-center mb-8">
-                <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
-                  <Building2 className="w-6 h-6 text-blue-500" />
+                <div className="w-12 h-12 bg-accent/20 rounded-full flex items-center justify-center mb-4">
+                  <Building2 className="w-6 h-6 text-accent" />
                 </div>
                 <h2 className="text-2xl font-bold text-white">
-                  {mode === 'login' ? 'Welcome Back' : 'Create an Account'}
+                  {mode === 'login' ? 'Bienvenido' : 'Crear Cuenta'}
                 </h2>
                 <p className="text-gray-400 text-sm mt-2 text-center">
-                  {mode === 'login' 
-                    ? 'Enter your credentials to access your account' 
-                    : 'Fill in the details below to get started'}
+                  {mode === 'login'
+                    ? 'Ingresa tus credenciales para acceder a tu cuenta'
+                    : 'Completa los detalles para registrarte'}
                 </p>
               </div>
 
@@ -116,18 +116,18 @@ export default function AuthModal({ isOpen, onClose }) {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center py-6 space-y-4"
                   >
-                    <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto">
-                      <Mail className="w-8 h-8 text-yellow-500" />
+                    <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mx-auto">
+                      <Mail className="w-8 h-8 text-accent" />
                     </div>
-                    <h3 className="text-xl font-bold text-white">Check your email</h3>
+                    <h3 className="text-xl font-bold text-white">Revisa tu correo</h3>
                     <p className="text-gray-400 text-sm">
-                      We sent a verification link to <strong className="text-white">{registeredEmail}</strong>
+                      Enviamos un enlace de verificación a <strong className="text-white">{registeredEmail}</strong>
                     </p>
                     <p className="text-gray-500 text-xs">
-                      Click the link in the email to activate your account, then log in.
+                      Haz clic en el enlace del correo para activar tu cuenta.
                     </p>
                     <p className="text-gray-500 text-xs">
-                      Didn't get it? Check your spam folder.
+                      ¿No lo recibiste? Revisa tu carpeta de spam.
                     </p>
                     <Button
                       type="button"
@@ -135,7 +135,7 @@ export default function AuthModal({ isOpen, onClose }) {
                       className="mt-4"
                       onClick={() => setRegisteredEmail(null)}
                     >
-                      Back to login
+                      Volver a inicio de sesión
                     </Button>
                   </motion.div>
                 ) : (
@@ -148,7 +148,7 @@ export default function AuthModal({ isOpen, onClose }) {
                       exit={{ opacity: 0, height: 0 }}
                       className="space-y-2"
                     >
-                      <Label htmlFor="fullName" className="text-gray-300">Full Name</Label>
+                      <Label htmlFor="fullName" className="text-gray-300">Nombre Completo</Label>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                         <Input
@@ -166,7 +166,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 </AnimatePresence>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-gray-300">Email</Label>
+                  <Label htmlFor="email" className="text-gray-300">Correo Electrónico</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                     <Input
@@ -182,7 +182,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-gray-300">Password</Label>
+                  <Label htmlFor="password" className="text-gray-300">Contraseña</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                     <Input
@@ -204,18 +204,18 @@ export default function AuthModal({ isOpen, onClose }) {
                   </div>
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 mt-4 font-medium rounded-xl"
+                <Button
+                  type="submit"
+                  className="w-full bg-accent hover:bg-accent-hover text-[#0B0C10] py-6 mt-4 font-bold rounded-xl transition-all duration-200"
                   disabled={loading}
                 >
                   {loading ? (
                     <div className="flex items-center space-x-2">
-                      <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                      <span>Please wait...</span>
+                      <div className="w-4 h-4 border-2 border-[#0B0C10]/20 border-t-[#0B0C10] rounded-full animate-spin" />
+                      <span className="text-[#0B0C10]">Espera un momento...</span>
                     </div>
                   ) : (
-                    mode === 'login' ? 'Sign In' : 'Create Account'
+                    mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'
                   )}
                 </Button>
               </>
@@ -224,7 +224,7 @@ export default function AuthModal({ isOpen, onClose }) {
 
               <div className="mt-6 text-center">
                 <p className="text-gray-400 text-sm">
-                  {mode === 'login' ? "Don't have an account? " : "Already have an account? "}
+                  {mode === 'login' ? '¿No tienes cuenta? ' : '¿Ya tienes cuenta? '}
                   <button
                     onClick={() => {
                       setMode(mode === 'login' ? 'register' : 'login');
@@ -232,9 +232,9 @@ export default function AuthModal({ isOpen, onClose }) {
                       setPassword('');
                       setFullName('');
                     }}
-                    className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                    className="text-accent hover:text-accent-hover font-medium transition-colors"
                   >
-                    {mode === 'login' ? 'Sign up' : 'Sign in'}
+                    {mode === 'login' ? 'Registrarse' : 'Iniciar Sesión'}
                   </button>
                 </p>
               </div>
