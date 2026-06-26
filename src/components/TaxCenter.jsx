@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Receipt, Calculator, TrendingUp, TrendingDown,
@@ -393,7 +393,7 @@ export default function TaxCenter({ onBack }) {
                         </span>
                       </div>
                     </h2>
-                    <p className="text-xs text-gray-400">Lake Contribuyente â€” AutomatizaciÃ³n SII</p>
+                    <p className="text-xs text-gray-400">Lake Contribuyente â€” Automatización SII</p>
                   </div>
                 </div>
                 
@@ -408,7 +408,7 @@ export default function TaxCenter({ onBack }) {
                   <button 
                     onClick={() => {
                       toast({ title: 'ðŸš§ Verificando Impuestos', description: 'ðŸš§ This feature isn\'t implemented yetâ€”but don\'t worry! You can request it in your next prompt! ðŸš€' });
-                      setLogsEnVivo(prev => [...prev, { type: 'info', text: 'Iniciando verificaciÃ³n de impuestos manual...', time: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }]);
+                      setLogsEnVivo(prev => [...prev, { type: 'info', text: 'Iniciando verificación de impuestos manual...', time: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }]);
                     }}
                     className="flex-1 md:flex-none px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold transition-all shadow-lg shadow-blue-900/30 flex items-center justify-center gap-2"
                   >
@@ -439,7 +439,7 @@ export default function TaxCenter({ onBack }) {
                       type="text" 
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
-                      placeholder="Solicita cÃ¡lculos o reportes..." 
+                      placeholder="Solicita cálculos o reportes..." 
                       className="flex-1 bg-[#1a1d2b] border border-white/5 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500/30"
                     />
                     <button type="submit" className="p-2 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-colors">
@@ -522,7 +522,7 @@ export default function TaxCenter({ onBack }) {
             border="border-blue-500/20"
           />
           <KpiCard
-            label="RetenciÃ³n Extranjera"
+            label="Retención Extranjera"
             value={display(kpis.foreignWithholding)}
             subvalue="WHT deducible"
             icon={TrendingDown}
@@ -548,7 +548,7 @@ export default function TaxCenter({ onBack }) {
           <GlassCard>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-bold text-yellow-400 uppercase tracking-wider flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" /> EvoluciÃ³n Mensual {year}
+                <TrendingUp className="w-4 h-4" /> Evolución Mensual {year}
               </h2>
               <span className="text-[10px] text-gray-600">{currency}</span>
             </div>
@@ -568,7 +568,7 @@ export default function TaxCenter({ onBack }) {
         â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <GlassCard glow>
-            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-4 text-center">FÃ³rmula Tributaria Estimada {year}</p>
+            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-4 text-center">Fórmula Tributaria Estimada {year}</p>
             <div className="flex flex-wrap items-center justify-center gap-3 md:gap-5">
               {/* Gross profit */}
               <div className="text-center">
@@ -644,7 +644,7 @@ export default function TaxCenter({ onBack }) {
                       <table className="w-full text-xs border-separate border-spacing-y-1" style={{ minWidth: 700 }}>
                         <thead>
                           <tr>
-                            {['Fecha', 'SÃ­mbolo', 'Tipo', 'Qty', 'Entrada', 'Salida', 'PnL Bruto', 'ComisiÃ³n', 'Impuesto Est.', 'Neto', 'Broker'].map(h => (
+                            {['Fecha', 'Símbolo', 'Tipo', 'Qty', 'Entrada', 'Salida', 'PnL Bruto', 'Comisión', 'Impuesto Est.', 'Neto', 'Broker'].map(h => (
                               <th key={h} className="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-widest text-gray-500 whitespace-nowrap">
                                 {h}
                               </th>
@@ -696,12 +696,12 @@ export default function TaxCenter({ onBack }) {
                                           exit={{ opacity: 0, y: -6 }}
                                           className="mx-1 mb-1 p-4 bg-[#0f1118]/80 border border-yellow-500/10 rounded-2xl"
                                         >
-                                          <p className="text-[10px] font-bold text-yellow-400 uppercase tracking-widest mb-2">CÃ¡lculo Detallado</p>
+                                          <p className="text-[10px] font-bold text-yellow-400 uppercase tracking-widest mb-2">Cálculo Detallado</p>
                                           <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
                                             <span className="text-gray-500">PnL Bruto:</span>
                                             <span className={`font-bold ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(pnl)}</span>
                                             <span className="text-gray-700">âˆ’</span>
-                                            <span className="text-gray-500">ComisiÃ³n:</span>
+                                            <span className="text-gray-500">Comisión:</span>
                                             <span className="text-gray-300 font-bold">{fmt(comm)}</span>
                                             <span className="text-gray-700">âˆ’</span>
                                             <span className="text-gray-500">Impuesto est.:</span>
@@ -758,7 +758,7 @@ export default function TaxCenter({ onBack }) {
                 <table className="w-full text-xs border-separate border-spacing-y-1" style={{ minWidth: 480 }}>
                   <thead>
                     <tr>
-                      {['SÃ­mbolo', 'Fecha', 'Bruto', 'RetenciÃ³n', 'Neto'].map(h => (
+                      {['Símbolo', 'Fecha', 'Bruto', 'Retención', 'Neto'].map(h => (
                         <th key={h} className="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-widest text-gray-500">
                           {h}
                         </th>
@@ -807,8 +807,8 @@ export default function TaxCenter({ onBack }) {
             <AlertCircle className="w-4 h-4 text-yellow-500/60 flex-shrink-0 mt-0.5" />
             <p className="text-[11px] text-gray-500 leading-relaxed">
               <span className="text-yellow-500/80 font-bold">Aviso importante: </span>
-              Cifras tributarias estimadas. Los cÃ¡lculos mostrados son una aproximaciÃ³n basada en los datos registrados en el sistema.
-              Validar con contador o asesor tributario calificado antes de presentar declaraciÃ³n de impuestos.
+              Cifras tributarias estimadas. Los cálculos mostrados son una aproximación basada en los datos registrados en el sistema.
+              Validar con contador o asesor tributario calificado antes de presentar declaración de impuestos.
               Freraut Invest no asume responsabilidad por decisiones tributarias tomadas en base a estas cifras.
             </p>
           </div>
@@ -826,7 +826,7 @@ export default function TaxCenter({ onBack }) {
                 <table className="w-full text-xs border-separate border-spacing-y-1" style={{ minWidth: 400 }}>
                   <thead>
                     <tr>
-                      {['Fecha', 'DescripciÃ³n', 'Neto', 'IVA', 'Total'].map(h => (
+                      {['Fecha', 'Descripción', 'Neto', 'IVA', 'Total'].map(h => (
                         <th key={h} className="px-3 py-2 text-left text-[10px] font-bold uppercase tracking-widest text-gray-500">{h}</th>
                       ))}
                     </tr>
