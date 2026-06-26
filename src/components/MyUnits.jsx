@@ -797,147 +797,216 @@ const MyUnits = () => {
       </div>
 
       {lucro && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           {/* Total UEs */}
-          <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl p-4">
-            <div className="flex justify-between items-start mb-2">
-              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Total UEs</p>
-              <div className="p-1.5 bg-[#C9A227]/10 rounded-lg">
-                <PieChart className="w-3.5 h-3.5 text-[#C9A227]" />
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.05 }}
+            whileHover={{ y: -2, transition: { duration: 0.2 } }}
+            className="relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/15 hover:border-[#C9A227]/40 rounded-2xl p-5 shadow-sm hover:shadow-[0_8px_32px_-4px_rgba(201,162,39,0.12)] transition-all duration-300 group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-[#C9A227]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[#C9A227]/30 to-transparent" />
+            <div className="relative z-10">
+              <div className="flex justify-between items-start mb-3">
+                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">Total UEs</p>
+                <div className="p-2 bg-[#C9A227]/10 rounded-xl group-hover:bg-[#C9A227]/20 transition-colors duration-300">
+                  <PieChart className="w-4 h-4 text-[#C9A227]" />
+                </div>
               </div>
+              <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight">
+                {Number(lucro.ue_totales).toLocaleString('es-CL', {
+                  minimumFractionDigits: 3,
+                  maximumFractionDigits: 3
+                })}
+              </p>
             </div>
-            <p className="text-xl font-semibold text-[#1A1D2B] dark:text-white">
-              {Number(lucro.ue_totales).toLocaleString('es-CL', {
-                minimumFractionDigits: 3,
-                maximumFractionDigits: 3
-              })}
-            </p>
-          </div>
+          </motion.div>
 
           {/* Valor de mis UEs */}
-          <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl p-4">
-            <div className="flex justify-between items-start mb-2">
-              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Valor de UEs</p>
-              <div className="p-1.5 bg-[#C9A227]/10 rounded-lg">
-                <Wallet className="w-3.5 h-3.5 text-[#C9A227]" />
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            whileHover={{ y: -2, transition: { duration: 0.2 } }}
+            className="relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/20 hover:border-[#C9A227]/50 rounded-2xl p-5 shadow-sm hover:shadow-[0_8px_32px_-4px_rgba(201,162,39,0.18)] transition-all duration-300 group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-[#C9A227]/8 via-[#C9A227]/2 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[#C9A227]/50 to-transparent" />
+            <div className="relative z-10">
+              <div className="flex justify-between items-start mb-3">
+                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">Valor de UEs</p>
+                <div className="p-2 bg-[#C9A227]/15 rounded-xl group-hover:bg-[#C9A227]/25 transition-colors duration-300">
+                  <Wallet className="w-4 h-4 text-[#C9A227]" />
+                </div>
               </div>
+              <p className="text-2xl font-bold text-[#C9A227] tracking-tight">{formatUSD(lucro.valor_actual)}</p>
+              <p className="text-[11px] text-[#6E6E6E]/60 dark:text-[#9CA3AF]/60 mt-1 font-medium">
+                {formatCLP(lucro.valor_actual, fxRate)}
+              </p>
             </div>
-            <p className="text-xl font-semibold text-[#C9A227]">{formatUSD(lucro.valor_actual)}</p>
-            <p className="text-[11px] text-[#6E6E6E]/70 dark:text-[#9CA3AF]/70 mt-0.5">
-              {formatCLP(lucro.valor_actual, fxRate)}
-            </p>
-          </div>
+          </motion.div>
 
-          {/* InversiÃ³n Total */}
-          <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl p-4">
-            <div className="flex justify-between items-start mb-2">
-              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">InversiÃ³n Total</p>
-              <div className="p-1.5 bg-[#C9A227]/10 rounded-lg">
-                <TrendingUp className="w-3.5 h-3.5 text-[#C9A227]" />
+          {/* Inversion Total */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.15 }}
+            whileHover={{ y: -2, transition: { duration: 0.2 } }}
+            className="relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/15 hover:border-[#C9A227]/40 rounded-2xl p-5 shadow-sm hover:shadow-[0_8px_32px_-4px_rgba(201,162,39,0.12)] transition-all duration-300 group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-[#C9A227]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[#C9A227]/30 to-transparent" />
+            <div className="relative z-10">
+              <div className="flex justify-between items-start mb-3">
+                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">Inversion Total</p>
+                <div className="p-2 bg-[#C9A227]/10 rounded-xl group-hover:bg-[#C9A227]/20 transition-colors duration-300">
+                  <TrendingUp className="w-4 h-4 text-[#C9A227]" />
+                </div>
               </div>
+              <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight">
+                {formatUSD(lucro.total_invertido)}
+              </p>
+              <p className="text-[11px] text-[#6E6E6E]/60 dark:text-[#9CA3AF]/60 mt-1 font-medium">
+                {formatCLP(lucro.total_invertido, fxRate)}
+              </p>
             </div>
-            <p className="text-xl font-semibold text-[#1A1D2B] dark:text-white break-words">
-              {formatUSD(lucro.total_invertido)}
-            </p>
-            <p className="text-[11px] text-[#6E6E6E]/70 dark:text-[#9CA3AF]/70 mt-0.5">
-              {formatCLP(lucro.total_invertido, fxRate)}
-            </p>
-          </div>
+          </motion.div>
 
           {/* Rentabilidad */}
-          <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl p-4">
-            <div className="flex justify-between items-start mb-2">
-              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Rentabilidad</p>
-              <div className={`p-1.5 rounded-lg ${Number(lucro.lucro_total) >= 0 ? 'bg-emerald-500/10' : 'bg-red-500/10'}`}>
-                {Number(lucro.lucro_total) >= 0 ? (
-                  <ArrowUpRight className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                ) : (
-                  <ArrowDownRight className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
-                )}
-              </div>
-            </div>
-            <p className={`text-xl font-semibold ${Number(lucro.lucro_total) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-              {Number(lucro.porcentaje_lucro).toFixed(2)}%
-            </p>
-            <p className={`text-[11px] mt-0.5 ${Number(lucro.lucro_total) >= 0 ? 'text-emerald-600/60 dark:text-emerald-400/60' : 'text-red-600/60 dark:text-red-400/60'}`}>
-              {Number(lucro.lucro_total) >= 0 ? '+' : ''}{formatUSD(Math.abs(Number(lucro.lucro_total)))} &middot; {formatCLP(Math.abs(Number(lucro.lucro_total)), fxRate)}
-            </p>
-          </div>
-
-          {/* Total Patrimonio en USD (resumen) */}
-          <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl p-4">
-            <div className="flex justify-between items-start mb-2">
-              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Patrimonio Total</p>
-              <div className="p-1.5 bg-emerald-500/10 rounded-lg">
-                <Wallet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              </div>
-            </div>
-            <p className="text-xl font-semibold text-emerald-600 dark:text-emerald-400">
-              ${totalPatrimonioUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
-            </p>
-            <p className="text-[11px] text-[#6E6E6E]/70 dark:text-[#9CA3AF]/70 mt-0.5">
-              ~ ${Math.round(totalPatrimonioCLP).toLocaleString('es-CL')} CLP
-            </p>
-          </div>
-
-          {/* Saldo en Efectivo CLP */}
-          <div
-            className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl p-4 cursor-pointer hover:border-[#C9A227]/30 transition-all duration-300 group"
-            onClick={() => setShowExchangeModal(true)}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            whileHover={{ y: -2, transition: { duration: 0.2 } }}
+            className={`relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border rounded-2xl p-5 shadow-sm transition-all duration-300 group ${
+              Number(lucro.lucro_total) >= 0
+                ? 'border-emerald-500/20 hover:border-emerald-500/50 hover:shadow-[0_8px_32px_-4px_rgba(16,185,129,0.15)]'
+                : 'border-red-500/20 hover:border-red-500/50 hover:shadow-[0_8px_32px_-4px_rgba(239,68,68,0.15)]'
+            }`}
           >
-            <div className="flex justify-between items-start mb-2">
-              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Efectivo CLP</p>
-              <div className="p-1.5 bg-[#C9A227]/10 rounded-lg">
-                <DollarSign className="w-3.5 h-3.5 text-[#C9A227]" />
+            <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
+              Number(lucro.lucro_total) >= 0
+                ? 'from-emerald-500/5 via-transparent to-transparent'
+                : 'from-red-500/5 via-transparent to-transparent'
+            }`} />
+            <div className={`absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-current to-transparent ${
+              Number(lucro.lucro_total) >= 0 ? 'text-emerald-500/30' : 'text-red-500/30'
+            }`} />
+            <div className="relative z-10">
+              <div className="flex justify-between items-start mb-3">
+                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">Rentabilidad</p>
+                <div className={`p-2 rounded-xl transition-colors duration-300 ${
+                  Number(lucro.lucro_total) >= 0
+                    ? 'bg-emerald-500/10 group-hover:bg-emerald-500/20'
+                    : 'bg-red-500/10 group-hover:bg-red-500/20'
+                }`}>
+                  {Number(lucro.lucro_total) >= 0 ? (
+                    <ArrowUpRight className="w-4 h-4 text-emerald-500" />
+                  ) : (
+                    <ArrowDownRight className="w-4 h-4 text-red-500" />
+                  )}
+                </div>
               </div>
+              <p className={`text-2xl font-bold tracking-tight ${
+                Number(lucro.lucro_total) >= 0 ? 'text-emerald-500' : 'text-red-500'
+              }`}>
+                {Number(lucro.porcentaje_lucro).toFixed(2)}%
+              </p>
+              <p className={`text-[11px] mt-1 font-medium ${
+                Number(lucro.lucro_total) >= 0 ? 'text-emerald-500/60' : 'text-red-500/60'
+              }`}>
+                {Number(lucro.lucro_total) >= 0 ? '+' : ''}{formatUSD(Math.abs(Number(lucro.lucro_total)))} &middot; {formatCLP(Math.abs(Number(lucro.lucro_total)), fxRate)}
+              </p>
             </div>
-            <p className="text-xl font-semibold text-[#1A1D2B] dark:text-white">
-              ${saldoDisponible.toLocaleString('es-CL')}
-            </p>
-            <p className="text-[11px] text-[#C9A227]/70 mt-0.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <ArrowRightLeft className="w-3 h-3" />
-              Cambiar a USD
-            </p>
-          </div>
+          </motion.div>
 
-          {/* Saldo en DÃ³lares */}
-          <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl p-4">
-            <div className="flex justify-between items-start mb-2">
-              <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-xs font-medium tracking-wide uppercase">Saldo en DÃ³lares</p>
-              <div className="p-1.5 bg-[#C9A227]/10 rounded-lg">
-                <DollarSign className="w-3.5 h-3.5 text-[#C9A227]" />
+          {/* Saldo en Pesos */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.25 }}
+            whileHover={{ y: -2, transition: { duration: 0.2 } }}
+            onClick={() => setShowExchangeModal(true)}
+            className="relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-purple-500/15 hover:border-purple-500/50 rounded-2xl p-5 shadow-sm hover:shadow-[0_8px_32px_-4px_rgba(168,85,247,0.12)] transition-all duration-300 group cursor-pointer"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-purple-400/20 to-transparent" />
+            <div className="relative z-10">
+              <div className="flex justify-between items-start mb-3">
+                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">Saldo en Pesos</p>
+                <div className="p-2 bg-purple-500/10 rounded-xl group-hover:bg-purple-500/20 transition-colors duration-300">
+                  <DollarSign className="w-4 h-4 text-purple-500" />
+                </div>
               </div>
+              <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight">
+                ${saldoDisponible.toLocaleString('es-CL')}
+              </p>
+              <p className="text-[11px] text-purple-500/70 mt-1 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 font-medium">
+                <ArrowRightLeft className="w-3 h-3" />
+                Cambiar a USD
+              </p>
             </div>
-            <p className="text-xl font-semibold text-[#1A1D2B] dark:text-white">
-              ${saldoUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
-            </p>
-            <p className="text-[11px] text-[#6E6E6E]/70 dark:text-[#9CA3AF]/70 mt-0.5">
-              Para compra de UEs
-            </p>
-          </div>
+          </motion.div>
+
+          {/* Saldo en Dolares */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+            whileHover={{ y: -2, transition: { duration: 0.2 } }}
+            className="relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-emerald-500/15 hover:border-emerald-500/50 rounded-2xl p-5 shadow-sm hover:shadow-[0_8px_32px_-4px_rgba(16,185,129,0.12)] transition-all duration-300 group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" />
+            <div className="relative z-10">
+              <div className="flex justify-between items-start mb-3">
+                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">Saldo en Dolares</p>
+                <div className="p-2 bg-emerald-500/10 rounded-xl group-hover:bg-emerald-500/20 transition-colors duration-300">
+                  <DollarSign className="w-4 h-4 text-emerald-500" />
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight">
+                ${saldoUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+              </p>
+              <p className="text-[11px] text-emerald-500/60 mt-1 font-medium">
+                Para compra de UEs
+              </p>
+            </div>
+          </motion.div>
         </div>
       )}
 
       <PatrimonioChart historial={chartHistorial} fxRate={fxRate} lucro={lucro} saldoCLP={saldoDisponible} saldoUSD={saldoUSD} />
 
-      {/* BOTONES DE ACCIÃ“N: Cambiar Divisas + Retirar Fondos */}
-      <div className="flex justify-center gap-3 flex-wrap">
-        <button
+      {/* BOTONES DE ACCION: Cambiar Divisas + Retirar Fondos */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.35 }}
+        className="flex justify-center gap-4 flex-wrap"
+      >
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           onClick={() => setShowExchangeModal(true)}
-          className="px-5 py-2.5 bg-[#C9A227] hover:bg-[#B8921F] text-white text-sm font-medium rounded-lg transition-colors duration-200 flex items-center gap-2"
+          className="px-6 py-3 bg-gradient-to-r from-[#C9A227] to-[#D4AF37] hover:from-[#D4AF37] hover:to-[#E4C65A] text-[#1A1D2B] text-sm font-bold rounded-2xl shadow-lg hover:shadow-[0_8px_25px_-4px_rgba(201,162,39,0.4)] transition-all duration-300 flex items-center gap-2.5"
         >
           <ArrowRightLeft className="w-4 h-4" />
           Cambiar CLP a USD
-        </button>
+        </motion.button>
 
-        <button
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           onClick={() => setShowWithdrawModal(true)}
-          className="px-5 py-2.5 bg-white hover:bg-gray-50 dark:bg-[#1A1D2B] dark:hover:bg-[#232738] text-[#8B1E3F] dark:text-red-400 text-sm font-medium rounded-lg border border-[#8B1E3F]/30 dark:border-red-400/30 transition-colors duration-200 flex items-center gap-2"
+          className="px-6 py-3 bg-white dark:bg-[#1A1D2B] hover:bg-red-50 dark:hover:bg-red-950/20 text-[#8B1E3F] dark:text-red-400 text-sm font-bold rounded-2xl border-2 border-[#8B1E3F]/20 dark:border-red-400/20 hover:border-[#8B1E3F]/50 dark:hover:border-red-400/50 shadow-sm hover:shadow-[0_8px_25px_-4px_rgba(139,30,63,0.2)] transition-all duration-300 flex items-center gap-2.5"
         >
           <DollarSign className="w-4 h-4" />
           Retirar Fondos
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       {/* TABLA DE HISTORIAL DE RETIROS */}
       <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl">
@@ -977,28 +1046,53 @@ const MyUnits = () => {
               </thead>
               <tbody>
                 {withdrawHistory.map((retiro, index) => {
-                  const getStatusColor = (estado) => {
+                  const getStatusStyle = (estado) => {
                     switch (estado) {
                       case 'completado':
-                        return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-300 dark:border-green-700';
+                        return {
+                          bg: 'bg-emerald-100 dark:bg-emerald-900/20',
+                          text: 'text-emerald-700 dark:text-emerald-400',
+                          border: 'border-emerald-300 dark:border-emerald-700',
+                          dot: 'bg-emerald-500 shadow-[0_0_6px_2px_rgba(16,185,129,0.4)]',
+                          icon: 'Check',
+                          label: 'Completado'
+                        };
                       case 'rechazado':
-                        return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-300 dark:border-red-700';
+                        return {
+                          bg: 'bg-red-100 dark:bg-red-900/20',
+                          text: 'text-red-700 dark:text-red-400',
+                          border: 'border-red-300 dark:border-red-700',
+                          dot: 'bg-red-500 shadow-[0_0_6px_2px_rgba(239,68,68,0.4)]',
+                          icon: 'X',
+                          label: 'Rechazado'
+                        };
                       case 'pendiente':
-                        return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-300 dark:border-yellow-700';
+                        return {
+                          bg: 'bg-amber-100 dark:bg-amber-900/20',
+                          text: 'text-amber-700 dark:text-amber-400',
+                          border: 'border-amber-300 dark:border-amber-700',
+                          dot: 'bg-amber-500 shadow-[0_0_6px_2px_rgba(245,158,11,0.4)] animate-pulse',
+                          icon: 'Clock',
+                          label: 'Pendiente'
+                        };
                       case 'procesando':
-                        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-700';
+                        return {
+                          bg: 'bg-blue-100 dark:bg-blue-900/20',
+                          text: 'text-blue-700 dark:text-blue-400',
+                          border: 'border-blue-300 dark:border-blue-700',
+                          dot: 'bg-blue-500 shadow-[0_0_6px_2px_rgba(59,130,246,0.4)] animate-pulse',
+                          icon: 'Loader2',
+                          label: 'Procesando'
+                        };
                       default:
-                        return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400 border-gray-300 dark:border-gray-700';
-                    }
-                  };
-
-                  const getStatusIcon = (estado) => {
-                    switch (estado) {
-                      case 'completado': return 'âœ“';
-                      case 'rechazado': return 'âœ•';
-                      case 'pendiente': return 'â—';
-                      case 'procesando': return 'â—Œ';
-                      default: return 'â—';
+                        return {
+                          bg: 'bg-gray-100 dark:bg-gray-800',
+                          text: 'text-gray-700 dark:text-gray-400',
+                          border: 'border-gray-300 dark:border-gray-700',
+                          dot: 'bg-gray-400',
+                          icon: 'Circle',
+                          label: estado || 'Desconocido'
+                        };
                     }
                   };
 
@@ -1033,10 +1127,15 @@ const MyUnits = () => {
                         </div>
                       </td>
                       <td className="py-4 px-4">
-                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(retiro.estado)}`}>
-                          {getStatusIcon(retiro.estado)}
-                          <span className="uppercase">{retiro.estado}</span>
-                        </span>
+                        {(() => {
+                          const s = getStatusStyle(retiro.estado);
+                          return (
+                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${s.bg} ${s.text} ${s.border}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+                              <span className="uppercase tracking-wider">{s.label}</span>
+                            </span>
+                          );
+                        })()}
                         {retiro.motivo_rechazo && (
                           <p className="text-xs text-red-500 mt-1">{retiro.motivo_rechazo}</p>
                         )}
