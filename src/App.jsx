@@ -264,10 +264,7 @@ function App() {
 
   const renderContent = () => {
     if (loading) return <div className="text-center p-10">Cargando...</div>;
-<<<<<<< Updated upstream
     if (!session) return <div className="text-center p-10">Inicia sesion para ver el dashboard.</div>;
-=======
->>>>>>> Stashed changes
     if (showSettings) return <Settings onBack={() => setShowSettings(false)} />;
     switch (activeTab) {
       case 'dashboard':   return <Index onNavigate={setActiveTab} />;
