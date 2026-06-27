@@ -1636,81 +1636,33 @@ export function Lake() {
   };
 
   return (
-    <div className="h-[calc(100vh-6rem)] flex flex-col text-white relative overflow-hidden rounded-[3rem]">
+    <div className={`h-[calc(100vh-6rem)] flex flex-col text-white relative overflow-hidden ${isFullscreen ? 'rounded-none' : 'rounded-[2rem]'} bg-gradient-to-b from-[#0a0d14]/60 via-[#0d1115]/40 to-[#0a0d14]/60 backdrop-blur-sm border border-white/[0.03]`}>
 
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-amber-500/20 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -30, 0],
-              opacity: [0.2, 0.5, 0.2],
-            }}
-            transition={{
-              duration: 3 + Math.random() * 2,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-            }}
-          />
-        ))}
-      </div>
-
-      <div className={`flex-shrink-0 px-8 py-5 border-b border-amber-500/20 bg-slate-950/80 backdrop-blur-sm ${isFullscreen ? 'hidden' : ''}`}>
+      {/* Premium header bar */}
+      <div className={`flex-shrink-0 px-6 py-4 border-b border-white/[0.04] bg-gradient-to-r from-[#0a0d14]/80 via-[#0d1115]/60 to-[#0a0d14]/80 backdrop-blur-xl ${isFullscreen ? 'hidden' : ''}`}>
         <div className="flex items-center justify-between max-w-[1800px] mx-auto">
-          <div className="flex items-center gap-4">
-            <LakeLogo size="md" isThinking={sendingMessage} isFinancialMode={isFinancialMode} />
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/20 flex items-center justify-center">
+              <LakeLogo size="sm" isThinking={sendingMessage} isFinancialMode={isFinancialMode} />
+            </div>
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 bg-clip-text text-transparent">
+              <h1 className="text-lg font-semibold tracking-tight text-amber-100">
                 Lake Intelligence
               </h1>
-              <p className="text-xs text-slate-400">Análisis avanzado auto-evolutivo • Validado por Themis 🏛️</p>
+              <p className="text-[10px] text-slate-500 tracking-wide">Analisis avanzado auto-evolutivo</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <motion.div
-              className="flex items-center gap-3 text-xs"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-            >
-              <div className="flex items-center gap-1 text-amber-400">
-                <Wrench className="w-3 h-3" />
-                <span>{lakeStats.toolsCreated}</span>
-              </div>
-              <div className="flex items-center gap-1 text-purple-400">
-                <Zap className="w-3 h-3" />
-                <span>{lakeStats.queriesExecuted}</span>
-              </div>
-              <div className="flex items-center gap-1 text-green-400">
-                <Clock className="w-3 h-3" />
-                <span>{lakeStats.avgResponseTime}s</span>
-              </div>
-            </motion.div>
-
-            <a
-              href="https://frerautinvest.com/lake-reglamento.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="relative group"
-              onMouseEnter={() => setMenuHovered(true)}
-              onMouseLeave={() => setMenuHovered(false)}
-            >
-              <motion.div
-                className="p-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 transition-all duration-300 cursor-pointer"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Menu className={`w-5 h-5 text-amber-400 transition-transform duration-300 ${menuHovered ? 'rotate-90 scale-110' : ''}`} />
-              </motion.div>
-              <div className="absolute -bottom-8 right-0 text-[10px] text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                Reglamento
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 text-[10px] text-slate-500">
+              <span className="flex items-center gap-1"><Wrench className="w-3 h-3 text-amber-600" />{lakeStats.toolsCreated}</span>
+              <span className="flex items-center gap-1"><Zap className="w-3 h-3 text-purple-500" />{lakeStats.queriesExecuted}</span>
+              <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-slate-500" />{lakeStats.avgResponseTime}s</span>
+            </div>
+            <div className="w-px h-5 bg-white/[0.04]" />
+            <a href="https://frerautinvest.com/lake-reglamento.html" target="_blank" rel="noopener noreferrer"
+              className="p-2 rounded-xl border border-white/[0.04] hover:border-amber-500/20 hover:bg-amber-500/5 transition-all duration-300">
+              <Menu className="w-4 h-4 text-slate-400 hover:text-amber-400 transition-colors" />
             </a>
           </div>
         </div>
