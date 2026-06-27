@@ -1636,7 +1636,7 @@ export function Lake() {
   };
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col text-white bg-gradient-to-br from-slate-950 via-[#0f1318] to-slate-950 relative overflow-hidden">
+    <div className="h-[calc(100vh-6rem)] flex flex-col text-white bg-gradient-to-br from-slate-950 via-[#0f1318] to-slate-950 relative overflow-hidden">
 
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(20)].map((_, i) => (
@@ -1726,9 +1726,9 @@ export function Lake() {
             : 'max-w-[1800px] gap-4 grid-cols-1'
           }`}>
 
-          <div className={`flex flex-col bg-slate-900/40 border border-amber-500/15 overflow-hidden backdrop-blur-xl shadow-2xl shadow-amber-900/10 ${isFullscreen
-            ? 'h-screen rounded-none border-r-2 border-r-amber-500/30'
-            : 'rounded-[1.75rem]'
+          <div className={`flex flex-col overflow-hidden shadow-2xl shadow-amber-900/10 ${isFullscreen
+            ? 'h-screen rounded-none border-r-2 border-r-amber-500/30 bg-slate-900/40 backdrop-blur-xl border border-amber-500/15'
+            : 'rounded-[2.5rem] bg-gradient-to-b from-slate-900/20 to-slate-950/40 border border-white/[0.04]'
             }`}>
 
             <div className="absolute top-4 right-4 z-[100]">
