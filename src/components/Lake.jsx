@@ -1716,17 +1716,6 @@ export function Lake() {
         </div>
       </div>
 
-      {metrics && (
-        <div className={`flex-shrink-0 px-8 py-4 bg-slate-950/50 ${isFullscreen ? 'hidden' : ''}`}>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-[1800px] mx-auto">
-            <MetricCard title="Patrimonio Total" value={metrics.patrimonio_total} icon={Wallet} color="yellow" />
-            <MetricCard title="Emisiones (UEs)" value={metrics.cantidad_emisiones} icon={BarChart3} color="blue" isCurrency={false} />
-            <MetricCard title="Precio Promedio" value={metrics.precio_promedio} icon={TrendingUp} color="purple" />
-            <MetricCard title="Flujo Neto 24h" value={metrics.flujo_neto_24h} icon={metrics.flujo_neto_24h >= 0 ? TrendingUp : TrendingDown} color={metrics.flujo_neto_24h >= 0 ? "green" : "red"} />
-          </div>
-        </div>
-      )}
-
       <div className={`flex-1 overflow-hidden ${isFullscreen ? 'p-0 fixed inset-0 z-50 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950' : 'px-8 py-4'}`}>
         <div className={`h-full mx-auto grid transition-all duration-500 ${isFullscreen
           ? (browserVisible || remoteBrowserUrl)
