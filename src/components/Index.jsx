@@ -190,7 +190,7 @@ const Index = ({ onNavigate }) => {
                 style={{ borderColor: 'rgba(201,162,39,0.3)', color: COLORS.gold, backgroundColor: 'rgba(201,162,39,0.08)' }}
               >
                 <Globe2 className="w-3 h-3 mr-1.5" />
-                Chile · Francia
+                Presencia Internacional
               </Badge>
             </div>
 
@@ -600,7 +600,7 @@ const Index = ({ onNavigate }) => {
               <span>Conexión segura certificada</span>
             </div>
             <p className="text-[11px] leading-relaxed" style={{ color: COLORS.muted }}>
-              Freraut Invest · Super Holding Chileno-Francés<br />
+              Freraut Invest · Gestión Patrimonial de Excelencia<br />
               Talca, Región del Maule
             </p>
           </div>

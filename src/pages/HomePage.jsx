@@ -94,7 +94,7 @@ const LandingHeader = ({ onOpenAuth }) => {
               FRERAUT INVEST
             </h1>
             <span className="text-[10px] font-medium uppercase tracking-widest" style={{ color: COLORS.muted }}>
-              Holding Chileno-Francés
+              Excelencia Patrimonial
             </span>
           </div>
         </div>
@@ -213,14 +213,14 @@ const HeroSection = ({ onOpenAuth }) => {
               style={{ color: COLORS.textInverse, textWrap: 'balance' }}
             >
               Inversión Inteligente con{' '}
-              <span style={{ color: COLORS.gold }}>Estándares Europeos</span>
+              <span style={{ color: COLORS.gold }}>Visión de Excelencia</span>
             </h2>
 
             <p
               className="text-base md:text-lg leading-relaxed mb-8 max-w-lg"
               style={{ color: COLORS.muted }}
             >
-              Gestión profesional de patrimonios con presencia en Chile y Francia.
+              Gestión profesional de patrimonios con presencia internacional.
               Unidades de Efectivo (UEs) respaldadas por activos reales y gobernanza
               corporativa transparente.
             </p>
@@ -253,8 +253,8 @@ const HeroSection = ({ onOpenAuth }) => {
             <div className="flex flex-wrap gap-6 mt-12 pt-8" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
               {[
                 { icon: ShieldCheck, label: 'Regulado' },
-                { icon: Globe2, label: 'Chile · Francia' },
-                { icon: Users, label: '+50 Inversores' },
+                { icon: Globe2, label: 'Presencia Internacional' },
+                { icon: Users, label: 'Inversores Verificados' },
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <item.icon className="w-4 h-4" style={{ color: COLORS.gold }} />
@@ -294,16 +294,14 @@ const HeroSection = ({ onOpenAuth }) => {
                   <span className="text-base font-normal ml-2" style={{ color: COLORS.muted }}>USD</span>
                 </p>
                 <p className="text-xs mt-2" style={{ color: COLORS.muted }}>
-                  Precio de referencia · Actualizado continuamente
+                  Precio de referencia · Valor contable
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-3 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                 {[
-                  { label: 'Capital Administrado', value: '$2.4M USD', icon: Building2 },
-                  { label: 'Inversores Activos', value: '52', icon: Users },
-                  { label: 'Rendimiento Anual', value: '+18.4%', icon: TrendingUp },
-                  { label: 'UEs en Circulación', value: '458,230', icon: Wallet },
+                  { label: 'Activo Subyacente', value: 'Cartera Real', icon: Building2 },
+                  { label: 'Valor Base', value: 'Multimoneda', icon: Wallet },
                 ].map((stat, i) => (
                   <div key={i} className="flex items-center gap-2 p-3 rounded-xl" style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}>
                     <stat.icon className="w-4 h-4 flex-shrink-0" style={{ color: COLORS.gold }} />
@@ -492,10 +490,10 @@ const HowItWorksSection = () => {
 const StatsSection = () => {
   const { reduced } = useSafeAnimation();
   const stats = [
-    { value: '$2.4M+', label: 'Capital Administrado', sublabel: 'USD en gestión activa' },
-    { value: '52', label: 'Inversores Activos', sublabel: 'Cuentas institucionales' },
-    { value: '+18.4%', label: 'Rendimiento Anual', sublabel: 'Promedio ponderado' },
-    { value: '4', label: 'Años de Operación', sublabel: 'Desde 2022' },
+    { value: 'UEs', label: 'Unidades de Efectivo', sublabel: 'Respaldo en activos reales' },
+    { value: '24/7', label: 'Plataforma de Inversión', sublabel: 'Compra y venta de UEs' },
+    { value: 'CLP+USD', label: 'Base Multimoneda', sublabel: 'Cobertura cambiaria integrada' },
+    { value: '2022', label: 'Desde', sublabel: 'Operación continua' },
   ];
 
   return (
@@ -555,22 +553,19 @@ const TestimonialsSection = () => {
   const { reduced } = useSafeAnimation();
   const testimonials = [
     {
-      quote: 'La transparencia y el rendimiento constante de las UEs me ha permitido diversificar mis inversiones con total confianza.',
-      author: 'Carlos M.',
-      role: 'Inversor desde 2023',
-      ues: '12,500 UEs',
+      quote: 'La transparencia del modelo de UEs y la gobernanza corporativa me dieron la confianza para diversificar mi patrimonio.',
+      author: 'Inversor Verificado',
+      role: 'Cuenta institucional',
     },
     {
-      quote: 'El equipo de Freraut Invest combina la seriedad europea con el conocimiento local. Lake Intelligence es una herramienta extraordinaria.',
-      author: 'María F.',
-      role: 'Inversora desde 2022',
-      ues: '8,200 UEs',
+      quote: 'Lake Intelligence cambió mi forma de analizar inversiones. Acceso a datos y métricas que ningún bróker tradicional ofrece.',
+      author: 'Inversor Verificado',
+      role: 'Cuenta institucional',
     },
     {
-      quote: 'Pasar de la banca tradicional a las UEs fue la mejor decisión financiera. Rendimientos superiores y total liquidez.',
-      author: 'Andrés R.',
-      role: 'Inversor desde 2024',
-      ues: '5,000 UEs',
+      quote: 'La liquidez del mercado de UEs y la claridad del modelo de valorización hacen que pueda entrar y salir sin fricción.',
+      author: 'Inversor Verificado',
+      role: 'Cuenta institucional',
     },
   ];
 
@@ -616,7 +611,6 @@ const TestimonialsSection = () => {
                 <p className="text-sm font-semibold" style={{ color: COLORS.textInverse }}>{t.author}</p>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-xs" style={{ color: COLORS.muted }}>{t.role}</span>
-                  <span className="text-xs font-medium" style={{ color: COLORS.gold }}>{t.ues}</span>
                 </div>
               </div>
             </motion.div>
@@ -721,7 +715,7 @@ const FooterSection = () => (
             <p className="text-sm font-bold tracking-wider" style={{ color: COLORS.gold }}>FRERAUT INVEST</p>
           </div>
           <p className="text-sm leading-relaxed mb-4" style={{ color: COLORS.muted }}>
-            Super Holding Chileno-Francés especializado en gestión profesional de patrimonios,
+            Holding especializado en gestión profesional de patrimonios,
             con presencia en Talca, Región del Maule y operaciones internacionales.
           </p>
           <div className="flex gap-3">
@@ -786,7 +780,7 @@ const FooterSection = () => (
           El valor de las inversiones puede fluctuar. Rendimientos pasados no garantizan resultados futuros.
         </p>
         <p className="text-[11px] mt-3" style={{ color: COLORS.muted }}>
-          © {new Date().getFullYear()} Freraut Invest · Super Holding Chileno-Francés · Todos los derechos reservados.
+          © {new Date().getFullYear()} Freraut Invest · Todos los derechos reservados.
         </p>
       </div>
     </div>
@@ -810,10 +804,10 @@ const HomePage = ({ onOpenAuth }) => {
   return (
     <div style={{ backgroundColor: COLORS.bg, overflowX: 'hidden' }}>
       <Helmet>
-        <title>Freraut Invest — Inversión Inteligente con Estándares Europeos</title>
-        <meta name="description" content="Gestión profesional de patrimonios con presencia en Chile y Francia. Unidades de Efectivo (UEs) respaldadas por activos reales y gobernanza corporativa transparente." />
+        <title>Freraut Invest — Inversión Inteligente con Visión de Excelencia</title>
+        <meta name="description" content="Gestión profesional de patrimonios con presencia internacional. Unidades de Efectivo (UEs) respaldadas por activos reales y gobernanza corporativa transparente." />
         <meta property="og:title" content="Freraut Invest — Inversión Inteligente" />
-        <meta property="og:description" content="Gestión profesional de patrimonios con presencia Chile-Francia. UEs respaldadas por activos reales." />
+        <meta property="og:description" content="Gestión profesional de patrimonios con presencia internacional. UEs respaldadas por activos reales." />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/customSupabaseClient';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -13,6 +13,166 @@ const formatCLP = (val, fx) => {
   if (val == null || isNaN(val) || !fx) return '';
   const clp = Number(val) * fx;
   return '~ $' + Math.round(clp).toLocaleString('es-CL') + ' CLP';
+};
+
+// ── CinematicCard ── 3D tilt + cursor glow + shimmer sweep ──────────
+const CinematicCard = ({ children, className = '', accentColor = '#C9A227', delay = 0, onClick, span = 'col-span-1' }) => {
+  const cardRef = useRef(null);
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
+  const [glowX, setGlowX] = useState(50);
+  const [glowY, setGlowY] = useState(50);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseMove = useCallback((e) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const mouseX = e.clientX - centerX;
+    const mouseY = e.clientY - centerY;
+    const tiltX = (mouseY / (rect.height / 2)) * -8;
+    const tiltY = (mouseX / (rect.width / 2)) * 8;
+    setRotateX(tiltX);
+    setRotateY(tiltY);
+    setGlowX(((e.clientX - rect.left) / rect.width) * 100);
+    setGlowY(((e.clientY - rect.top) / rect.height) * 100);
+  }, []);
+
+  const handleMouseEnter = useCallback(() => setIsHovered(true), []);
+  const handleMouseLeave = useCallback(() => {
+    setRotateX(0);
+    setRotateY(0);
+    setGlowX(50);
+    setGlowY(50);
+    setIsHovered(false);
+  }, []);
+
+  const lgSpan = span.includes('2') ? 'lg:col-span-2' : 'lg:col-span-1';
+  const mdSpan = span.includes('2') ? 'md:col-span-2' : 'md:col-span-1';
+
+  return (
+    <motion.div
+      ref={cardRef}
+      initial={{ opacity: 0, y: 40, rotateX: 5, rotateY: -3 }}
+      animate={{ opacity: 1, y: 0, rotateX: 0, rotateY: 0 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 22, delay }}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onClick={onClick}
+      style={{
+        transform: `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
+        transformStyle: 'preserve-3d',
+      }}
+      className={`${lgSpan} ${mdSpan} relative overflow-hidden bg-[#0D0E14]/80 backdrop-blur-2xl backdrop-saturate-150 border border-white/[0.06] rounded-2xl p-5 transition-shadow duration-500 cursor-pointer group ${className}`}
+    >
+      {/* Ambient glow layer — tracks cursor */}
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0"
+        style={{
+          background: `radial-gradient(circle 180px at ${glowX}% ${glowY}%, ${accentColor}18, transparent 70%)`,
+        }}
+      />
+
+      {/* Shimmer sweep — diagonal light pass */}
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-0"
+        style={{
+          background: `linear-gradient(105deg, transparent 40%, ${accentColor}08 45%, ${accentColor}12 50%, transparent 55%)`,
+          backgroundSize: '200% 100%',
+          animation: isHovered ? 'shimmerSweep 1.8s ease-in-out infinite' : 'none',
+        }}
+      />
+
+      {/* Top edge light bar */}
+      <div
+        className="absolute top-0 left-4 right-4 h-px z-10 transition-all duration-500"
+        style={{
+          background: `linear-gradient(90deg, transparent, ${accentColor}40, transparent)`,
+          opacity: isHovered ? 1 : 0.5,
+        }}
+      />
+
+      {/* Bottom reflection line */}
+      <div
+        className="absolute bottom-0 left-8 right-8 h-px z-10 transition-all duration-500"
+        style={{
+          background: `linear-gradient(90deg, transparent, ${accentColor}15, transparent)`,
+          opacity: isHovered ? 0.6 : 0,
+        }}
+      />
+
+      {/* Content — sits above glow and shimmer */}
+      <div className="relative z-20" style={{ transform: 'translateZ(20px)' }}>
+        {children}
+      </div>
+
+      {/* Edge highlight on hover */}
+      <div
+        className="absolute inset-0 rounded-2xl pointer-events-none z-5 transition-all duration-500"
+        style={{
+          boxShadow: isHovered
+            ? `inset 0 0 0 1px ${accentColor}20, 0 16px 48px -12px ${accentColor}15`
+            : `inset 0 0 0 1px ${accentColor}06`,
+        }}
+      />
+    </motion.div>
+  );
+};
+
+// ── ParticleField ── subtle animated dots in background ─────────────
+const ParticleField = () => {
+  const particles = useMemo(() =>
+    Array.from({ length: 30 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 2 + 1,
+      duration: Math.random() * 6 + 4,
+      delay: Math.random() * 3,
+      opacity: Math.random() * 0.3 + 0.1,
+    })), []
+  );
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {particles.map((p) => (
+        <motion.div
+          key={p.id}
+          className="absolute rounded-full bg-[#C9A227]"
+          style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size, opacity: p.opacity }}
+          animate={{
+            y: [0, -30, 0],
+            opacity: [p.opacity, p.opacity * 0.3, p.opacity],
+          }}
+          transition={{
+            duration: p.duration,
+            delay: p.delay,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+// ── Animated Counter ── spring-counting number ──────────────────────
+const AnimatedValue = ({ value, className = '' }) => {
+  const numericValue = typeof value === 'string' ? parseFloat(value.replace(/[^0-9.-]/g, '')) : Number(value);
+  if (isNaN(numericValue)) return <span className={className}>{value}</span>;
+
+  return (
+    <motion.span
+      className={className}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
+    >
+      {value}
+    </motion.span>
+  );
 };
 
 // ── Skeleton Loaders ──────────────────────────────────────────────
