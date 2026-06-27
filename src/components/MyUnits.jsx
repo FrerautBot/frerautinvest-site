@@ -15,22 +15,101 @@ const formatCLP = (val, fx) => {
   return '~ $' + Math.round(clp).toLocaleString('es-CL') + ' CLP';
 };
 
+// ── Skeleton Loaders ──────────────────────────────────────────────
+const MetricsSkeleton = () => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    {[0, 1, 2, 3, 4, 5].map((i) => (
+      <div
+        key={i}
+        className={`animate-pulse bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/10 rounded-2xl p-5 ${
+          i < 2 ? 'lg:col-span-2' : 'lg:col-span-1'
+        }`}
+      >
+        <div className="flex justify-between items-start mb-3">
+          <div className="h-3 w-20 bg-[#C9A227]/10 rounded-full" />
+          <div className="p-2 rounded-xl bg-[#C9A227]/5 h-8 w-8" />
+        </div>
+        <div className="h-7 w-32 bg-[#C9A227]/10 rounded-lg mb-1" />
+        <div className="h-3 w-24 bg-[#C9A227]/5 rounded-full" />
+      </div>
+    ))}
+  </div>
+);
+
+// ── Empty State Component ─────────────────────────────────────────
+const EmptyState = ({ icon: Icon, title, subtitle }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="flex flex-col items-center justify-center py-16 px-8 bg-gradient-to-b from-[#1A1D2B]/50 to-transparent rounded-2xl border border-[#C9A227]/10"
+  >
+    <div className="mb-5 opacity-30">
+      {Icon ? (
+        <Icon className="w-20 h-20 text-[#C9A227]" strokeWidth={1} />
+      ) : (
+        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="8" width="64" height="64" rx="16" stroke="#C9A227" strokeWidth="1.5" opacity="0.4" />
+          <circle cx="40" cy="36" r="14" stroke="#C9A227" strokeWidth="1.5" opacity="0.4" />
+          <path d="M36 32l8 4-8 4V32z" fill="#C9A227" opacity="0.3" />
+          <path d="M24 60l8-12h16l8 12" stroke="#C9A227" strokeWidth="1.5" opacity="0.3" />
+        </svg>
+      )}
+    </div>
+    <p className="text-[#F5F1E8]/60 text-lg font-medium mb-1">{title}</p>
+    {subtitle && <p className="text-[#F5F1E8]/30 text-sm">{subtitle}</p>}
+  </motion.div>
+);
+
+// ── Custom Chart Tooltip ──────────────────────────────────────────
+const ChartTooltip = ({ point, mousePos, fxRate }) => {
+  if (!point) return null;
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+      className="absolute z-20 bg-[#1A1D2B]/85 backdrop-blur-md border border-[#C9A227]/30 rounded-xl px-4 py-3 shadow-lg shadow-[#C9A227]/5 pointer-events-none"
+      style={{ left: Math.min(mousePos.x + 15, 700), top: Math.max(mousePos.y - 80, 10) }}
+    >
+      <p className="text-[10px] text-[#C9A227] font-semibold uppercase tracking-wider mb-1">
+        {new Date(point.fecha).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' })}
+      </p>
+      <p className="text-base font-bold text-white font-mono tabular-nums">
+        {formatUSD(point.valor)}
+      </p>
+      <p className="text-xs text-[#F5F1E8]/40">{formatCLP(point.valor, fxRate)}</p>
+    </motion.div>
+  );
+};
+
+// ── PatrimonioChart ───────────────────────────────────────────────
 function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
   const [hoveredPoint, setHoveredPoint] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   if (!historial || historial.length === 0) {
     return (
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-gradient-to-br dark:from-gray-900/95 dark:via-gray-900/90 dark:to-black/95 border border-gray-200 dark:border-[#C9A227]/20 rounded-2xl p-6 shadow-sm"
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        className="bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/20 rounded-2xl shadow-sm"
       >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-[#C9A227]/10 rounded-lg">
-            <TrendingUp className="w-5 h-5 text-[#C9A227]" />
+        <div className="p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-[#C9A227]/10 rounded-lg">
+              <TrendingUp className="w-5 h-5 text-[#C9A227]" />
+            </div>
+            <h3 className="text-lg font-semibold text-[#1A1D2B] dark:text-white tracking-tight">
+              Evolucion de tu Patrimonio
+            </h3>
           </div>
-          <h3 className="text-lg font-semibold text-[#1A1D2B] dark:text-white tracking-tight">Evolución de tu Patrimonio</h3>
+          <EmptyState
+            icon={TrendingUp}
+            title="No hay suficiente historial"
+            subtitle="El grafico aparecera cuando tengas mas datos registrados"
+          />
         </div>
-        <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-sm text-center py-8">No hay suficiente historial para mostrar el gráfico</p>
       </motion.div>
     );
   }
@@ -41,22 +120,29 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
 
-  const valoresPatrimonio = historial.map(h => h?.patrimonio_total_real ? Number(h.patrimonio_total_real) : 0);
-  const todosLosValores = valoresPatrimonio.filter(v => v > 0);
+  const valoresPatrimonio = historial.map((h) => (h?.patrimonio_total_real ? Number(h.patrimonio_total_real) : 0));
+  const todosLosValores = valoresPatrimonio.filter((v) => v > 0);
 
   if (todosLosValores.length === 0) {
     return (
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-gradient-to-br dark:from-gray-900/95 dark:via-gray-900/90 dark:to-black/95 border border-gray-200 dark:border-[#C9A227]/20 rounded-2xl p-6 shadow-sm"
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        className="bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/20 rounded-2xl p-6 shadow-sm"
       >
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-[#C9A227]/10 rounded-lg">
             <TrendingUp className="w-5 h-5 text-[#C9A227]" />
           </div>
-          <h3 className="text-lg font-semibold text-[#1A1D2B] dark:text-white tracking-tight">Evolución de tu Patrimonio</h3>
+          <h3 className="text-lg font-semibold text-[#1A1D2B] dark:text-white tracking-tight">
+            Evolucion de tu Patrimonio
+          </h3>
         </div>
         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-          <p className="text-red-600 dark:text-red-400 text-xs">Los datos del historial existen pero todos los valores son 0</p>
+          <p className="text-red-600 dark:text-red-400 text-xs">
+            Los datos del historial existen pero todos los valores son 0
+          </p>
         </div>
       </motion.div>
     );
@@ -73,38 +159,42 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
       y: padding.top + chartHeight - ((valor - minValor) / rangoValor) * chartHeight,
       fecha: item.fecha,
       valor,
-      index
+      index,
     };
   });
 
-  // Smooth curve (Catmull-Rom → cubic Bezier)
   function smoothPath(pts) {
-    if (pts.length < 2) return pts.map(p => `${p.x},${p.y}`).join(' ');
-    return pts.map((p, i, a) => {
-      if (i === 0) return `M ${p.x} ${p.y}`;
-      const prev = a[i - 1];
-      const next = a[i + 1] || p;
-      const tension = 0.3;
-      const cp1x = prev.x + (p.x - prev.x) * tension;
-      const cp1y = prev.y + (p.y - prev.y) * tension;
-      const cp2x = p.x - (next.x - prev.x) * tension;
-      const cp2y = p.y - (next.y - prev.y) * tension;
-      return `C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p.x},${p.y}`;
-    }).join(' ');
+    if (pts.length < 2) return pts.map((p) => `${p.x},${p.y}`).join(' ');
+    return pts
+      .map((p, i, a) => {
+        if (i === 0) return `M ${p.x} ${p.y}`;
+        const prev = a[i - 1];
+        const next = a[i + 1] || p;
+        const tension = 0.3;
+        const cp1x = prev.x + (p.x - prev.x) * tension;
+        const cp1y = prev.y + (p.y - prev.y) * tension;
+        const cp2x = p.x - (next.x - prev.x) * tension;
+        const cp2y = p.y - (next.y - prev.y) * tension;
+        return `C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p.x},${p.y}`;
+      })
+      .join(' ');
   }
 
   const pathD = smoothPath(allPoints);
-  const areaPathD = pathD + ` L ${allPoints[allPoints.length - 1].x} ${height - padding.bottom} L ${padding.left} ${height - padding.bottom} Z`;
+  const areaPathD =
+    pathD + ` L ${allPoints[allPoints.length - 1].x} ${height - padding.bottom} L ${padding.left} ${height - padding.bottom} Z`;
 
   const valorPatrimonioFinal = valoresPatrimonio[valoresPatrimonio.length - 1];
   const valorInicial = valoresPatrimonio[0];
   const cambioAbsoluto = valorPatrimonioFinal - valorInicial;
-  const cambioPorcentaje = valorInicial > 0 ? ((cambioAbsoluto / valorInicial) * 100).toFixed(2) : '0.00';
+  const cambioPorcentaje =
+    valorInicial > 0 ? ((cambioAbsoluto / valorInicial) * 100).toFixed(2) : '0.00';
   const esPositivo = cambioAbsoluto >= 0;
 
-  // Calcular patrimonio total real: USD + UEs + CLP convertido
-  const totalPatrimonioUSD = (saldoUSD || 0) + (lucro?.valor_actual || 0) + ((saldoCLP || 0) / fxRate);
-  const totalPatrimonioCLP = (saldoCLP || 0) + ((lucro?.valor_actual || 0) * fxRate) + ((saldoUSD || 0) * fxRate);
+  const totalPatrimonioUSD =
+    (saldoUSD || 0) + (lucro?.valor_actual || 0) + (saldoCLP || 0) / fxRate;
+  const totalPatrimonioCLP =
+    (saldoCLP || 0) + (lucro?.valor_actual || 0) * fxRate + (saldoUSD || 0) * fxRate;
 
   const handleMouseMove = (e) => {
     const svg = e.currentTarget;
@@ -127,8 +217,8 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
-      className="bg-white dark:bg-gradient-to-br dark:from-gray-900/95 dark:via-gray-800/90 dark:to-black/95 border border-gray-200 dark:border-[#C9A227]/20 rounded-2xl p-6 shadow-sm relative overflow-hidden"
+      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+      className="bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/20 rounded-2xl p-6 shadow-sm relative overflow-hidden"
     >
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-6">
@@ -138,47 +228,76 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-[#1A1D2B] dark:text-white tracking-tight">
-                Evolución de tu Patrimonio
+                Evolucion de tu Patrimonio
               </h3>
-              <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF] mt-0.5">
+              <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF] mt-0.5 font-mono tabular-nums">
                 {formatUSD(totalPatrimonioUSD)}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700/50">
             <Calendar className="w-3.5 h-3.5 text-[#C9A227]" />
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Últimos 30 días</span>
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+              Ultimos 30 dias
+            </span>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div className="bg-gray-50/80 dark:bg-gray-800/40 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
-            <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF] font-medium mb-1 tracking-wide">Patrimonio Actual</p>
-            <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight">
+            <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF] font-medium mb-1 tracking-wide">
+              Patrimonio Actual
+            </p>
+            <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight font-mono tabular-nums">
               {formatUSD(totalPatrimonioUSD)}
             </p>
-            <p className="text-xs text-[#6E6E6E]/70 dark:text-[#9CA3AF]/70 mt-0.5">{formatCLP(totalPatrimonioUSD, fxRate)}</p>
-          </div>
-          <div className="bg-gray-50/80 dark:bg-gray-800/40 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
-            <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF] font-medium mb-1 tracking-wide">Cambio Total</p>
-            <p className={`text-2xl font-bold tracking-tight ${esPositivo ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-              {esPositivo ? '+' : ''}{cambioPorcentaje}%
+            <p className="text-xs text-[#6E6E6E]/70 dark:text-[#9CA3AF]/70 mt-0.5">
+              {formatCLP(totalPatrimonioUSD, fxRate)}
             </p>
           </div>
           <div className="bg-gray-50/80 dark:bg-gray-800/40 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
-            <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF] font-medium mb-1 tracking-wide">Patrimonio en CLP</p>
+            <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF] font-medium mb-1 tracking-wide">
+              Cambio Total
+            </p>
+            <p
+              className={`text-2xl font-bold tracking-tight font-mono tabular-nums ${
+                esPositivo ? 'text-[#10B981]' : 'text-[#EF4444]'
+              }`}
+            >
+              {esPositivo ? '+' : ''}
+              {cambioPorcentaje}%
+            </p>
+          </div>
+          <div className="bg-gray-50/80 dark:bg-gray-800/40 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
+            <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF] font-medium mb-1 tracking-wide">
+              Patrimonio en CLP
+            </p>
             <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight">
               {formatCLP(totalPatrimonioUSD, fxRate)}
             </p>
           </div>
         </div>
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
-          className="overflow-hidden rounded-xl p-5 border border-gray-200 dark:border-[#C9A227]/15 relative"
-          style={{ background: '#0b0c10', backgroundImage: `radial-gradient(circle, rgba(201,162,39,0.15) 0.5px, transparent 0.5px)`, backgroundSize: '12px 12px' }}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="overflow-hidden rounded-xl p-5 border border-[#C9A227]/15 relative"
+          style={{
+            background: '#0b0c10',
+            backgroundImage: `radial-gradient(circle, rgba(201,162,39,0.15) 0.5px, transparent 0.5px)`,
+            backgroundSize: '12px 12px',
+          }}
         >
-          <svg width={width} height={height} className="mx-auto" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}
-            style={{ cursor: 'crosshair' }} shapeRendering="geometricPrecision">
+          <svg
+            width={width}
+            height={height}
+            className="mx-auto"
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            style={{ cursor: 'crosshair' }}
+            shapeRendering="geometricPrecision"
+          >
             <defs>
               <linearGradient id="gradientGold" x1="0%" y1="0%" x2="0%" y2="100%">
                 <stop offset="0%" stopColor="#C9A227" stopOpacity="0.35" />
@@ -188,7 +307,10 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
               </linearGradient>
               <filter id="lineGlowGold">
                 <feGaussianBlur stdDeviation="3" result="blur" />
-                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
               </filter>
               <linearGradient id="lineGradientGold" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor="#C9A227" />
@@ -197,7 +319,10 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
               </linearGradient>
               <filter id="nodeGlowGold">
                 <feGaussianBlur stdDeviation="1.5" result="blur" />
-                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
               </filter>
             </defs>
 
@@ -206,9 +331,24 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
               const valorEtiqueta = minValor + rangoValor * f;
               return (
                 <g key={i}>
-                  <line x1={padding.left} y1={yPos} x2={width - padding.right} y2={yPos}
-                    stroke="#ffffff" strokeWidth="1" strokeDasharray="3 5" opacity="0.08" />
-                  <text x={padding.left - 12} y={yPos + 4} textAnchor="end" fill="#9CA3AF" fontSize="11" fontWeight="400">
+                  <line
+                    x1={padding.left}
+                    y1={yPos}
+                    x2={width - padding.right}
+                    y2={yPos}
+                    stroke="#ffffff"
+                    strokeWidth="1"
+                    strokeDasharray="3 5"
+                    opacity="0.08"
+                  />
+                  <text
+                    x={padding.left - 12}
+                    y={yPos + 4}
+                    textAnchor="end"
+                    fill="#9CA3AF"
+                    fontSize="11"
+                    fontWeight="400"
+                  >
                     ${(valorEtiqueta / 1000).toFixed(1)}k
                   </text>
                 </g>
@@ -217,16 +357,59 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
 
             <path d={areaPathD} fill="url(#gradientGold)" opacity="0.6" />
             <path d={pathD} fill="none" stroke="#C9A227" strokeWidth="8" strokeLinecap="round" opacity="0.15" />
-            <path d={pathD} fill="none" stroke="url(#lineGradientGold)" strokeWidth="2" strokeLinecap="round" filter="url(#lineGlowGold)" />
+            <path
+              d={pathD}
+              fill="none"
+              stroke="url(#lineGradientGold)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              filter="url(#lineGlowGold)"
+            />
 
-            <circle cx={allPoints[allPoints.length - 1].x} cy={allPoints[allPoints.length - 1].y} r="4" fill="#C9A227" stroke="#fff" strokeWidth="2" filter="url(#nodeGlowGold)" />
+            {/* Dots on data points */}
+            {allPoints.map((pt, i) => (
+              <circle
+                key={i}
+                cx={pt.x}
+                cy={pt.y}
+                r="4"
+                fill="#C9A227"
+                stroke="#fff"
+                strokeWidth="2"
+                filter="url(#nodeGlowGold)"
+              />
+            ))}
 
             {hoveredPoint && (
               <>
-                <line x1={hoveredPoint.x} y1={padding.top} x2={hoveredPoint.x} y2={height - padding.bottom}
-                  stroke="#C9A227" strokeWidth="1" strokeDasharray="3 4" opacity="0.3" />
-                <circle cx={hoveredPoint.x} cy={hoveredPoint.y} r="5" fill="#C9A227" stroke="#fff" strokeWidth="2" filter="url(#nodeGlowGold)" />
-                <circle cx={hoveredPoint.x} cy={hoveredPoint.y} r="10" fill="none" stroke="#C9A227" strokeWidth="1" opacity="0.2">
+                <line
+                  x1={hoveredPoint.x}
+                  y1={padding.top}
+                  x2={hoveredPoint.x}
+                  y2={height - padding.bottom}
+                  stroke="#C9A227"
+                  strokeWidth="1"
+                  strokeDasharray="3 4"
+                  opacity="0.3"
+                />
+                <circle
+                  cx={hoveredPoint.x}
+                  cy={hoveredPoint.y}
+                  r="5"
+                  fill="#C9A227"
+                  stroke="#fff"
+                  strokeWidth="2"
+                  filter="url(#nodeGlowGold)"
+                />
+                <circle
+                  cx={hoveredPoint.x}
+                  cy={hoveredPoint.y}
+                  r="10"
+                  fill="none"
+                  stroke="#C9A227"
+                  strokeWidth="1"
+                  opacity="0.2"
+                >
                   <animate attributeName="r" from="5" to="16" dur="2s" repeatCount="indefinite" />
                   <animate attributeName="opacity" from="0.3" to="0" dur="2s" repeatCount="indefinite" />
                 </circle>
@@ -234,23 +417,90 @@ function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
             )}
           </svg>
 
-          {hoveredPoint && (
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-              className="absolute bg-white dark:bg-gray-900 border border-[#C9A227]/30 rounded-xl px-4 py-2.5 shadow-lg backdrop-blur-md pointer-events-none"
-              style={{ left: Math.min(mousePos.x + 15, width - 200), top: Math.max(mousePos.y - 80, 10) }}>
-              <p className="text-[10px] text-[#C9A227] font-semibold uppercase tracking-wider mb-1">
-                {new Date(hoveredPoint.fecha).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' })}
-              </p>
-              <p className="text-base font-bold text-white">{formatUSD(hoveredPoint.valor)}</p>
-              <p className="text-xs text-gray-400">{formatCLP(hoveredPoint.valor, fxRate)}</p>
-            </motion.div>
-          )}
+          <ChartTooltip point={hoveredPoint} mousePos={mousePos} fxRate={fxRate} />
         </motion.div>
       </div>
     </motion.div>
   );
 }
 
+// ── Status Badge ──────────────────────────────────────────────────
+const StatusBadge = ({ estado, motivoRechazo }) => {
+  const getStatusStyle = (estado) => {
+    switch (estado) {
+      case 'completado':
+        return {
+          bg: 'bg-[#10B981]/10',
+          text: 'text-[#10B981]',
+          border: 'border-[#10B981]/30',
+          dot: 'bg-[#10B981]',
+          label: 'Completado',
+        };
+      case 'rechazado':
+        return {
+          bg: 'bg-[#EF4444]/10',
+          text: 'text-[#EF4444]',
+          border: 'border-[#EF4444]/30',
+          dot: 'bg-[#EF4444]',
+          label: 'Rechazado',
+        };
+      case 'pendiente':
+        return {
+          bg: 'bg-amber-500/10',
+          text: 'text-amber-500',
+          border: 'border-amber-500/30',
+          dot: 'bg-amber-500 animate-pulse',
+          label: 'Pendiente',
+        };
+      case 'procesando':
+        return {
+          bg: 'bg-[#8B5CF6]/10',
+          text: 'text-[#8B5CF6]',
+          border: 'border-[#8B5CF6]/30',
+          dot: 'bg-[#8B5CF6] animate-bounce',
+          label: 'Procesando',
+        };
+      default:
+        return {
+          bg: 'bg-gray-500/10',
+          text: 'text-gray-400',
+          border: 'border-gray-500/30',
+          dot: 'bg-gray-400',
+          label: estado || 'Desconocido',
+        };
+    }
+  };
+
+  const s = getStatusStyle(estado);
+
+  return (
+    <div>
+      <span
+        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${s.bg} ${s.text} ${s.border}`}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+        <span className="uppercase tracking-wider">{s.label}</span>
+      </span>
+      {motivoRechazo && (
+        <p className="text-xs text-[#EF4444] mt-1">{motivoRechazo}</p>
+      )}
+    </div>
+  );
+};
+
+// ── Spring animation preset ───────────────────────────────────────
+const springHover = {
+  whileHover: { scale: 1.02, transition: { type: 'spring', stiffness: 300, damping: 20 } },
+  whileTap: { scale: 0.97, transition: { type: 'spring', stiffness: 300, damping: 20 } },
+};
+
+const cardSpring = {
+  initial: { opacity: 0, y: 24 },
+  animate: { opacity: 1, y: 0 },
+  transition: { type: 'spring', stiffness: 300, damping: 25 },
+};
+
+// ── MyUnits ───────────────────────────────────────────────────────
 const MyUnits = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -267,7 +517,7 @@ const MyUnits = () => {
     numeroCuenta: '',
     rutTitular: '',
     nombreTitular: '',
-    email: ''
+    email: '',
   });
   const [isProcessingWithdraw, setIsProcessingWithdraw] = useState(false);
   const [savedBankAccounts, setSavedBankAccounts] = useState([]);
@@ -276,23 +526,16 @@ const MyUnits = () => {
   const [saldoDisponible, setSaldoDisponible] = useState(0);
   const [saldoUSD, setSaldoUSD] = useState(0);
 
-  // Estados para historial de retiros
   const [withdrawHistory, setWithdrawHistory] = useState([]);
   const [withdrawHistoryLimit, setWithdrawHistoryLimit] = useState(3);
   const [hasMoreWithdraws, setHasMoreWithdraws] = useState(false);
 
-  // ============================================
-  // NUEVOS ESTADOS: Modal de cambio CLP → USD
-  // ============================================
   const [showExchangeModal, setShowExchangeModal] = useState(false);
   const [exchangeAmount, setExchangeAmount] = useState('');
   const [exchangeQuote, setExchangeQuote] = useState(null);
   const [isLoadingQuote, setIsLoadingQuote] = useState(false);
   const [isProcessingExchange, setIsProcessingExchange] = useState(false);
 
-  // ============================================
-  // CARGAR HISTORIAL DE RETIROS (desde tabla retiros)
-  // ============================================
   const loadWithdrawHistory = async (limit = 3) => {
     try {
       const { data, error, count } = await supabase
@@ -318,19 +561,18 @@ const MyUnits = () => {
       try {
         setLoading(true);
 
-        const { data: histData, error: histError } = await supabase
-          .rpc('obtener_historial_patrimonio', {
-            p_usuario_id: user.id,
-            p_dias: 30
-          });
+        const { data: histData, error: histError } = await supabase.rpc(
+          'obtener_historial_patrimonio',
+          { p_usuario_id: user.id, p_dias: 30 }
+        );
 
         if (histError) console.error('Error historial:', histError);
         else setHistorial(histData || []);
 
-        const { data: lucroData, error: lucroError } = await supabase
-          .rpc('obtener_lucro_detallado', {
-            p_usuario_id: user.id
-          });
+        const { data: lucroData, error: lucroError } = await supabase.rpc(
+          'obtener_lucro_detallado',
+          { p_usuario_id: user.id }
+        );
 
         if (lucroError) console.error('Error lucro:', lucroError);
         else setLucro(lucroData);
@@ -342,11 +584,11 @@ const MyUnits = () => {
           .single();
 
         if (userData) {
-          setBankData(prev => ({
+          setBankData((prev) => ({
             ...prev,
             nombreTitular: userData.nombre || '',
             email: userData.email || '',
-            rutTitular: userData.rut || ''
+            rutTitular: userData.rut || '',
           }));
         }
 
@@ -354,21 +596,19 @@ const MyUnits = () => {
         await loadWithdrawHistory(withdrawHistoryLimit);
         await loadSaldoDisponible();
 
-        // Cargar tipo de cambio USD/CLP
         const { data: fx } = await supabase
           .from('fx_config')
           .select('manual_rate')
           .eq('is_active', true)
           .maybeSingle();
         if (fx?.manual_rate) setFxRate(parseFloat(fx.manual_rate));
-
       } catch (error) {
         console.error('Error fetching units data:', error);
         toast({
-          title: 'Error al cargar datos',
+          title: '❌ Error al cargar datos',
           description: 'No se pudieron cargar los datos de tu cartera. Intenta nuevamente.',
           variant: 'destructive',
-          duration: 4000
+          duration: 4000,
         });
       } finally {
         setLoading(false);
@@ -380,16 +620,15 @@ const MyUnits = () => {
 
   const loadSavedBankAccounts = async () => {
     try {
-      const { data, error } = await supabase
-        .rpc('obtener_datos_bancarios', {
-          p_usuario_id: user.id
-        });
+      const { data, error } = await supabase.rpc('obtener_datos_bancarios', {
+        p_usuario_id: user.id,
+      });
 
       if (error) throw error;
 
       setSavedBankAccounts(data || []);
 
-      const cuentaPrincipal = data?.find(cuenta => cuenta.es_principal);
+      const cuentaPrincipal = data?.find((cuenta) => cuenta.es_principal);
       if (cuentaPrincipal) {
         setSelectedBankAccountId(cuentaPrincipal.id);
         loadBankDataFromSaved(cuentaPrincipal);
@@ -406,7 +645,7 @@ const MyUnits = () => {
       numeroCuenta: cuenta.numero_cuenta,
       rutTitular: cuenta.rut_titular,
       nombreTitular: cuenta.nombre_titular,
-      email: cuenta.email
+      email: cuenta.email,
     });
   };
 
@@ -436,7 +675,7 @@ const MyUnits = () => {
         title: '❌ Datos incompletos',
         description: 'Completa todos los datos bancarios',
         variant: 'destructive',
-        duration: 3000
+        duration: 3000,
       });
       return false;
     }
@@ -450,7 +689,7 @@ const MyUnits = () => {
         p_rut_titular: bankData.rutTitular,
         p_nombre_titular: bankData.nombreTitular,
         p_email: bankData.email,
-        p_es_principal: savedBankAccounts.length === 0
+        p_es_principal: savedBankAccounts.length === 0,
       });
 
       if (error) throw error;
@@ -458,35 +697,31 @@ const MyUnits = () => {
       toast({
         title: '✅ Datos guardados',
         description: 'Tus datos bancarios se guardaron correctamente',
-        duration: 3000
+        duration: 3000,
       });
 
       await loadSavedBankAccounts();
       return true;
-
     } catch (error) {
       console.error('Error guardando datos bancarios:', error);
       toast({
         title: '❌ Error',
         description: error.message,
         variant: 'destructive',
-        duration: 4000
+        duration: 4000,
       });
       return false;
     }
   };
 
-  // ============================================
-  // RETIRO: Usa solicitar_retiro RPC + guarda datos bancarios en usuarios
-  // ============================================
   const handleWithdraw = async () => {
     const montoNum = Number(withdrawAmount);
     if (!withdrawAmount || isNaN(montoNum) || montoNum <= 0) {
       toast({
-        title: '❌ Monto inválido',
-        description: 'Ingresa un monto válido para retirar',
+        title: '❌ Monto invalido',
+        description: 'Ingresa un monto valido para retirar',
         variant: 'destructive',
-        duration: 3000
+        duration: 3000,
       });
       return;
     }
@@ -496,7 +731,7 @@ const MyUnits = () => {
         title: '❌ Datos incompletos',
         description: 'Completa todos los datos bancarios',
         variant: 'destructive',
-        duration: 3000
+        duration: 3000,
       });
       return;
     }
@@ -505,10 +740,10 @@ const MyUnits = () => {
 
     if (montoRetiro < 1000) {
       toast({
-        title: '❌ Monto mínimo',
-        description: 'El monto mínimo de retiro es $1.000 CLP',
+        title: '❌ Monto minimo',
+        description: 'El monto minimo de retiro es $1.000 CLP',
         variant: 'destructive',
-        duration: 3000
+        duration: 3000,
       });
       return;
     }
@@ -516,7 +751,6 @@ const MyUnits = () => {
     try {
       setIsProcessingWithdraw(true);
 
-      // Recargar saldo actualizado
       const { saldoCLP: saldoActual } = (await loadSaldoDisponible()) || {};
 
       if (montoRetiro > saldoActual) {
@@ -524,13 +758,12 @@ const MyUnits = () => {
           title: '❌ Saldo insuficiente',
           description: `Solo tienes $${(saldoActual || 0).toLocaleString('es-CL')} disponibles para retirar.`,
           variant: 'destructive',
-          duration: 5000
+          duration: 5000,
         });
         setIsProcessingWithdraw(false);
         return;
       }
 
-      // Guardar datos bancarios en columnas de usuarios
       const { error: updateError } = await supabase
         .from('usuarios')
         .update({
@@ -538,7 +771,7 @@ const MyUnits = () => {
           tipo_cuenta_retiro: bankData.tipoCuenta,
           numero_cuenta_retiro: bankData.numeroCuenta,
           rut_titular_retiro: bankData.rutTitular,
-          nombre_titular_retiro: bankData.nombreTitular
+          nombre_titular_retiro: bankData.nombreTitular,
         })
         .eq('id', user.id);
 
@@ -546,15 +779,13 @@ const MyUnits = () => {
         console.error('Error actualizando datos bancarios en usuarios:', updateError);
       }
 
-      // Guardar en datos_bancarios si es nueva cuenta
       if (saveForFuture && !selectedBankAccountId) {
         await saveBankData();
       }
 
-      // Llamar al RPC solicitar_retiro
       const { data, error } = await supabase.rpc('solicitar_retiro', {
         p_user_id: user.id,
-        p_monto_clp: montoRetiro
+        p_monto_clp: montoRetiro,
       });
 
       if (error) {
@@ -563,21 +794,21 @@ const MyUnits = () => {
             title: '❌ Saldo insuficiente',
             description: error.message,
             variant: 'destructive',
-            duration: 5000
+            duration: 5000,
           });
-        } else if (error.message.includes('mínimo') || error.message.includes('1000')) {
+        } else if (error.message.includes('minimo') || error.message.includes('1000')) {
           toast({
-            title: '❌ Monto mínimo',
+            title: '❌ Monto minimo',
             description: error.message,
             variant: 'destructive',
-            duration: 5000
+            duration: 5000,
           });
         } else if (error.message.includes('bancarios')) {
           toast({
             title: '❌ Datos bancarios faltantes',
             description: error.message,
             variant: 'destructive',
-            duration: 5000
+            duration: 5000,
           });
         } else {
           throw error;
@@ -588,49 +819,44 @@ const MyUnits = () => {
 
       toast({
         title: '✅ Solicitud de retiro creada',
-        description: `Se procesará tu retiro de $${montoRetiro.toLocaleString('es-CL')} CLP en las próximas 24-48 horas`,
-        duration: 5000
+        description: `Se procesara tu retiro de $${montoRetiro.toLocaleString('es-CL')} CLP en las proximas 24-48 horas`,
+        duration: 5000,
       });
 
-      // Recargar saldo y historial
       await loadSaldoDisponible();
       setWithdrawAmount('');
       setShowWithdrawModal(false);
       await loadWithdrawHistory(withdrawHistoryLimit);
-
     } catch (error) {
       console.error('Error retiro:', error);
       toast({
         title: '❌ Error al procesar retiro',
         description: error.message,
         variant: 'destructive',
-        duration: 5000
+        duration: 5000,
       });
     } finally {
       setIsProcessingWithdraw(false);
     }
   };
 
-  // ============================================
-  // CAMBIO CLP → USD: Cotizar
-  // ============================================
   const handleGetQuote = async () => {
     const monto = Number(exchangeAmount);
     if (!monto || monto <= 0) {
       toast({
-        title: '❌ Monto inválido',
+        title: '❌ Monto invalido',
         description: 'Ingresa un monto en pesos para convertir',
         variant: 'destructive',
-        duration: 3000
+        duration: 3000,
       });
       return;
     }
     if (monto < 1000) {
       toast({
-        title: '❌ Monto mínimo',
-        description: 'El monto mínimo para cambiar es de $1.000 CLP',
+        title: '❌ Monto minimo',
+        description: 'El monto minimo para cambiar es de $1.000 CLP',
         variant: 'destructive',
-        duration: 3000
+        duration: 3000,
       });
       return;
     }
@@ -640,7 +866,7 @@ const MyUnits = () => {
       setExchangeQuote(null);
 
       const { data, error } = await supabase.rpc('cotizar_cambio_clp_usd', {
-        p_monto_clp: monto
+        p_monto_clp: monto,
       });
 
       if (error) throw error;
@@ -652,25 +878,22 @@ const MyUnits = () => {
         title: '❌ Error al cotizar',
         description: error.message,
         variant: 'destructive',
-        duration: 4000
+        duration: 4000,
       });
     } finally {
       setIsLoadingQuote(false);
     }
   };
 
-  // ============================================
-  // CAMBIO CLP → USD: Ejecutar conversión
-  // ============================================
   const handleExecuteExchange = async () => {
     const monto = Number(exchangeAmount);
     if (!monto || monto <= 0) return;
     if (monto < 1000) {
       toast({
-        title: '❌ Monto mínimo',
-        description: 'El monto mínimo para cambiar es de $1.000 CLP',
+        title: '❌ Monto minimo',
+        description: 'El monto minimo para cambiar es de $1.000 CLP',
         variant: 'destructive',
-        duration: 3000
+        duration: 3000,
       });
       return;
     }
@@ -680,7 +903,7 @@ const MyUnits = () => {
 
       const { data, error } = await supabase.rpc('convertir_clp_a_usd', {
         p_user_id: user.id,
-        p_monto_clp: monto
+        p_monto_clp: monto,
       });
 
       if (error) {
@@ -689,7 +912,7 @@ const MyUnits = () => {
             title: '❌ Saldo insuficiente',
             description: error.message,
             variant: 'destructive',
-            duration: 5000
+            duration: 5000,
           });
         } else {
           throw error;
@@ -700,22 +923,20 @@ const MyUnits = () => {
       toast({
         title: '✅ Cambio realizado',
         description: `Convertiste $${monto.toLocaleString('es-CL')} CLP a $${Number(data.monto_usd).toFixed(2)} USD`,
-        duration: 5000
+        duration: 5000,
       });
 
-      // Recargar saldos y cerrar modal
       await loadSaldoDisponible();
       setExchangeAmount('');
       setExchangeQuote(null);
       setShowExchangeModal(false);
-
     } catch (error) {
       console.error('Error ejecutando cambio:', error);
       toast({
         title: '❌ Error al realizar cambio',
         description: error.message,
         variant: 'destructive',
-        duration: 5000
+        duration: 5000,
       });
     } finally {
       setIsProcessingExchange(false);
@@ -724,17 +945,14 @@ const MyUnits = () => {
 
   const deleteBankAccount = async (accountId) => {
     try {
-      const { error } = await supabase
-        .from('datos_bancarios')
-        .delete()
-        .eq('id', accountId);
+      const { error } = await supabase.from('datos_bancarios').delete().eq('id', accountId);
 
       if (error) throw error;
 
       toast({
         title: '✅ Cuenta eliminada',
-        description: 'La cuenta bancaria se eliminó correctamente',
-        duration: 3000
+        description: 'La cuenta bancaria se elimino correctamente',
+        duration: 3000,
       });
 
       await loadSavedBankAccounts();
@@ -747,25 +965,20 @@ const MyUnits = () => {
           numeroCuenta: '',
           rutTitular: '',
           nombreTitular: '',
-          email: ''
+          email: '',
         });
       }
-
     } catch (error) {
       console.error('Error eliminando cuenta:', error);
       toast({
         title: '❌ Error',
         description: error.message,
         variant: 'destructive',
-        duration: 4000
+        duration: 4000,
       });
     }
   };
 
-  // Corregir historial: patrimonio_total_real (bug) = saldo_clp (CLP) + valor_ue (USD)
-  // USD correcto = saldo_usd + valor_ue + (saldo_clp/fxRate)
-  // 1) factor = clpRatio/fxRate + ueRatio  → transforma raw buggy a USD (sin saldo_usd)
-  // 2) se suma saldoUSD a todos los puntos (saldo_usd no está en patrimonio_total_real)
   const chartHistorial = useMemo(() => {
     if (!lucro || historial.length === 0) return historial;
     const sCLP = saldoDisponible || 0;
@@ -773,18 +986,27 @@ const MyUnits = () => {
     const sUSD = saldoUSD || 0;
     const rawTotal = sCLP + ueUSD;
     const f = fxRate > 0 ? fxRate : 930;
-    const factor = rawTotal > 0 ? (sCLP / rawTotal / f) + (ueUSD / rawTotal) : 0;
+    const factor = rawTotal > 0 ? sCLP / rawTotal / f + ueUSD / rawTotal : 0;
     if (factor <= 0) return historial;
-    return historial.map(h => ({
+    return historial.map((h) => ({
       ...h,
-      patrimonio_total_real: Number(h.patrimonio_total_real || 0) * factor + sUSD
+      patrimonio_total_real: Number(h.patrimonio_total_real || 0) * factor + sUSD,
     }));
   }, [historial, lucro, fxRate, saldoDisponible, saldoUSD]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 text-gold animate-spin" />
+      <div className="space-y-8">
+        <div>
+          <h2 className="text-xl font-semibold text-[#1A1D2B] dark:text-white tracking-tight">
+            Mis Unidades
+          </h2>
+          <p className="text-sm text-[#6E6E6E] dark:text-[#9CA3AF] mt-1">
+            Resumen de tu cartera de UEs
+          </p>
+        </div>
+        <MetricsSkeleton />
+        <div className="animate-pulse bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/10 rounded-2xl p-6 h-[400px]" />
       </div>
     );
   }
@@ -792,223 +1014,259 @@ const MyUnits = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-semibold text-[#1A1D2B] dark:text-white tracking-tight">Mis Unidades</h2>
-        <p className="text-sm text-[#6E6E6E] dark:text-[#9CA3AF] mt-1">Resumen de tu cartera de UEs</p>
+        <h2 className="text-xl font-semibold text-[#1A1D2B] dark:text-white tracking-tight">
+          Mis Unidades
+        </h2>
+        <p className="text-sm text-[#6E6E6E] dark:text-[#9CA3AF] mt-1">
+          Resumen de tu cartera de UEs
+        </p>
       </div>
 
-      {lucro && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          {/* Total UEs */}
+      {lucro ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Total UEs — col-span-2 */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.05 }}
-            whileHover={{ y: -2, transition: { duration: 0.2 } }}
-            className="relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/15 hover:border-[#C9A227]/40 rounded-2xl p-5 shadow-sm hover:shadow-[0_8px_32px_-4px_rgba(201,162,39,0.12)] transition-all duration-300 group"
+            {...cardSpring}
+            transition={{ ...cardSpring.transition, delay: 0.05 }}
+            {...springHover}
+            className="lg:col-span-2 relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/15 hover:border-[#C9A227]/40 rounded-2xl p-5 shadow-sm hover:shadow-[0_8px_32px_-4px_rgba(201,162,39,0.12)] transition-shadow duration-300 group"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-[#C9A227]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[#C9A227]/30 to-transparent" />
             <div className="relative z-10">
               <div className="flex justify-between items-start mb-3">
-                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">Total UEs</p>
+                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">
+                  Total UEs
+                </p>
                 <div className="p-2 bg-[#C9A227]/10 rounded-xl group-hover:bg-[#C9A227]/20 transition-colors duration-300">
                   <PieChart className="w-4 h-4 text-[#C9A227]" />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight">
+              <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight font-mono tabular-nums">
                 {Number(lucro.ue_totales).toLocaleString('es-CL', {
                   minimumFractionDigits: 3,
-                  maximumFractionDigits: 3
+                  maximumFractionDigits: 3,
                 })}
               </p>
             </div>
           </motion.div>
 
-          {/* Valor de mis UEs */}
+          {/* Valor de UEs — col-span-2 */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            whileHover={{ y: -2, transition: { duration: 0.2 } }}
-            className="relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/20 hover:border-[#C9A227]/50 rounded-2xl p-5 shadow-sm hover:shadow-[0_8px_32px_-4px_rgba(201,162,39,0.18)] transition-all duration-300 group"
+            {...cardSpring}
+            transition={{ ...cardSpring.transition, delay: 0.1 }}
+            {...springHover}
+            className="lg:col-span-2 relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/20 hover:border-[#C9A227]/50 rounded-2xl p-5 shadow-sm hover:shadow-[0_8px_32px_-4px_rgba(201,162,39,0.18)] transition-shadow duration-300 group"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-[#C9A227]/8 via-[#C9A227]/2 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[#C9A227]/50 to-transparent" />
             <div className="relative z-10">
               <div className="flex justify-between items-start mb-3">
-                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">Valor de UEs</p>
+                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">
+                  Valor de UEs
+                </p>
                 <div className="p-2 bg-[#C9A227]/15 rounded-xl group-hover:bg-[#C9A227]/25 transition-colors duration-300">
                   <Wallet className="w-4 h-4 text-[#C9A227]" />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-[#C9A227] tracking-tight">{formatUSD(lucro.valor_actual)}</p>
-              <p className="text-[11px] text-[#6E6E6E]/60 dark:text-[#9CA3AF]/60 mt-1 font-medium">
+              <p className="text-2xl font-bold text-[#C9A227] tracking-tight font-mono tabular-nums">
+                {formatUSD(lucro.valor_actual)}
+              </p>
+              <p className="text-[11px] text-[#6E6E6E]/60 dark:text-[#9CA3AF]/60 mt-1 font-light">
                 {formatCLP(lucro.valor_actual, fxRate)}
               </p>
             </div>
           </motion.div>
 
-          {/* Inversion Total */}
+          {/* Inversion Total — col-span-1 */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.15 }}
-            whileHover={{ y: -2, transition: { duration: 0.2 } }}
-            className="relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/15 hover:border-[#C9A227]/40 rounded-2xl p-5 shadow-sm hover:shadow-[0_8px_32px_-4px_rgba(201,162,39,0.12)] transition-all duration-300 group"
+            {...cardSpring}
+            transition={{ ...cardSpring.transition, delay: 0.15 }}
+            {...springHover}
+            className="lg:col-span-1 relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/15 hover:border-[#C9A227]/40 rounded-2xl p-5 shadow-sm hover:shadow-[0_8px_32px_-4px_rgba(201,162,39,0.12)] transition-shadow duration-300 group"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-[#C9A227]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[#C9A227]/30 to-transparent" />
             <div className="relative z-10">
               <div className="flex justify-between items-start mb-3">
-                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">Inversion Total</p>
+                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">
+                  Inversion Total
+                </p>
                 <div className="p-2 bg-[#C9A227]/10 rounded-xl group-hover:bg-[#C9A227]/20 transition-colors duration-300">
                   <TrendingUp className="w-4 h-4 text-[#C9A227]" />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight">
+              <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight font-mono tabular-nums">
                 {formatUSD(lucro.total_invertido)}
               </p>
-              <p className="text-[11px] text-[#6E6E6E]/60 dark:text-[#9CA3AF]/60 mt-1 font-medium">
+              <p className="text-[11px] text-[#6E6E6E]/60 dark:text-[#9CA3AF]/60 mt-1 font-light">
                 {formatCLP(lucro.total_invertido, fxRate)}
               </p>
             </div>
           </motion.div>
 
-          {/* Rentabilidad */}
+          {/* Rentabilidad — col-span-1 */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-            whileHover={{ y: -2, transition: { duration: 0.2 } }}
-            className={`relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border rounded-2xl p-5 shadow-sm transition-all duration-300 group ${
+            {...cardSpring}
+            transition={{ ...cardSpring.transition, delay: 0.2 }}
+            {...springHover}
+            className={`lg:col-span-1 relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border rounded-2xl p-5 shadow-sm transition-shadow duration-300 group ${
               Number(lucro.lucro_total) >= 0
-                ? 'border-emerald-500/20 hover:border-emerald-500/50 hover:shadow-[0_8px_32px_-4px_rgba(16,185,129,0.15)]'
-                : 'border-red-500/20 hover:border-red-500/50 hover:shadow-[0_8px_32px_-4px_rgba(239,68,68,0.15)]'
+                ? 'border-[#10B981]/20 hover:border-[#10B981]/50 hover:shadow-[0_8px_32px_-4px_rgba(16,185,129,0.15)]'
+                : 'border-[#EF4444]/20 hover:border-[#EF4444]/50 hover:shadow-[0_8px_32px_-4px_rgba(239,68,68,0.15)]'
             }`}
           >
-            <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
-              Number(lucro.lucro_total) >= 0
-                ? 'from-emerald-500/5 via-transparent to-transparent'
-                : 'from-red-500/5 via-transparent to-transparent'
-            }`} />
-            <div className={`absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-current to-transparent ${
-              Number(lucro.lucro_total) >= 0 ? 'text-emerald-500/30' : 'text-red-500/30'
-            }`} />
+            <div
+              className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
+                Number(lucro.lucro_total) >= 0
+                  ? 'from-[#10B981]/5 via-transparent to-transparent'
+                  : 'from-[#EF4444]/5 via-transparent to-transparent'
+              }`}
+            />
+            <div
+              className={`absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-current to-transparent ${
+                Number(lucro.lucro_total) >= 0 ? 'text-[#10B981]/30' : 'text-[#EF4444]/30'
+              }`}
+            />
             <div className="relative z-10">
               <div className="flex justify-between items-start mb-3">
-                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">Rentabilidad</p>
-                <div className={`p-2 rounded-xl transition-colors duration-300 ${
-                  Number(lucro.lucro_total) >= 0
-                    ? 'bg-emerald-500/10 group-hover:bg-emerald-500/20'
-                    : 'bg-red-500/10 group-hover:bg-red-500/20'
-                }`}>
+                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">
+                  Rentabilidad
+                </p>
+                <div
+                  className={`p-2 rounded-xl transition-colors duration-300 ${
+                    Number(lucro.lucro_total) >= 0
+                      ? 'bg-[#10B981]/10 group-hover:bg-[#10B981]/20'
+                      : 'bg-[#EF4444]/10 group-hover:bg-[#EF4444]/20'
+                  }`}
+                >
                   {Number(lucro.lucro_total) >= 0 ? (
-                    <ArrowUpRight className="w-4 h-4 text-emerald-500" />
+                    <ArrowUpRight className="w-4 h-4 text-[#10B981]" />
                   ) : (
-                    <ArrowDownRight className="w-4 h-4 text-red-500" />
+                    <ArrowDownRight className="w-4 h-4 text-[#EF4444]" />
                   )}
                 </div>
               </div>
-              <p className={`text-2xl font-bold tracking-tight ${
-                Number(lucro.lucro_total) >= 0 ? 'text-emerald-500' : 'text-red-500'
-              }`}>
+              <p
+                className={`text-2xl font-bold tracking-tight font-mono tabular-nums ${
+                  Number(lucro.lucro_total) >= 0 ? 'text-[#10B981]' : 'text-[#EF4444]'
+                }`}
+              >
                 {Number(lucro.porcentaje_lucro).toFixed(2)}%
               </p>
-              <p className={`text-[11px] mt-1 font-medium ${
-                Number(lucro.lucro_total) >= 0 ? 'text-emerald-500/60' : 'text-red-500/60'
-              }`}>
-                {Number(lucro.lucro_total) >= 0 ? '+' : ''}{formatUSD(Math.abs(Number(lucro.lucro_total)))} &middot; {formatCLP(Math.abs(Number(lucro.lucro_total)), fxRate)}
+              <p
+                className={`text-[11px] mt-1 font-light ${
+                  Number(lucro.lucro_total) >= 0 ? 'text-[#10B981]/60' : 'text-[#EF4444]/60'
+                }`}
+              >
+                {Number(lucro.lucro_total) >= 0 ? '+' : ''}
+                {formatUSD(Math.abs(Number(lucro.lucro_total)))} &middot;{' '}
+                {formatCLP(Math.abs(Number(lucro.lucro_total)), fxRate)}
               </p>
             </div>
           </motion.div>
 
-          {/* Saldo en Pesos */}
+          {/* Saldo en Pesos — col-span-1 */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.25 }}
-            whileHover={{ y: -2, transition: { duration: 0.2 } }}
+            {...cardSpring}
+            transition={{ ...cardSpring.transition, delay: 0.25 }}
+            {...springHover}
             onClick={() => setShowExchangeModal(true)}
-            className="relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-purple-500/15 hover:border-purple-500/50 rounded-2xl p-5 shadow-sm hover:shadow-[0_8px_32px_-4px_rgba(168,85,247,0.12)] transition-all duration-300 group cursor-pointer"
+            className="lg:col-span-1 relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#8B5CF6]/15 hover:border-[#8B5CF6]/50 rounded-2xl p-5 shadow-sm hover:shadow-[0_8px_32px_-4px_rgba(139,92,246,0.12)] transition-shadow duration-300 group cursor-pointer"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-purple-400/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#8B5CF6]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[#8B5CF6]/20 to-transparent" />
             <div className="relative z-10">
               <div className="flex justify-between items-start mb-3">
-                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">Saldo en Pesos</p>
-                <div className="p-2 bg-purple-500/10 rounded-xl group-hover:bg-purple-500/20 transition-colors duration-300">
-                  <DollarSign className="w-4 h-4 text-purple-500" />
+                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">
+                  Saldo en Pesos
+                </p>
+                <div className="p-2 bg-[#8B5CF6]/10 rounded-xl group-hover:bg-[#8B5CF6]/20 transition-colors duration-300">
+                  <DollarSign className="w-4 h-4 text-[#8B5CF6]" />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight">
+              <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight font-mono tabular-nums">
                 ${saldoDisponible.toLocaleString('es-CL')}
               </p>
-              <p className="text-[11px] text-purple-500/70 mt-1 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 font-medium">
+              <p className="text-[11px] text-[#8B5CF6]/70 mt-1 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 font-medium">
                 <ArrowRightLeft className="w-3 h-3" />
                 Cambiar a USD
               </p>
             </div>
           </motion.div>
 
-          {/* Saldo en Dolares */}
+          {/* Saldo en Dolares — col-span-1 */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-            whileHover={{ y: -2, transition: { duration: 0.2 } }}
-            className="relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-emerald-500/15 hover:border-emerald-500/50 rounded-2xl p-5 shadow-sm hover:shadow-[0_8px_32px_-4px_rgba(16,185,129,0.12)] transition-all duration-300 group"
+            {...cardSpring}
+            transition={{ ...cardSpring.transition, delay: 0.3 }}
+            {...springHover}
+            className="lg:col-span-1 relative overflow-hidden bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#10B981]/15 hover:border-[#10B981]/50 rounded-2xl p-5 shadow-sm hover:shadow-[0_8px_32px_-4px_rgba(16,185,129,0.12)] transition-shadow duration-300 group"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#10B981]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[#10B981]/30 to-transparent" />
             <div className="relative z-10">
               <div className="flex justify-between items-start mb-3">
-                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">Saldo en Dolares</p>
-                <div className="p-2 bg-emerald-500/10 rounded-xl group-hover:bg-emerald-500/20 transition-colors duration-300">
-                  <DollarSign className="w-4 h-4 text-emerald-500" />
+                <p className="text-[#6E6E6E] dark:text-[#9CA3AF] text-[11px] font-semibold tracking-widest uppercase">
+                  Saldo en Dolares
+                </p>
+                <div className="p-2 bg-[#10B981]/10 rounded-xl group-hover:bg-[#10B981]/20 transition-colors duration-300">
+                  <DollarSign className="w-4 h-4 text-[#10B981]" />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight">
+              <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight font-mono tabular-nums">
                 ${saldoUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
               </p>
-              <p className="text-[11px] text-emerald-500/60 mt-1 font-medium">
+              <p className="text-[11px] text-[#10B981]/60 mt-1 font-light">
                 Para compra de UEs
               </p>
             </div>
           </motion.div>
         </div>
+      ) : (
+        <EmptyState
+          icon={PieChart}
+          title="No tienes unidades registradas"
+          subtitle="Tus metricas de UEs apareceran aqui cuando esten disponibles"
+        />
       )}
 
-      <PatrimonioChart historial={chartHistorial} fxRate={fxRate} lucro={lucro} saldoCLP={saldoDisponible} saldoUSD={saldoUSD} />
+      <PatrimonioChart
+        historial={chartHistorial}
+        fxRate={fxRate}
+        lucro={lucro}
+        saldoCLP={saldoDisponible}
+        saldoUSD={saldoUSD}
+      />
 
-      {/* BOTONES DE ACCION: Cambiar Divisas + Retirar Fondos */}
+      {/* BOTONES DE ACCION */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.35 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25, delay: 0.35 }}
         className="flex justify-center gap-4 flex-wrap"
       >
         <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
+          whileHover={{ scale: 1.02, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
+          whileTap={{ scale: 0.97, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
           onClick={() => setShowExchangeModal(true)}
-          className="px-6 py-3 bg-gradient-to-r from-[#C9A227] to-[#D4AF37] hover:from-[#D4AF37] hover:to-[#E4C65A] text-[#1A1D2B] text-sm font-bold rounded-2xl shadow-lg hover:shadow-[0_8px_25px_-4px_rgba(201,162,39,0.4)] transition-all duration-300 flex items-center gap-2.5"
+          className="px-6 py-3 bg-gradient-to-r from-[#C9A227] to-[#D4AF37] hover:from-[#D4AF37] hover:to-[#E4C65A] text-[#1A1D2B] text-sm font-bold rounded-2xl shadow-lg hover:shadow-[0_8px_25px_-4px_rgba(201,162,39,0.4)] transition-all duration-300 flex items-center gap-2.5 w-full sm:w-auto"
         >
           <ArrowRightLeft className="w-4 h-4" />
           Cambiar CLP a USD
         </motion.button>
 
         <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
+          whileHover={{ scale: 1.02, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
+          whileTap={{ scale: 0.97, transition: { type: 'spring', stiffness: 300, damping: 20 } }}
           onClick={() => setShowWithdrawModal(true)}
-          className="px-6 py-3 bg-white dark:bg-[#1A1D2B] hover:bg-red-50 dark:hover:bg-red-950/20 text-[#8B1E3F] dark:text-red-400 text-sm font-bold rounded-2xl border-2 border-[#8B1E3F]/20 dark:border-red-400/20 hover:border-[#8B1E3F]/50 dark:hover:border-red-400/50 shadow-sm hover:shadow-[0_8px_25px_-4px_rgba(139,30,63,0.2)] transition-all duration-300 flex items-center gap-2.5"
+          className="px-6 py-3 bg-white dark:bg-[#1A1D2B] hover:bg-red-50 dark:hover:bg-red-950/20 text-[#EF4444] text-sm font-bold rounded-2xl border-2 border-[#EF4444]/20 hover:border-[#EF4444]/50 shadow-sm hover:shadow-[0_8px_25px_-4px_rgba(239,68,68,0.2)] transition-all duration-300 flex items-center gap-2.5 w-full sm:w-auto"
         >
           <DollarSign className="w-4 h-4" />
           Retirar Fondos
         </motion.button>
       </motion.div>
 
-      {/* TABLA DE HISTORIAL DE RETIROS */}
+      {/* HISTORIAL DE RETIROS */}
       <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#C9A227]/10">
           <div className="flex items-center gap-2.5">
@@ -1016,138 +1274,101 @@ const MyUnits = () => {
               <DollarSign className="w-3.5 h-3.5 text-[#C9A227]" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-[#1A1D2B] dark:text-white">Historial de Retiros</h3>
-              <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF]">Seguimiento de tus solicitudes</p>
+              <h3 className="text-sm font-semibold text-[#1A1D2B] dark:text-white">
+                Historial de Retiros
+              </h3>
+              <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF]">
+                Seguimiento de tus solicitudes
+              </p>
             </div>
           </div>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center py-8">
-            <Loader2 className="w-5 h-5 text-[#C9A227] animate-spin" />
-          </div>
-        ) : withdrawHistory.length === 0 ? (
-          <div className="text-center py-10 mx-4 mb-4 bg-gray-50/50 dark:bg-gray-800/30 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
-            <DollarSign className="w-8 h-8 text-[#6E6E6E]/40 mx-auto mb-2" />
-            <p className="text-sm text-[#6E6E6E] dark:text-[#9CA3AF] font-medium">No tienes retiros registrados</p>
-            <p className="text-xs text-[#6E6E6E]/60 dark:text-[#9CA3AF]/60 mt-0.5">Tus solicitudes aparecerán aquí</p>
+        {withdrawHistory.length === 0 ? (
+          <div className="p-4">
+            <EmptyState
+              icon={DollarSign}
+              title="No tienes retiros registrados"
+              subtitle="Tus solicitudes apareceran aqui"
+            />
           </div>
         ) : (
           <div className="overflow-x-auto px-2">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left py-3 px-3 text-[11px] font-medium text-[#6E6E6E] dark:text-[#9CA3AF] tracking-wide">Fecha</th>
-                  <th className="text-left py-3 px-3 text-[11px] font-medium text-[#6E6E6E] dark:text-[#9CA3AF] tracking-wide">Monto</th>
-                  <th className="text-left py-3 px-3 text-[11px] font-medium text-[#6E6E6E] dark:text-[#9CA3AF] tracking-wide">Banco</th>
-                  <th className="text-left py-3 px-3 text-[11px] font-medium text-[#6E6E6E] dark:text-[#9CA3AF] tracking-wide">Estado</th>
-                  <th className="text-left py-3 px-3 text-[11px] font-medium text-[#6E6E6E] dark:text-[#9CA3AF] tracking-wide">Cuenta</th>
+                  <th className="text-left py-3 px-3 text-[11px] font-medium text-[#6E6E6E] dark:text-[#9CA3AF] tracking-wide">
+                    Fecha
+                  </th>
+                  <th className="text-left py-3 px-3 text-[11px] font-medium text-[#6E6E6E] dark:text-[#9CA3AF] tracking-wide">
+                    Monto
+                  </th>
+                  <th className="text-left py-3 px-3 text-[11px] font-medium text-[#6E6E6E] dark:text-[#9CA3AF] tracking-wide">
+                    Banco
+                  </th>
+                  <th className="text-left py-3 px-3 text-[11px] font-medium text-[#6E6E6E] dark:text-[#9CA3AF] tracking-wide">
+                    Estado
+                  </th>
+                  <th className="text-left py-3 px-3 text-[11px] font-medium text-[#6E6E6E] dark:text-[#9CA3AF] tracking-wide">
+                    Cuenta
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {withdrawHistory.map((retiro, index) => {
-                  const getStatusStyle = (estado) => {
-                    switch (estado) {
-                      case 'completado':
-                        return {
-                          bg: 'bg-emerald-100 dark:bg-emerald-900/20',
-                          text: 'text-emerald-700 dark:text-emerald-400',
-                          border: 'border-emerald-300 dark:border-emerald-700',
-                          dot: 'bg-emerald-500 shadow-[0_0_6px_2px_rgba(16,185,129,0.4)]',
-                          icon: 'Check',
-                          label: 'Completado'
-                        };
-                      case 'rechazado':
-                        return {
-                          bg: 'bg-red-100 dark:bg-red-900/20',
-                          text: 'text-red-700 dark:text-red-400',
-                          border: 'border-red-300 dark:border-red-700',
-                          dot: 'bg-red-500 shadow-[0_0_6px_2px_rgba(239,68,68,0.4)]',
-                          icon: 'X',
-                          label: 'Rechazado'
-                        };
-                      case 'pendiente':
-                        return {
-                          bg: 'bg-amber-100 dark:bg-amber-900/20',
-                          text: 'text-amber-700 dark:text-amber-400',
-                          border: 'border-amber-300 dark:border-amber-700',
-                          dot: 'bg-amber-500 shadow-[0_0_6px_2px_rgba(245,158,11,0.4)] animate-pulse',
-                          icon: 'Clock',
-                          label: 'Pendiente'
-                        };
-                      case 'procesando':
-                        return {
-                          bg: 'bg-blue-100 dark:bg-blue-900/20',
-                          text: 'text-blue-700 dark:text-blue-400',
-                          border: 'border-blue-300 dark:border-blue-700',
-                          dot: 'bg-blue-500 shadow-[0_0_6px_2px_rgba(59,130,246,0.4)] animate-pulse',
-                          icon: 'Loader2',
-                          label: 'Procesando'
-                        };
-                      default:
-                        return {
-                          bg: 'bg-gray-100 dark:bg-gray-800',
-                          text: 'text-gray-700 dark:text-gray-400',
-                          border: 'border-gray-300 dark:border-gray-700',
-                          dot: 'bg-gray-400',
-                          icon: 'Circle',
-                          label: estado || 'Desconocido'
-                        };
-                    }
-                  };
-
-                  return (
-                    <motion.tr
-                      key={retiro.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                    >
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                          <span className="text-sm font-medium text-gray-900 dark:text-white">
-                            {new Date(retiro.fecha_solicitud).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' })}
-                          </span>
-                        </div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-6">
-                          {new Date(retiro.fecha_solicitud).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+                {withdrawHistory.map((retiro, index) => (
+                  <motion.tr
+                    key={retiro.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 25, delay: index * 0.05 }}
+                    className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  >
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                          {new Date(retiro.fecha_solicitud).toLocaleDateString('es-CL', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                          })}
                         </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="text-base font-bold text-gray-900 dark:text-white">
-                          ${Number(retiro.monto_clp).toLocaleString('es-CL')}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">{retiro.banco_destino || 'N/A'}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{retiro.tipo_cuenta || '-'}</p>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        {(() => {
-                          const s = getStatusStyle(retiro.estado);
-                          return (
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${s.bg} ${s.text} ${s.border}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-                              <span className="uppercase tracking-wider">{s.label}</span>
-                            </span>
-                          );
-                        })()}
-                        {retiro.motivo_rechazo && (
-                          <p className="text-xs text-red-500 mt-1">{retiro.motivo_rechazo}</p>
-                        )}
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="text-sm font-mono text-gray-700 dark:text-gray-300">
-                          ***{retiro.numero_cuenta?.slice(-4) || '****'}
-                        </span>
-                      </td>
-                    </motion.tr>
-                  );
-                })}
+                      </div>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 ml-6">
+                        {new Date(retiro.fecha_solicitud).toLocaleTimeString('es-CL', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="text-base font-bold text-gray-900 dark:text-white font-mono tabular-nums">
+                        ${Number(retiro.monto_clp).toLocaleString('es-CL')}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {retiro.banco_destino || 'N/A'}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                          {retiro.tipo_cuenta || '-'}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <StatusBadge
+                        estado={retiro.estado}
+                        motivoRechazo={retiro.motivo_rechazo}
+                      />
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="text-sm font-mono text-gray-700 dark:text-gray-300">
+                        ***{retiro.numero_cuenta?.slice(-4) || '****'}
+                      </span>
+                    </td>
+                  </motion.tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -1155,7 +1376,9 @@ const MyUnits = () => {
 
         {hasMoreWithdraws && (
           <div className="flex justify-center px-5 py-4 border-t border-[#C9A227]/10">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
               onClick={async () => {
                 const newLimit = withdrawHistoryLimit + 3;
                 setWithdrawHistoryLimit(newLimit);
@@ -1164,22 +1387,27 @@ const MyUnits = () => {
               className="px-4 py-2 bg-[#C9A227]/10 hover:bg-[#C9A227]/20 text-[#C9A227] text-xs font-medium rounded-lg transition-colors duration-200 flex items-center gap-1.5"
             >
               <ArrowDownRight className="w-3.5 h-3.5" />
-              Ver más retiros
-            </button>
+              Ver mas retiros
+            </motion.button>
           </div>
         )}
 
         <div className="px-5 py-3 text-center border-t border-[#C9A227]/10">
           <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF]">
-            Mostrando <span className="font-medium text-[#1A1D2B] dark:text-white">{withdrawHistory.length}</span>
+            Mostrando{' '}
+            <span className="font-medium text-[#1A1D2B] dark:text-white">
+              {withdrawHistory.length}
+            </span>
             {withdrawHistory.length === 1 ? ' retiro' : ' retiros'}
-            {!hasMoreWithdraws && withdrawHistory.length > 0 && <span className="ml-1 text-[#6E6E6E]/60">(todos)</span>}
+            {!hasMoreWithdraws && withdrawHistory.length > 0 && (
+              <span className="ml-1 text-[#6E6E6E]/60">(todos)</span>
+            )}
           </p>
         </div>
       </div>
 
       {/* ============================================ */}
-      {/* MODAL: CAMBIO CLP → USD */}
+      {/* MODAL: CAMBIO CLP → USD                       */}
       {/* ============================================ */}
       <AnimatePresence>
         {showExchangeModal && (
@@ -1189,26 +1417,31 @@ const MyUnits = () => {
             exit={{ opacity: 0 }}
             role="dialog"
             aria-modal="true"
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-[#0B0C10]/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             onClick={() => !isProcessingExchange && setShowExchangeModal(false)}
-            onKeyDown={(e) => e.key === 'Escape' && !isProcessingExchange && setShowExchangeModal(false)}
+            onKeyDown={(e) =>
+              e.key === 'Escape' && !isProcessingExchange && setShowExchangeModal(false)
+            }
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-8 max-w-lg w-full shadow-2xl border-2 border-purple-500/30"
+              className="bg-white dark:bg-[#1A1D2B] rounded-2xl p-8 max-w-lg w-[calc(100%-2rem)] mx-4 shadow-2xl border border-[#8B5CF6]/20 shadow-[#8B5CF6]/10"
             >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-purple-500/10 rounded-xl">
-                    <ArrowRightLeft className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+                  <div className="p-3 bg-[#8B5CF6]/10 rounded-xl">
+                    <ArrowRightLeft className="w-8 h-8 text-[#8B5CF6]" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Cambiar Divisas</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+                      Cambiar Divisas
+                    </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      CLP → USD
+                      CLP &rarr; USD
                     </p>
                   </div>
                 </div>
@@ -1222,29 +1455,33 @@ const MyUnits = () => {
               </div>
 
               <div className="space-y-6">
-                {/* Saldos actuales */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4">
-                    <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Saldo CLP</p>
-                    <p className="text-xl font-bold text-purple-700 dark:text-purple-300 mt-1">
+                  <div className="bg-[#8B5CF6]/10 border border-[#8B5CF6]/20 rounded-xl p-4">
+                    <p className="text-xs font-semibold text-[#8B5CF6] uppercase tracking-wider">
+                      Saldo CLP
+                    </p>
+                    <p className="text-xl font-bold text-[#8B5CF6] mt-1 font-mono tabular-nums">
                       ${saldoDisponible.toLocaleString('es-CL')}
                     </p>
                   </div>
-                  <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4">
-                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Saldo USD</p>
-                    <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300 mt-1">
+                  <div className="bg-[#10B981]/10 border border-[#10B981]/20 rounded-xl p-4">
+                    <p className="text-xs font-semibold text-[#10B981] uppercase tracking-wider">
+                      Saldo USD
+                    </p>
+                    <p className="text-xl font-bold text-[#10B981] mt-1 font-mono tabular-nums">
                       ${saldoUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   </div>
                 </div>
 
-                {/* Input monto CLP */}
                 <div>
                   <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
                     Monto a cambiar (CLP)
                   </label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">
+                      $
+                    </span>
                     <input
                       type="number"
                       value={exchangeAmount}
@@ -1255,7 +1492,7 @@ const MyUnits = () => {
                       placeholder="Ej: 100000"
                       disabled={isProcessingExchange}
                       autoFocus
-                      className="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-700 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all text-gray-900 dark:text-white font-semibold text-lg"
+                      className="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-700 rounded-xl focus:border-[#8B5CF6] focus:ring-2 focus:ring-[#8B5CF6]/20 outline-none transition-all text-gray-900 dark:text-white font-semibold text-lg"
                     />
                   </div>
                   {saldoDisponible > 0 && (
@@ -1264,19 +1501,20 @@ const MyUnits = () => {
                         setExchangeAmount(String(saldoDisponible));
                         setExchangeQuote(null);
                       }}
-                      className="mt-2 text-xs text-purple-600 dark:text-purple-400 hover:underline"
+                      className="mt-2 text-xs text-[#8B5CF6] hover:underline"
                     >
                       Usar todo mi saldo (${saldoDisponible.toLocaleString('es-CL')})
                     </button>
                   )}
                 </div>
 
-                {/* Botón cotizar */}
                 {!exchangeQuote && (
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={handleGetQuote}
                     disabled={isLoadingQuote || !exchangeAmount || Number(exchangeAmount) <= 0}
-                    className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full px-6 py-3 bg-gradient-to-r from-[#8B5CF6] to-indigo-600 hover:from-[#9B6CF7] hover:to-indigo-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {isLoadingQuote ? (
                       <>
@@ -1289,35 +1527,42 @@ const MyUnits = () => {
                         Cotizar Cambio
                       </>
                     )}
-                  </button>
+                  </motion.button>
                 )}
 
-                {/* Resultado cotización */}
                 {exchangeQuote && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                     className="space-y-4"
                   >
-                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/60 dark:to-gray-900/60 rounded-xl p-6 border-2 border-purple-200 dark:border-purple-800">
+                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/60 dark:to-gray-900/60 rounded-xl p-6 border-2 border-[#8B5CF6]/20">
                       <div className="flex items-center justify-between mb-4">
-                        <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">Resumen del cambio</span>
-                        <span className="text-xs bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full font-bold">
-                          1 USD = ${Number(exchangeQuote.tasa).toLocaleString('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} CLP
+                        <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+                          Resumen del cambio
+                        </span>
+                        <span className="text-xs bg-[#8B5CF6]/10 text-[#8B5CF6] px-3 py-1 rounded-full font-bold">
+                          1 USD = $
+                          {Number(exchangeQuote.tasa).toLocaleString('es-CL', {
+                            minimumFractionDigits: 1,
+                            maximumFractionDigits: 1,
+                          })}{' '}
+                          CLP
                         </span>
                       </div>
 
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600 dark:text-gray-400">Envías</span>
-                          <span className="text-lg font-bold text-gray-900 dark:text-white">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Envias</span>
+                          <span className="text-lg font-bold text-gray-900 dark:text-white font-mono tabular-nums">
                             ${Number(exchangeQuote.monto_clp).toLocaleString('es-CL')} CLP
                           </span>
                         </div>
                         <div className="border-t border-gray-200 dark:border-gray-700"></div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-gray-600 dark:text-gray-400">Recibes</span>
-                          <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
+                          <span className="text-2xl font-extrabold text-[#10B981] font-mono tabular-nums">
                             ${Number(exchangeQuote.monto_usd).toFixed(2)} USD
                           </span>
                         </div>
@@ -1325,17 +1570,21 @@ const MyUnits = () => {
                     </div>
 
                     <div className="flex gap-3">
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.97 }}
                         onClick={() => setExchangeQuote(null)}
                         disabled={isProcessingExchange}
                         className="flex-1 px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
                       >
                         Volver
-                      </button>
-                      <button
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.97 }}
                         onClick={handleExecuteExchange}
                         disabled={isProcessingExchange}
-                        className="flex-1 px-6 py-3 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="flex-1 px-6 py-3 bg-gradient-to-r from-[#10B981] to-green-600 hover:from-[#10B981] hover:to-green-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
                         {isProcessingExchange ? (
                           <>
@@ -1348,15 +1597,16 @@ const MyUnits = () => {
                             Confirmar Cambio
                           </>
                         )}
-                      </button>
+                      </motion.button>
                     </div>
                   </motion.div>
                 )}
 
-                {/* Nota informativa */}
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                   <p className="text-xs text-blue-800 dark:text-blue-300">
-                    <strong>💱 Tipo de cambio:</strong> El tipo de cambio se calcula en tiempo real. Una vez confirmado, la conversión es instantánea y se refleja en tus saldos.
+                    <strong>💱 Tipo de cambio:</strong> El tipo de cambio se calcula en tiempo
+                    real. Una vez confirmado, la conversion es instantanea y se refleja en tus
+                    saldos.
                   </p>
                 </div>
               </div>
@@ -1366,7 +1616,7 @@ const MyUnits = () => {
       </AnimatePresence>
 
       {/* ============================================ */}
-      {/* MODAL: RETIRO DE FONDOS */}
+      {/* MODAL: RETIRO DE FONDOS                       */}
       {/* ============================================ */}
       <AnimatePresence>
         {showWithdrawModal && (
@@ -1376,26 +1626,34 @@ const MyUnits = () => {
             exit={{ opacity: 0 }}
             role="dialog"
             aria-modal="true"
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-[#0B0C10]/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             onClick={() => !isProcessingWithdraw && setShowWithdrawModal(false)}
-            onKeyDown={(e) => e.key === 'Escape' && !isProcessingWithdraw && setShowWithdrawModal(false)}
+            onKeyDown={(e) =>
+              e.key === 'Escape' && !isProcessingWithdraw && setShowWithdrawModal(false)
+            }
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border-2 border-red-500/30"
+              className="bg-white dark:bg-[#1A1D2B] rounded-2xl p-8 max-w-2xl w-[calc(100%-2rem)] mx-4 max-h-[90vh] overflow-y-auto shadow-2xl border border-[#EF4444]/20 shadow-[#EF4444]/5"
             >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-red-500/10 rounded-xl">
-                    <DollarSign className="w-8 h-8 text-red-600" />
+                  <div className="p-3 bg-[#EF4444]/10 rounded-xl">
+                    <DollarSign className="w-8 h-8 text-[#EF4444]" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Retirar Fondos</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+                      Retirar Fondos
+                    </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Disponible: <span className="font-bold text-green-600">${saldoDisponible.toLocaleString('es-CL')} CLP</span>
+                      Disponible:{' '}
+                      <span className="font-bold text-[#10B981]">
+                        ${saldoDisponible.toLocaleString('es-CL')} CLP
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -1420,37 +1678,43 @@ const MyUnits = () => {
                     placeholder="Ej: 50000"
                     disabled={isProcessingWithdraw}
                     autoFocus
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-700 rounded-xl focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all text-gray-900 dark:text-white font-semibold text-lg"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-700 rounded-xl focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none transition-all text-gray-900 dark:text-white font-semibold text-lg"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Monto mínimo: $1.000 CLP</p>
+                  <p className="text-xs text-gray-500 mt-1">Monto minimo: $1.000 CLP</p>
                 </div>
 
                 {savedBankAccounts.length > 0 && (
                   <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl p-4">
-                    <h4 className="text-sm font-bold text-blue-900 dark:text-blue-300 mb-3">💳 Cuentas Guardadas</h4>
+                    <h4 className="text-sm font-bold text-blue-900 dark:text-blue-300 mb-3">
+                      Cuentas Guardadas
+                    </h4>
                     <div className="space-y-2">
                       {savedBankAccounts.map((cuenta) => (
                         <div
                           key={cuenta.id}
-                          className={`flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-all ${selectedBankAccountId === cuenta.id
-                            ? 'bg-blue-100 dark:bg-blue-900/40 border-blue-500'
-                            : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 hover:border-blue-400'
-                            }`}
+                          className={`flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                            selectedBankAccountId === cuenta.id
+                              ? 'bg-blue-100 dark:bg-blue-900/40 border-blue-500'
+                              : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 hover:border-blue-400'
+                          }`}
                           onClick={() => {
                             setSelectedBankAccountId(cuenta.id);
                             loadBankDataFromSaved(cuenta);
                           }}
                         >
                           <div className="flex-1">
-                            <p className="text-sm font-bold text-gray-900 dark:text-white">{cuenta.banco}</p>
+                            <p className="text-sm font-bold text-gray-900 dark:text-white">
+                              {cuenta.banco}
+                            </p>
                             <p className="text-xs text-gray-600 dark:text-gray-400">
-                              {cuenta.tipo_cuenta.toUpperCase()} • ***{cuenta.numero_cuenta.slice(-4)}
+                              {cuenta.tipo_cuenta.toUpperCase()} &middot; ***
+                              {cuenta.numero_cuenta.slice(-4)}
                             </p>
                           </div>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (window.confirm('¿Eliminar esta cuenta?')) {
+                              if (window.confirm('Eliminar esta cuenta?')) {
                                 deleteBankAccount(cuenta.id);
                               }
                             }}
@@ -1470,7 +1734,7 @@ const MyUnits = () => {
                           numeroCuenta: '',
                           rutTitular: bankData.rutTitular,
                           nombreTitular: bankData.nombreTitular,
-                          email: bankData.email
+                          email: bankData.email,
                         });
                       }}
                       className="mt-3 text-sm text-blue-600 dark:text-blue-400 hover:underline"
@@ -1481,16 +1745,20 @@ const MyUnits = () => {
                 )}
 
                 <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6 space-y-4 border-2 border-gray-200 dark:border-gray-700">
-                  <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Datos Bancarios</h4>
+                  <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                    Datos Bancarios
+                  </h4>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Banco</label>
+                      <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                        Banco
+                      </label>
                       <select
                         value={bankData.banco}
                         onChange={(e) => setBankData({ ...bankData, banco: e.target.value })}
                         disabled={isProcessingWithdraw}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none text-sm"
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm"
                       >
                         <option value="">Seleccionar...</option>
                         <option value="Banco de Chile">Banco de Chile</option>
@@ -1498,7 +1766,7 @@ const MyUnits = () => {
                         <option value="Banco Estado">Banco Estado</option>
                         <option value="BCI">BCI</option>
                         <option value="Scotiabank">Scotiabank</option>
-                        <option value="Banco Itaú">Banco Itaú</option>
+                        <option value="Banco Itau">Banco Itau</option>
                         <option value="Banco Security">Banco Security</option>
                         <option value="Banco Falabella">Banco Falabella</option>
                         <option value="Banco Ripley">Banco Ripley</option>
@@ -1507,12 +1775,16 @@ const MyUnits = () => {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Tipo de Cuenta</label>
+                      <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                        Tipo de Cuenta
+                      </label>
                       <select
                         value={bankData.tipoCuenta}
-                        onChange={(e) => setBankData({ ...bankData, tipoCuenta: e.target.value })}
+                        onChange={(e) =>
+                          setBankData({ ...bankData, tipoCuenta: e.target.value })
+                        }
                         disabled={isProcessingWithdraw}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none text-sm"
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm"
                       >
                         <option value="corriente">Cuenta Corriente</option>
                         <option value="vista">Cuenta Vista</option>
@@ -1522,52 +1794,66 @@ const MyUnits = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Número de Cuenta</label>
+                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                      Numero de Cuenta
+                    </label>
                     <input
                       type="text"
                       value={bankData.numeroCuenta}
-                      onChange={(e) => setBankData({ ...bankData, numeroCuenta: e.target.value })}
+                      onChange={(e) =>
+                        setBankData({ ...bankData, numeroCuenta: e.target.value })
+                      }
                       placeholder="1234567890"
                       disabled={isProcessingWithdraw}
-                      className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none text-sm"
+                      className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">RUT Titular</label>
+                      <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                        RUT Titular
+                      </label>
                       <input
                         type="text"
                         value={bankData.rutTitular}
-                        onChange={(e) => setBankData({ ...bankData, rutTitular: e.target.value })}
+                        onChange={(e) =>
+                          setBankData({ ...bankData, rutTitular: e.target.value })
+                        }
                         placeholder="12.345.678-9"
                         disabled={isProcessingWithdraw}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none text-sm"
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Nombre Titular</label>
+                      <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                        Nombre Titular
+                      </label>
                       <input
                         type="text"
                         value={bankData.nombreTitular}
-                        onChange={(e) => setBankData({ ...bankData, nombreTitular: e.target.value })}
-                        placeholder="Juan Pérez"
+                        onChange={(e) =>
+                          setBankData({ ...bankData, nombreTitular: e.target.value })
+                        }
+                        placeholder="Juan Perez"
                         disabled={isProcessingWithdraw}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none text-sm"
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Email de Confirmación</label>
+                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
+                      Email de Confirmacion
+                    </label>
                     <input
                       type="email"
                       value={bankData.email}
                       onChange={(e) => setBankData({ ...bankData, email: e.target.value })}
                       placeholder="correo@ejemplo.com"
                       disabled={isProcessingWithdraw}
-                      className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none text-sm"
+                      className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm"
                     />
                   </div>
 
@@ -1578,9 +1864,12 @@ const MyUnits = () => {
                         id="saveForFuture"
                         checked={saveForFuture}
                         onChange={(e) => setSaveForFuture(e.target.checked)}
-                        className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                        className="w-4 h-4 text-[#EF4444] border-gray-300 rounded focus:ring-[#EF4444]"
                       />
-                      <label htmlFor="saveForFuture" className="text-sm text-gray-700 dark:text-gray-300">
+                      <label
+                        htmlFor="saveForFuture"
+                        className="text-sm text-gray-700 dark:text-gray-300"
+                      >
                         Guardar estos datos para futuros retiros
                       </label>
                     </div>
@@ -1589,23 +1878,28 @@ const MyUnits = () => {
 
                 <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4">
                   <p className="text-xs text-blue-800 dark:text-blue-300">
-                    <strong>📝 Importante:</strong> El retiro será procesado en un plazo de 24-48 horas hábiles.
-                    Recibirás un email de confirmación cuando se complete la transferencia.
+                    <strong>📝 Importante:</strong> El retiro sera procesado en un plazo de 24-48
+                    horas habiles. Recibiras un email de confirmacion cuando se complete la
+                    transferencia.
                   </p>
                 </div>
 
-                <div className="flex gap-4 pt-4">
-                  <button
+                <div className="flex gap-4 pt-4 flex-col sm:flex-row">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => setShowWithdrawModal(false)}
                     disabled={isProcessingWithdraw}
-                    className="flex-1 px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                    className="flex-1 px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 w-full"
                   >
                     Cancelar
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={handleWithdraw}
                     disabled={isProcessingWithdraw}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-[#EF4444] to-red-700 hover:from-[#EF4444] hover:to-red-800 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 w-full"
                   >
                     {isProcessingWithdraw ? (
                       <>
@@ -1618,7 +1912,7 @@ const MyUnits = () => {
                         Confirmar Retiro
                       </>
                     )}
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             </motion.div>
