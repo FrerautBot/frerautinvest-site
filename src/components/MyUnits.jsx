@@ -243,346 +243,245 @@ const ChartTooltip = ({ point, mousePos, fxRate }) => {
 };
 
 // ── PatrimonioChart ───────────────────────────────────────────────
-function PatrimonioChart({ historial, fxRate, lucro, saldoCLP, saldoUSD }) {
+const PatrimonioChart = React.memo(({ historial, fxRate, lucro, saldoCLP, saldoUSD }) => {
   const [hoveredPoint, setHoveredPoint] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const rafRef = useRef(null);
+  const svgRef = useRef(null);
 
-  if (!historial || historial.length === 0) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        className="bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/20 rounded-2xl shadow-sm"
-      >
-        <div className="p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-[#C9A227]/10 rounded-lg">
-              <TrendingUp className="w-5 h-5 text-[#C9A227]" />
-            </div>
-            <h3 className="text-lg font-semibold text-[#1A1D2B] dark:text-white tracking-tight">
-              Evolucion de tu Patrimonio
-            </h3>
-          </div>
-          <EmptyState
-            icon={TrendingUp}
-            title="No hay suficiente historial"
-            subtitle="El grafico aparecera cuando tengas mas datos registrados"
-          />
-        </div>
-      </motion.div>
-    );
-  }
+  const { totalPatrimonioUSD, totalPatrimonioCLP, cambioPorcentaje, esPositivo, allPoints, pathD, areaPathD, minValor, rangoValor, chartHeight, padding, width, height } = useMemo(() => {
+    if (!historial || historial.length === 0) return {};
 
-  const width = 900;
-  const height = 350;
-  const padding = { top: 40, right: 40, bottom: 60, left: 80 };
-  const chartWidth = width - padding.left - padding.right;
-  const chartHeight = height - padding.top - padding.bottom;
+    const w = 900;
+    const h = 300;
+    const pad = { top: 30, right: 30, bottom: 50, left: 70 };
+    const cw = w - pad.left - pad.right;
+    const ch = h - pad.top - pad.bottom;
 
-  const valoresPatrimonio = historial.map((h) => (h?.patrimonio_total_real ? Number(h.patrimonio_total_real) : 0));
-  const todosLosValores = valoresPatrimonio.filter((v) => v > 0);
+    const valores = historial.map((d) => (d?.patrimonio_total_real ? Number(d.patrimonio_total_real) : 0));
+    const vfilt = valores.filter((v) => v > 0);
+    if (vfilt.length === 0) return { emptyValues: true };
 
-  if (todosLosValores.length === 0) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        className="bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/20 rounded-2xl p-6 shadow-sm"
-      >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-[#C9A227]/10 rounded-lg">
-            <TrendingUp className="w-5 h-5 text-[#C9A227]" />
-          </div>
-          <h3 className="text-lg font-semibold text-[#1A1D2B] dark:text-white tracking-tight">
-            Evolucion de tu Patrimonio
-          </h3>
-        </div>
-        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-          <p className="text-red-600 dark:text-red-400 text-xs">
-            Los datos del historial existen pero todos los valores son 0
-          </p>
-        </div>
-      </motion.div>
-    );
-  }
+    const minV = Math.min(...vfilt) * 0.95;
+    const maxV = Math.max(...vfilt) * 1.05;
+    const range = maxV - minV || 1;
 
-  const minValor = Math.min(...todosLosValores) * 0.95;
-  const maxValor = Math.max(...todosLosValores) * 1.05;
-  const rangoValor = maxValor - minValor || 1;
+    const pts = historial.map((item, idx) => {
+      const val = Number(item?.patrimonio_total_real || 0);
+      return {
+        x: pad.left + (idx / Math.max(historial.length - 1, 1)) * cw,
+        y: pad.top + ch - ((val - minV) / range) * ch,
+        fecha: item.fecha,
+        valor: val,
+        index: idx,
+      };
+    });
 
-  const allPoints = historial.map((item, index) => {
-    const valor = Number(item?.patrimonio_total_real || 0);
-    return {
-      x: padding.left + (index / (historial.length - 1)) * chartWidth,
-      y: padding.top + chartHeight - ((valor - minValor) / rangoValor) * chartHeight,
-      fecha: item.fecha,
-      valor,
-      index,
-    };
-  });
-
-  function smoothPath(pts) {
-    if (pts.length < 2) return pts.map((p) => `${p.x},${p.y}`).join(' ');
-    return pts
-      .map((p, i, a) => {
+    // Catmull-Rom smooth path
+    const buildSmooth = (pts) => {
+      if (pts.length < 2) return '';
+      return pts.map((p, i, a) => {
         if (i === 0) return `M ${p.x} ${p.y}`;
         const prev = a[i - 1];
         const next = a[i + 1] || p;
-        const tension = 0.3;
-        const cp1x = prev.x + (p.x - prev.x) * tension;
-        const cp1y = prev.y + (p.y - prev.y) * tension;
-        const cp2x = p.x - (next.x - prev.x) * tension;
-        const cp2y = p.y - (next.y - prev.y) * tension;
-        return `C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p.x},${p.y}`;
-      })
-      .join(' ');
+        const t = 0.3;
+        return `C ${prev.x + (p.x - prev.x) * t},${prev.y + (p.y - prev.y) * t} ${p.x - (next.x - prev.x) * t},${p.y - (next.y - prev.y) * t} ${p.x},${p.y}`;
+      }).join(' ');
+    };
+
+    const pd = buildSmooth(pts);
+    const ad = pd + ` L ${pts[pts.length - 1].x} ${h - pad.bottom} L ${pad.left} ${h - pad.bottom} Z`;
+
+    const last = valores[valores.length - 1];
+    const first = valores[0];
+    const absChange = last - first;
+    const pct = first > 0 ? ((absChange / first) * 100).toFixed(2) : '0.00';
+
+    const tusd = (saldoUSD || 0) + (lucro?.valor_actual || 0) + (saldoCLP || 0) / fxRate;
+    const tclp = (saldoCLP || 0) + (lucro?.valor_actual || 0) * fxRate + (saldoUSD || 0) * fxRate;
+
+    return {
+      totalPatrimonioUSD: tusd,
+      totalPatrimonioCLP: tclp,
+      cambioPorcentaje: pct,
+      esPositivo: absChange >= 0,
+      allPoints: pts,
+      pathD: pd,
+      areaPathD: ad,
+      minValor: minV,
+      rangoValor: range,
+      chartHeight: ch,
+      padding: pad,
+      width: w,
+      height: h,
+    };
+  }, [historial, fxRate, saldoCLP, saldoUSD, lucro]);
+
+  // Throttled mouse move via rAF — no setState on every pixel
+  const handleMouseMove = useCallback((e) => {
+    if (rafRef.current) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      const svg = svgRef.current;
+      if (!svg || !allPoints) return;
+      const rect = svg.getBoundingClientRect();
+      const scaleX = svg.width.baseVal.value / rect.width;
+      const mouseX = (e.clientX - rect.left) * scaleX;
+      setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+      if (mouseX < padding.left - 10 || mouseX > width - padding.right + 5) {
+        setHoveredPoint(null);
+        return;
+      }
+      const cw = width - padding.left - padding.right;
+      const idx = Math.round(((mouseX - padding.left) / cw) * (allPoints.length - 1));
+      const clamped = Math.max(0, Math.min(idx, allPoints.length - 1));
+      setHoveredPoint(allPoints[clamped]);
+    });
+  }, [allPoints, padding, width, chartHeight]);
+
+  const handleMouseLeave = useCallback(() => setHoveredPoint(null), []);
+
+  useEffect(() => {
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, []);
+
+  if (!historial || historial.length === 0) {
+    return (
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        className="bg-[#0D0E14]/80 border border-white/[0.06] rounded-2xl p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-[#C9A227]/10 rounded-lg"><TrendingUp className="w-5 h-5 text-[#C9A227]" /></div>
+          <h3 className="text-lg font-semibold text-white tracking-tight">Evolucion de tu Patrimonio</h3>
+        </div>
+        <EmptyState icon={TrendingUp} title="No hay suficiente historial" subtitle="El grafico aparecera cuando tengas mas datos registrados" />
+      </motion.div>
+    );
   }
 
-  const pathD = smoothPath(allPoints);
-  const areaPathD =
-    pathD + ` L ${allPoints[allPoints.length - 1].x} ${height - padding.bottom} L ${padding.left} ${height - padding.bottom} Z`;
+  if (allPoints && allPoints.length === 0 && !totalPatrimonioUSD) {
+    return (
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        className="bg-[#0D0E14]/80 border border-white/[0.06] rounded-2xl p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-[#C9A227]/10 rounded-lg"><TrendingUp className="w-5 h-5 text-[#C9A227]" /></div>
+          <h3 className="text-lg font-semibold text-white tracking-tight">Evolucion de tu Patrimonio</h3>
+        </div>
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+          <p className="text-red-400 text-xs">Los datos del historial existen pero todos los valores son 0</p>
+        </div>
+      </motion.div>
+    );
+  }
 
-  const valorPatrimonioFinal = valoresPatrimonio[valoresPatrimonio.length - 1];
-  const valorInicial = valoresPatrimonio[0];
-  const cambioAbsoluto = valorPatrimonioFinal - valorInicial;
-  const cambioPorcentaje =
-    valorInicial > 0 ? ((cambioAbsoluto / valorInicial) * 100).toFixed(2) : '0.00';
-  const esPositivo = cambioAbsoluto >= 0;
+  if (!allPoints || allPoints.length === 0) return null;
 
-  const totalPatrimonioUSD =
-    (saldoUSD || 0) + (lucro?.valor_actual || 0) + (saldoCLP || 0) / fxRate;
-  const totalPatrimonioCLP =
-    (saldoCLP || 0) + (lucro?.valor_actual || 0) * fxRate + (saldoUSD || 0) * fxRate;
-
-  const handleMouseMove = (e) => {
-    const svg = e.currentTarget;
-    const rect = svg.getBoundingClientRect();
-    const scaleX = svg.width.baseVal.value / rect.width;
-    const mouseX = (e.clientX - rect.left) * scaleX;
-    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-    if (mouseX < padding.left - 10 || mouseX > width - padding.right + 5) {
-      setHoveredPoint(null);
-      return;
-    }
-    const idx = Math.round(((mouseX - padding.left) / chartWidth) * (allPoints.length - 1));
-    const clamped = Math.max(0, Math.min(idx, allPoints.length - 1));
-    setHoveredPoint(allPoints[clamped]);
-  };
-
-  const handleMouseLeave = () => setHoveredPoint(null);
+  // Only render every Nth dot (sparse for perf)
+  const DOT_INTERVAL = Math.max(1, Math.floor(allPoints.length / 12));
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-      className="bg-white/70 dark:bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/20 rounded-2xl p-6 shadow-sm relative overflow-hidden"
-    >
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#C9A227]/10 rounded-lg">
-              <TrendingUp className="w-5 h-5 text-[#C9A227]" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-[#1A1D2B] dark:text-white tracking-tight">
-                Evolucion de tu Patrimonio
-              </h3>
-              <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF] mt-0.5 font-mono tabular-nums">
-                {formatUSD(totalPatrimonioUSD)}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700/50">
-            <Calendar className="w-3.5 h-3.5 text-[#C9A227]" />
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-              Ultimos 30 dias
-            </span>
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+      className="bg-[#0D0E14]/80 border border-white/[0.06] rounded-2xl p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-[#C9A227]/10 rounded-lg"><TrendingUp className="w-5 h-5 text-[#C9A227]" /></div>
+          <div>
+            <h3 className="text-lg font-semibold text-white tracking-tight">Evolucion de tu Patrimonio</h3>
+            <p className="text-xs text-[#9CA3AF] mt-0.5 font-mono tabular-nums">{formatUSD(totalPatrimonioUSD)}</p>
           </div>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div className="bg-gray-50/80 dark:bg-gray-800/40 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
-            <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF] font-medium mb-1 tracking-wide">
-              Patrimonio Actual
-            </p>
-            <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight font-mono tabular-nums">
-              {formatUSD(totalPatrimonioUSD)}
-            </p>
-            <p className="text-xs text-[#6E6E6E]/70 dark:text-[#9CA3AF]/70 mt-0.5">
-              {formatCLP(totalPatrimonioUSD, fxRate)}
-            </p>
-          </div>
-          <div className="bg-gray-50/80 dark:bg-gray-800/40 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
-            <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF] font-medium mb-1 tracking-wide">
-              Cambio Total
-            </p>
-            <p
-              className={`text-2xl font-bold tracking-tight font-mono tabular-nums ${
-                esPositivo ? 'text-[#10B981]' : 'text-[#EF4444]'
-              }`}
-            >
-              {esPositivo ? '+' : ''}
-              {cambioPorcentaje}%
-            </p>
-          </div>
-          <div className="bg-gray-50/80 dark:bg-gray-800/40 rounded-xl p-4 border border-gray-200 dark:border-gray-700/50">
-            <p className="text-xs text-[#6E6E6E] dark:text-[#9CA3AF] font-medium mb-1 tracking-wide">
-              Patrimonio en CLP
-            </p>
-            <p className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight">
-              {formatCLP(totalPatrimonioUSD, fxRate)}
-            </p>
-          </div>
+        <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/[0.06]">
+          <Calendar className="w-3.5 h-3.5 text-[#C9A227]" />
+          <span className="text-xs font-medium text-gray-300">Historial completo</span>
         </div>
+      </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="overflow-hidden rounded-xl p-5 border border-[#C9A227]/15 relative"
-          style={{
-            background: '#0b0c10',
-            backgroundImage: `radial-gradient(circle, rgba(201,162,39,0.15) 0.5px, transparent 0.5px)`,
-            backgroundSize: '12px 12px',
-          }}
+      {/* Summary cards */}
+      <div className="grid grid-cols-3 gap-3 mb-5">
+        {[
+          { label: 'Patrimonio Actual', value: formatUSD(totalPatrimonioUSD), sub: formatCLP(totalPatrimonioUSD, fxRate), color: 'text-white' },
+          { label: 'Cambio Total', value: `${esPositivo ? '+' : ''}${cambioPorcentaje}%`, sub: 'Desde el inicio', color: esPositivo ? 'text-[#10B981]' : 'text-[#EF4444]' },
+          { label: 'Patrimonio CLP', value: formatCLP(totalPatrimonioUSD, fxRate), sub: null, color: 'text-white' },
+        ].map((card, i) => (
+          <div key={i} className="bg-white/[0.03] rounded-xl p-3 border border-white/[0.05]">
+            <p className="text-[10px] text-[#9CA3AF] font-medium mb-1 tracking-wide uppercase">{card.label}</p>
+            <p className={`text-lg font-bold tracking-tight font-mono tabular-nums ${card.color}`}>{card.value}</p>
+            {card.sub && <p className="text-[10px] text-[#9CA3AF]/60 mt-0.5">{card.sub}</p>}
+          </div>
+        ))}
+      </div>
+
+      {/* Chart area */}
+      <div className="overflow-hidden rounded-xl border border-white/[0.05] relative bg-[#0B0C10]">
+        <svg
+          ref={svgRef}
+          width={width}
+          height={height}
+          className="mx-auto block"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          style={{ cursor: 'crosshair', touchAction: 'none' }}
+          shapeRendering="auto"
         >
-          <svg
-            width={width}
-            height={height}
-            className="mx-auto"
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            style={{ cursor: 'crosshair' }}
-            shapeRendering="geometricPrecision"
-          >
-            <defs>
-              <linearGradient id="gradientGold" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#C9A227" stopOpacity="0.35" />
-                <stop offset="30%" stopColor="#C9A227" stopOpacity="0.15" />
-                <stop offset="60%" stopColor="#C9A227" stopOpacity="0.05" />
-                <stop offset="100%" stopColor="#C9A227" stopOpacity="0" />
-              </linearGradient>
-              <filter id="lineGlowGold">
-                <feGaussianBlur stdDeviation="3" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-              <linearGradient id="lineGradientGold" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#C9A227" />
-                <stop offset="50%" stopColor="#D4AF37" />
-                <stop offset="100%" stopColor="#C9A227" />
-              </linearGradient>
-              <filter id="nodeGlowGold">
-                <feGaussianBlur stdDeviation="1.5" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
+          <defs>
+            <linearGradient id="chartAreaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#C9A227" stopOpacity="0.25" />
+              <stop offset="50%" stopColor="#C9A227" stopOpacity="0.06" />
+              <stop offset="100%" stopColor="#C9A227" stopOpacity="0" />
+            </linearGradient>
+            <linearGradient id="chartLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#C9A227" stopOpacity="0.6" />
+              <stop offset="30%" stopColor="#D4AF37" />
+              <stop offset="70%" stopColor="#D4AF37" />
+              <stop offset="100%" stopColor="#C9A227" stopOpacity="0.6" />
+            </linearGradient>
+          </defs>
 
-            {[0, 0.25, 0.5, 0.75, 1].map((f, i) => {
-              const yPos = padding.top + chartHeight * (1 - f);
-              const valorEtiqueta = minValor + rangoValor * f;
-              return (
-                <g key={i}>
-                  <line
-                    x1={padding.left}
-                    y1={yPos}
-                    x2={width - padding.right}
-                    y2={yPos}
-                    stroke="#ffffff"
-                    strokeWidth="1"
-                    strokeDasharray="3 5"
-                    opacity="0.08"
-                  />
-                  <text
-                    x={padding.left - 12}
-                    y={yPos + 4}
-                    textAnchor="end"
-                    fill="#9CA3AF"
-                    fontSize="11"
-                    fontWeight="400"
-                  >
-                    ${(valorEtiqueta / 1000).toFixed(1)}k
-                  </text>
-                </g>
-              );
-            })}
+          {/* Grid lines */}
+          {[0, 0.25, 0.5, 0.75, 1].map((f) => {
+            const yPos = padding.top + chartHeight * (1 - f);
+            const val = minValor + rangoValor * f;
+            return (
+              <g key={f}>
+                <line x1={padding.left} y1={yPos} x2={width - padding.right} y2={yPos}
+                  stroke="#ffffff" strokeWidth="1" strokeDasharray="4 6" opacity="0.05" />
+                <text x={padding.left - 10} y={yPos + 4} textAnchor="end" fill="#6B7280" fontSize="10" fontFamily="monospace">
+                  ${(val / 1000).toFixed(1)}k
+                </text>
+              </g>
+            );
+          })}
 
-            <path d={areaPathD} fill="url(#gradientGold)" opacity="0.6" />
-            <path d={pathD} fill="none" stroke="#C9A227" strokeWidth="8" strokeLinecap="round" opacity="0.15" />
-            <path
-              d={pathD}
-              fill="none"
-              stroke="url(#lineGradientGold)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              filter="url(#lineGlowGold)"
-            />
+          {/* Area fill */}
+          <path d={areaPathD} fill="url(#chartAreaGrad)" />
 
-            {/* Dots on data points */}
-            {allPoints.map((pt, i) => (
-              <circle
-                key={i}
-                cx={pt.x}
-                cy={pt.y}
-                r="4"
-                fill="#C9A227"
-                stroke="#fff"
-                strokeWidth="2"
-                filter="url(#nodeGlowGold)"
-              />
-            ))}
+          {/* Glow line (wide, translucent) */}
+          <path d={pathD} fill="none" stroke="#C9A227" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" opacity="0.12" />
 
-            {hoveredPoint && (
-              <>
-                <line
-                  x1={hoveredPoint.x}
-                  y1={padding.top}
-                  x2={hoveredPoint.x}
-                  y2={height - padding.bottom}
-                  stroke="#C9A227"
-                  strokeWidth="1"
-                  strokeDasharray="3 4"
-                  opacity="0.3"
-                />
-                <circle
-                  cx={hoveredPoint.x}
-                  cy={hoveredPoint.y}
-                  r="5"
-                  fill="#C9A227"
-                  stroke="#fff"
-                  strokeWidth="2"
-                  filter="url(#nodeGlowGold)"
-                />
-                <circle
-                  cx={hoveredPoint.x}
-                  cy={hoveredPoint.y}
-                  r="10"
-                  fill="none"
-                  stroke="#C9A227"
-                  strokeWidth="1"
-                  opacity="0.2"
-                >
-                  <animate attributeName="r" from="5" to="16" dur="2s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" from="0.3" to="0" dur="2s" repeatCount="indefinite" />
-                </circle>
-              </>
-            )}
-          </svg>
+          {/* Main line */}
+          <path d={pathD} fill="none" stroke="url(#chartLineGrad)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
 
-          <ChartTooltip point={hoveredPoint} mousePos={mousePos} fxRate={fxRate} />
-        </motion.div>
+          {/* Sparse dots */}
+          {allPoints.filter((_, i) => i % DOT_INTERVAL === 0 || i === allPoints.length - 1).map((pt) => (
+            <circle key={pt.index} cx={pt.x} cy={pt.y} r="2.5" fill="#0B0C10" stroke="#C9A227" strokeWidth="1.5" />
+          ))}
+
+          {/* Hover indicator */}
+          {hoveredPoint && (
+            <>
+              <line x1={hoveredPoint.x} y1={padding.top} x2={hoveredPoint.x} y2={height - padding.bottom}
+                stroke="#C9A227" strokeWidth="1" strokeDasharray="3 4" opacity="0.25" />
+              <circle cx={hoveredPoint.x} cy={hoveredPoint.y} r="5" fill="#0B0C10" stroke="#C9A227" strokeWidth="2" />
+              <circle cx={hoveredPoint.x} cy={hoveredPoint.y} r="14" fill="none" stroke="#C9A227" strokeWidth="1" opacity="0.15" />
+            </>
+          )}
+        </svg>
+
+        <ChartTooltip point={hoveredPoint} mousePos={mousePos} fxRate={fxRate} />
       </div>
     </motion.div>
   );
-}
+});
 
 // ── Status Badge ──────────────────────────────────────────────────
 const StatusBadge = ({ estado, motivoRechazo }) => {
