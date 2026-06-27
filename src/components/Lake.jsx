@@ -1636,7 +1636,7 @@ export function Lake() {
   };
 
   return (
-    <div className="h-screen flex flex-col text-white bg-gradient-to-br from-slate-950 via-[#0f1318] to-slate-950 relative overflow-hidden">
+    <div className="h-[calc(100vh-8rem)] flex flex-col text-white bg-gradient-to-br from-slate-950 via-[#0f1318] to-slate-950 relative overflow-hidden">
 
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(20)].map((_, i) => (
