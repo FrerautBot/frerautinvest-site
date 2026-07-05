@@ -197,7 +197,7 @@ const MetricsSkeleton = () => (
 );
 
 // ── Empty State Component ─────────────────────────────────────────
-const EmptyState = ({ icon: Icon, title, subtitle }) => (
+const EmptyState = ({ icon: Icon, title, subtitle, action }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -216,7 +216,17 @@ const EmptyState = ({ icon: Icon, title, subtitle }) => (
       )}
     </div>
     <p className="text-[#F5F1E8]/60 text-lg font-medium mb-1">{title}</p>
-    {subtitle && <p className="text-[#F5F1E8]/30 text-sm">{subtitle}</p>}
+    {subtitle && <p className="text-[#F5F1E8]/30 text-sm mb-4">{subtitle}</p>}
+    {action && (
+      <motion.button
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.97 }}
+        onClick={action.onClick}
+        className="mt-2 px-5 py-2.5 bg-[#C9A227]/10 hover:bg-[#C9A227]/20 border border-[#C9A227]/20 hover:border-[#C9A227]/40 text-[#C9A227] text-sm font-semibold rounded-xl transition-all duration-300"
+      >
+        {action.label}
+      </motion.button>
+    )}
   </motion.div>
 );
 
@@ -397,7 +407,7 @@ const PatrimonioChart = React.memo(({ historial, fxRate, lucro, saldoCLP, saldoU
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-3 mb-5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
         {[
           { label: 'Patrimonio Actual', value: formatUSD(totalPatrimonioUSD), sub: formatCLP(totalPatrimonioUSD, fxRate), color: 'text-white' },
           { label: 'Cambio Total', value: `${esPositivo ? '+' : ''}${cambioPorcentaje}%`, sub: 'Desde el inicio', color: esPositivo ? 'text-[#10B981]' : 'text-[#EF4444]' },
@@ -425,16 +435,23 @@ const PatrimonioChart = React.memo(({ historial, fxRate, lucro, saldoCLP, saldoU
         >
           <defs>
             <linearGradient id="chartAreaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#C9A227" stopOpacity="0.25" />
-              <stop offset="50%" stopColor="#C9A227" stopOpacity="0.06" />
+              <stop offset="0%" stopColor="#C9A227" stopOpacity="0.30" />
+              <stop offset="15%" stopColor="#D4AF37" stopOpacity="0.18" />
+              <stop offset="40%" stopColor="#C9A227" stopOpacity="0.08" />
+              <stop offset="70%" stopColor="#C9A227" stopOpacity="0.03" />
               <stop offset="100%" stopColor="#C9A227" stopOpacity="0" />
             </linearGradient>
             <linearGradient id="chartLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#C9A227" stopOpacity="0.6" />
-              <stop offset="30%" stopColor="#D4AF37" />
-              <stop offset="70%" stopColor="#D4AF37" />
-              <stop offset="100%" stopColor="#C9A227" stopOpacity="0.6" />
+              <stop offset="0%" stopColor="#C9A227" stopOpacity="0.5" />
+              <stop offset="15%" stopColor="#E4C65A" />
+              <stop offset="50%" stopColor="#D4AF37" />
+              <stop offset="85%" stopColor="#E4C65A" />
+              <stop offset="100%" stopColor="#C9A227" stopOpacity="0.5" />
             </linearGradient>
+            <filter id="chartGlow">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur" />
+              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
           </defs>
 
           {/* Grid lines */}
@@ -459,7 +476,7 @@ const PatrimonioChart = React.memo(({ historial, fxRate, lucro, saldoCLP, saldoU
           <path d={pathD} fill="none" stroke="#C9A227" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" opacity="0.12" />
 
           {/* Main line */}
-          <path d={pathD} fill="none" stroke="url(#chartLineGrad)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d={pathD} fill="none" stroke="url(#chartLineGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" filter="url(#chartGlow)" />
 
           {/* Sparse dots */}
           {allPoints.filter((_, i) => i % DOT_INTERVAL === 0 || i === allPoints.length - 1).map((pt) => (
@@ -558,6 +575,32 @@ const cardSpring = {
   animate: { opacity: 1, y: 0 },
   transition: { type: 'spring', stiffness: 300, damping: 25 },
 };
+
+// ── Table Skeleton ──────────────────────────────────────────────────
+const TableSkeleton = ({ rows = 3 }) => (
+  <div className="overflow-x-auto px-2">
+    <table className="w-full">
+      <thead>
+        <tr className="border-b border-gray-200 dark:border-gray-700">
+          {["Fecha", "Monto", "Banco", "Estado", "Cuenta"].map((h, i) => (
+            <th key={i} className="text-left py-3 px-3 text-[11px] font-medium text-[#6E6E6E] dark:text-[#9CA3AF] tracking-wide">{h}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {Array.from({ length: rows }).map((_, i) => (
+          <tr key={i} className="border-b border-gray-200 dark:border-gray-800">
+            {Array.from({ length: 5 }).map((_, j) => (
+              <td key={j} className="py-4 px-4">
+                <div className="h-4 bg-[#C9A227]/5 rounded-lg animate-pulse" style={{ width: `${60 + Math.random() * 30}%` }} />
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)
 
 // ── MyUnits ───────────────────────────────────────────────────────
 const MyUnits = () => {
@@ -1065,20 +1108,39 @@ const MyUnits = () => {
           </p>
         </div>
         <MetricsSkeleton />
-        <div className="animate-pulse bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/10 rounded-2xl p-6 h-[400px]" />
+        <div className="mt-8 animate-pulse bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/10 rounded-2xl p-6">
+          <div className="h-5 w-48 bg-[#C9A227]/10 rounded-lg mb-6" />
+          <div className="h-[300px] bg-[#C9A227]/5 rounded-xl" />
+        </div>
+        <div className="mt-8 bg-[#1A1D2B]/70 backdrop-blur-xl border border-[#C9A227]/10 rounded-2xl p-6">
+          <TableSkeleton rows={3} />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-xl font-semibold text-[#1A1D2B] dark:text-white tracking-tight">
-          Mis Unidades
-        </h2>
-        <p className="text-sm text-[#6E6E6E] dark:text-[#9CA3AF] mt-1">
-          Resumen de tu cartera de UEs
-        </p>
+      <div className="flex items-start justify-between flex-wrap gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-[#1A1D2B] dark:text-white tracking-tight">
+            Mis Unidades
+          </h2>
+          <p className="text-sm text-[#6E6E6E] dark:text-[#9CA3AF] mt-1">
+            Resumen de tu cartera de UEs
+          </p>
+        </div>
+        {lucro && Number(lucro.valor_actual) >= 10000 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.2 }}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#C9A227]/20 to-[#D4AF37]/10 border border-[#C9A227]/30 rounded-full"
+          >
+            <span className="text-lg">👑</span>
+            <span className="text-xs font-bold text-[#C9A227] tracking-widest uppercase">Inversor Premier</span>
+          </motion.div>
+        )}
       </div>
 
       {lucro ? (
@@ -1298,6 +1360,16 @@ const MyUnits = () => {
       />
 
       {/* BOTONES DE ACCION */}
+      <div className="relative my-8">
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+          <div className="w-full border-t border-[#C9A227]/10" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="px-4 text-[10px] font-semibold text-[#C9A227]/40 tracking-widest uppercase bg-[#0B0C10]">
+            Operaciones
+          </span>
+        </div>
+      </div>
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1326,7 +1398,17 @@ const MyUnits = () => {
       </motion.div>
 
       {/* HISTORIAL DE RETIROS */}
-      <div className="bg-white/90 dark:bg-[#1A1D2B]/80 border border-[#C9A227]/10 rounded-xl">
+      <div className="relative my-8">
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+          <div className="w-full border-t border-[#C9A227]/10" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="px-4 text-[10px] font-semibold text-[#C9A227]/40 tracking-widest uppercase bg-[#0B0C10]">
+            Historial
+          </span>
+        </div>
+      </div>
+      <div className="bg-white/90 dark:bg-[#1A1D2B]/80 backdrop-blur-xl border border-[#C9A227]/10 rounded-xl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#C9A227]/10">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 bg-[#C9A227]/10 rounded-lg">
@@ -1349,6 +1431,7 @@ const MyUnits = () => {
               icon={DollarSign}
               title="No tienes retiros registrados"
               subtitle="Tus solicitudes apareceran aqui"
+              action={{ label: "Solicitar mi primer retiro", onClick: () => setShowWithdrawModal(true) }}
             />
           </div>
         ) : (
@@ -1379,8 +1462,9 @@ const MyUnits = () => {
                     key={retiro.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ backgroundColor: "rgba(201,162,39,0.04)", transition: { duration: 0.2 } }}
                     transition={{ type: 'spring', stiffness: 300, damping: 25, delay: index * 0.05 }}
-                    className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                    className="border-b border-gray-200 dark:border-gray-800 transition-colors relative"
                   >
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
@@ -1488,7 +1572,7 @@ const MyUnits = () => {
               exit={{ opacity: 0, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-[#1A1D2B] rounded-2xl p-8 max-w-lg w-[calc(100%-2rem)] mx-4 shadow-2xl border border-[#8B5CF6]/20 shadow-[#8B5CF6]/10"
+              className="bg-[#1A1D2B]/90 backdrop-blur-2xl backdrop-saturate-150 rounded-2xl p-8 max-w-lg w-[calc(100%-2rem)] mx-4 shadow-2xl border border-[#8B5CF6]/20 shadow-[#8B5CF6]/10"
             >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
@@ -1551,7 +1635,7 @@ const MyUnits = () => {
                       placeholder="Ej: 100000"
                       disabled={isProcessingExchange}
                       autoFocus
-                      className="w-full pl-8 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-700 rounded-xl focus:border-[#8B5CF6] focus:ring-2 focus:ring-[#8B5CF6]/20 outline-none transition-all text-gray-900 dark:text-white font-semibold text-lg"
+                      className="w-full pl-8 pr-4 py-3 bg-[#0B0C10] border border-gray-700 rounded-xl focus:border-[#8B5CF6] focus:ring-2 focus:ring-[#8B5CF6]/20 outline-none transition-all text-[#F5F1E8] font-semibold text-lg"
                     />
                   </div>
                   {saldoDisponible > 0 && (
@@ -1596,7 +1680,7 @@ const MyUnits = () => {
                     transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                     className="space-y-4"
                   >
-                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800/60 dark:to-gray-900/60 rounded-xl p-6 border-2 border-[#8B5CF6]/20">
+                    <div className="bg-[#0D0E14]/90 backdrop-blur-md rounded-xl p-6 border border-[#8B5CF6]/20">
                       <div className="flex items-center justify-between mb-4">
                         <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
                           Resumen del cambio
@@ -1661,7 +1745,7 @@ const MyUnits = () => {
                   </motion.div>
                 )}
 
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                <div className="bg-[#0D0E14]/80 backdrop-blur-md border border-[#8B5CF6]/10 rounded-lg p-4">
                   <p className="text-xs text-blue-800 dark:text-blue-300">
                     <strong>💱 Tipo de cambio:</strong> El tipo de cambio se calcula en tiempo
                     real. Una vez confirmado, la conversion es instantanea y se refleja en tus
@@ -1697,7 +1781,7 @@ const MyUnits = () => {
               exit={{ opacity: 0, y: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-[#1A1D2B] rounded-2xl p-8 max-w-2xl w-[calc(100%-2rem)] mx-4 max-h-[90vh] overflow-y-auto shadow-2xl border border-[#EF4444]/20 shadow-[#EF4444]/5"
+              className="bg-[#1A1D2B]/90 backdrop-blur-2xl backdrop-saturate-150 rounded-2xl p-8 max-w-2xl w-[calc(100%-2rem)] mx-4 max-h-[90vh] overflow-y-auto shadow-2xl border border-[#EF4444]/20 shadow-[#EF4444]/5"
             >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
@@ -1737,13 +1821,13 @@ const MyUnits = () => {
                     placeholder="Ej: 50000"
                     disabled={isProcessingWithdraw}
                     autoFocus
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-700 rounded-xl focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none transition-all text-gray-900 dark:text-white font-semibold text-lg"
+                    className="w-full px-4 py-3 bg-[#0B0C10] border border-gray-700 rounded-xl focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none transition-all text-[#F5F1E8] font-semibold text-lg"
                   />
                   <p className="text-xs text-gray-500 mt-1">Monto minimo: $1.000 CLP</p>
                 </div>
 
                 {savedBankAccounts.length > 0 && (
-                  <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                  <div className="bg-[#0D0E14]/70 backdrop-blur-md border border-[#C9A227]/10 rounded-xl p-4">
                     <h4 className="text-sm font-bold text-blue-900 dark:text-blue-300 mb-3">
                       Cuentas Guardadas
                     </h4>
@@ -1751,10 +1835,10 @@ const MyUnits = () => {
                       {savedBankAccounts.map((cuenta) => (
                         <div
                           key={cuenta.id}
-                          className={`flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
                             selectedBankAccountId === cuenta.id
-                              ? 'bg-blue-100 dark:bg-blue-900/40 border-blue-500'
-                              : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 hover:border-blue-400'
+                              ? 'bg-[#C9A227]/10 border-[#C9A227]/40'
+                              : 'bg-[#0B0C10] border-gray-700 hover:border-[#C9A227]/30'
                           }`}
                           onClick={() => {
                             setSelectedBankAccountId(cuenta.id);
@@ -1796,14 +1880,14 @@ const MyUnits = () => {
                           email: bankData.email,
                         });
                       }}
-                      className="mt-3 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                      className="mt-3 text-sm text-[#C9A227] hover:underline font-medium"
                     >
                       + Usar nueva cuenta
                     </button>
                   </div>
                 )}
 
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6 space-y-4 border-2 border-gray-200 dark:border-gray-700">
+                <div className="bg-[#0D0E14]/70 backdrop-blur-md rounded-xl p-6 space-y-4 border border-[#C9A227]/10">
                   <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
                     Datos Bancarios
                   </h4>
@@ -1817,7 +1901,7 @@ const MyUnits = () => {
                         value={bankData.banco}
                         onChange={(e) => setBankData({ ...bankData, banco: e.target.value })}
                         disabled={isProcessingWithdraw}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm"
+                        className="w-full px-3 py-2 bg-[#0B0C10] border border-gray-700 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm text-[#F5F1E8]"
                       >
                         <option value="">Seleccionar...</option>
                         <option value="Banco de Chile">Banco de Chile</option>
@@ -1843,7 +1927,7 @@ const MyUnits = () => {
                           setBankData({ ...bankData, tipoCuenta: e.target.value })
                         }
                         disabled={isProcessingWithdraw}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm"
+                        className="w-full px-3 py-2 bg-[#0B0C10] border border-gray-700 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm text-[#F5F1E8]"
                       >
                         <option value="corriente">Cuenta Corriente</option>
                         <option value="vista">Cuenta Vista</option>
@@ -1864,7 +1948,7 @@ const MyUnits = () => {
                       }
                       placeholder="1234567890"
                       disabled={isProcessingWithdraw}
-                      className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm"
+                      className="w-full px-3 py-2 bg-[#0B0C10] border border-gray-700 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm text-[#F5F1E8]"
                     />
                   </div>
 
@@ -1881,7 +1965,7 @@ const MyUnits = () => {
                         }
                         placeholder="12.345.678-9"
                         disabled={isProcessingWithdraw}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm"
+                        className="w-full px-3 py-2 bg-[#0B0C10] border border-gray-700 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm text-[#F5F1E8]"
                       />
                     </div>
 
@@ -1897,7 +1981,7 @@ const MyUnits = () => {
                         }
                         placeholder="Juan Perez"
                         disabled={isProcessingWithdraw}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm"
+                        className="w-full px-3 py-2 bg-[#0B0C10] border border-gray-700 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm text-[#F5F1E8]"
                       />
                     </div>
                   </div>
@@ -1912,7 +1996,7 @@ const MyUnits = () => {
                       onChange={(e) => setBankData({ ...bankData, email: e.target.value })}
                       placeholder="correo@ejemplo.com"
                       disabled={isProcessingWithdraw}
-                      className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm"
+                      className="w-full px-3 py-2 bg-[#0B0C10] border border-gray-700 rounded-lg focus:border-[#EF4444] focus:ring-2 focus:ring-[#EF4444]/20 outline-none text-sm text-[#F5F1E8]"
                     />
                   </div>
 
@@ -1935,9 +2019,9 @@ const MyUnits = () => {
                   )}
                 </div>
 
-                <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                  <p className="text-xs text-blue-800 dark:text-blue-300">
-                    <strong>📝 Importante:</strong> El retiro sera procesado en un plazo de 24-48
+                <div className="bg-[#0D0E14]/80 backdrop-blur-md border border-[#EF4444]/10 rounded-lg p-4">
+                  <p className="text-xs text-[#F5F1E8]/60">
+                    <strong className="text-[#F5F1E8]/80">Importante:</strong> El retiro sera procesado en un plazo de 24-48
                     horas habiles. Recibiras un email de confirmacion cuando se complete la
                     transferencia.
                   </p>
